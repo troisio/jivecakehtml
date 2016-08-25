@@ -1,0 +1,68 @@
+<div ng-show="uiReady">
+  <md-table-container>
+    <table ng-model="selected" md-table md-row-select multiple>
+      <tbody md-body>
+        <tr md-row md-auto-select ng-repeat="itemData in paging.data.entity track by itemData.item.id">
+          <td md-cell>
+            <span>{{itemData.item.name}}</span>
+          </td>
+          <td md-cell>
+            <a ui-sref="application.internal.event.read({id: itemData.event.id})">{{itemData.event.name}}</a>
+          </td>
+          <td md-cell>
+            <md-menu md-position-mode="target-right target">
+              <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+              <ng-md-icon icon="more_vert"></ng-md-icon>
+              </md-button>
+              <md-menu-content width="2">
+                <md-menu-item>
+                  <md-button ui-sref="application.internal.transaction.read({itemId: itemData.item.id})">
+                    <span md-menu-align-target>view transactions</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ui-sref="application.internal.transaction.create({itemId: itemData.item.id})">
+                    <span md-menu-align-target>create transaction</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ui-sref="application.internal.item.update({itemId: itemData.item.id})">
+                    <span md-menu-align-target>update</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-show="hasApplicationWrite && itemData.item.amount !== null">
+                  <md-button ng-click="controller.createPaypalTransaction(itemData.item)">
+                    <span md-menu-align-target>create paypal transaction</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ng-href="{{apiUrl + '/transaction/excel?itemId=' + itemData.item.id + '&Authorization=Bearer ' + token}}">
+                    <span md-menu-align-target>download transactions</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ng-click="controller.delete(itemData, $event)">
+                    <span md-menu-align-target>delete</span>
+                  </md-button>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+          </td>
+        </tr>
+        <tr md-row ng-show="paging.data.entity.length === 0">
+          <td md-cell colspan="3">
+            <span class="md-subheader">No data found</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </md-table-container>
+  <md-table-pagination md-limit="query.limit" md-limit-options="[10, 20, 50]" md-page="query.page" md-total="{{paging.data.count}}" md-on-paginate="paginate" md-page-select>
+  </md-table-pagination>
+</div>
+<div ng-show="!uiReady" layout="row" layout-align="center">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+</div>
+<md-button class="md-fab md-fab-bottom-right md-ink-ripple" aria-label="Add" ng-click="controller.createItem()">
+  <ng-md-icon size="35" icon="add"></ng-md-icon>
+</md-button>

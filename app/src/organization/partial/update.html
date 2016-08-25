@@ -1,0 +1,172 @@
+<md-toolbar ng-show="uiReady" class="md-hue-2">
+  <div class="md-toolbar-tools">
+    <h3>Update {{organization.name}}</h3>
+  </div>
+</md-toolbar>
+<div ng-show="uiReady" layout-padding class="md-inline-form">
+  <form ng-disabled="true" ng-submit="controller.submit(organization, userPermissionModel)">
+    <section layout-padding>
+      <div layout="row">
+        <div layout-padding>
+          <h4>Users</h4>
+        </div>
+        <span flex></span>
+        <md-menu md-position-mode="target-right target">
+          <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+          <ng-md-icon icon="more_vert"></ng-md-icon>
+          </md-button>
+          <md-menu-content width="2">
+            <md-menu-item>
+              <md-button ng-click="controller.addUserPermission()">
+                <span md-menu-align-target>add user</span>
+              </md-button>
+            </md-menu-item>
+          </md-menu-content>
+        </md-menu>
+      </div>
+      <div>
+        <md-table-container>
+          <table ng-model="controller.selected" md-table md-row-select multiple>
+            <tbody md-body>
+              <tr md-row md-auto-select ng-repeat="user in users track by user.user_id">
+                <td md-cell>
+                  <h5>{{user| userIdentificationFilter: true}}</h5>
+                </td>
+                <td md-cell>
+                  <md-select ng-disabled="currentUser.user_id === user.user_id" aria-label="Inclusion" ng-model="userPermissionModel[user.user_id].include" ng-change="controller.changeInclusion(user.user_id, userPermissionModel[user.user_id].include)">
+                    <md-option ng-value="0">All</md-option>
+                    <md-option ng-value="1">including</md-option>
+                    <md-option ng-value="2">excluding</md-option>
+                  </md-select>
+                </td>
+                <td md-cell ng-repeat="permission in organizationPermissionTypes">
+                  <md-checkbox
+                  layout-padding
+                  ng-show="userPermissionModel[user.user_id].include !== 3"
+                  ng-model="userPermissionModel[user.user_id].permission[permission]"
+                  ng-disabled="userPermissionModel[user.user_id].include === 0 || currentUser.user_id === user.user_id"
+                  >{{permission}}</md-checkbox>
+                </td>
+                <td md-cell>
+                  <md-button aria-label="Delete user from organization" ng-click="controller.removeUserFromOrganization(user)" ng-show="currentUser.user_id !== user.user_id">
+                    <ng-md-icon icon="delete"></ng-md-icon>
+                  </md-button>
+                </td>
+              </tr>
+              <tr ng-show="users.length === 0" md-row layout-padding>
+                <td md-cell>
+                  <span class="md-subheader">No data found</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+      </div>
+    </section>
+    <section>
+      <div layout-padding layout="row">
+        <div>
+          <h4>Features</h4>
+        </div>
+        <span flex></span>
+        <div>
+          <md-menu md-position-mode="target-right target">
+            <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+            </md-button>
+            <md-menu-content width="2">
+              <md-menu-item>
+                <md-button ng-click="controller.createEventSubscription()">
+                  <span md-menu-align-target>add subscription</span>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item ng-show="hasApplicationWrite">
+                <md-button ng-click="controller.createOrganizationFeature(organization)">
+                  <span md-menu-align-target>add feature</span>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+        </div>
+      </div>
+      <div>
+        <md-table-container>
+          <table ng-model="controller.selectedFeature" md-table md-row-select multiple>
+            <tbody md-body>
+              <tr md-row md-auto-select ng-repeat="feature in controller.features track by feature.id">
+                <td md-cell>
+                  <h5>{{feature.type | featureTypeFilter}}</h5>
+                </td>
+                <td md-cell>
+                  <h5>{{feature.timeStart | date:'d MMM yyyy'}} to {{feature.timeEnd | date:'d MMM yyyy'}} </h5>
+                </td>
+                <td ng-show="hasApplicationWrite" ng-click="controller.deleteOrganizationFeature($event, feature)" md-cell>
+                  <ng-md-icon icon="delete"></ng-md-icon>
+                </td>
+              </tr>
+              <tr  ng-show="controller.features.length === 0" md-row layout-padding>
+                <td md-cell>
+                  <span class="md-subheader">No data found</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+      </div>
+    </section>
+    <section>
+      <div layout-padding layout="row">
+        <div>
+          <h4>Payment Profiles</h4>
+        </div>
+        <span flex></span>
+        <div>
+          <md-menu md-position-mode="target-right target">
+            <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+            </md-button>
+            <md-menu-content width="2">
+              <md-menu-item>
+                <md-button ng-click="controller.createPaymentProfile(organization)">
+                  <span md-menu-align-target>add payment profile</span>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+        </div>
+      </div>
+      <div>
+        <md-table-container>
+          <table ng-model="controller.selectedPaymentProfile" md-table md-row-select multiple>
+            <tbody md-body>
+              <tr md-row md-auto-select ng-repeat="paymentProfile in controller.paymentProfiles track by paymentProfile.id">
+                <td md-cell>
+                  <h5>Paypal: {{paymentProfile.email}}</h5>
+                </td>
+                <td ng-click="controller.deletePaymentProfile($event, paymentProfile)" md-cell>
+                  <ng-md-icon icon="delete"></ng-md-icon>
+                </td>
+              </tr>
+              <tr  ng-show="controller.paymentProfiles.length === 0" md-row layout-padding>
+                <td md-cell>
+                  <span class="md-subheader">No data found</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+      </div>
+    </section>
+    <div layout="row">
+      <md-input-container>
+        <md-button type="button" ui-sref="application.internal.organization.read" class="md-raised">Cancel</md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button type="submit" class="md-raised md-primary">Update</md-button>
+      </md-input-container>
+    </div>
+  </form>
+</div>
+<div ng-show="!uiReady" layout="row" layout-align="center">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+</div>

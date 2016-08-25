@@ -1,0 +1,73 @@
+<md-toolbar class="md-table-toolbar md-default transactions-partial">
+  <div class="md-toolbar-tools">
+    <ng-md-icon icon="search"></ng-md-icon>
+    <input flex ng-model="controller.searchText" ng-change="controller.onSearchTextChanged()" ng-model-options="{debounce: 300}" placeholder="search">
+  </div>
+</md-toolbar>
+<div ng-show="uiReady">
+  <md-table-container>
+    <table ng-model="controller.selected" md-table md-row-select multiple>
+      <tbody md-body>
+        <tr md-row md-auto-select ng-repeat="transactionData in paging.data.entity track by transactionData.transaction.id">
+          <td md-cell>
+            <span ng-show="transactionData.user === null">{{transactionData.transaction.given_name}} {{transactionData.transaction.family_name}}</span>
+            <span ng-show="transactionData.user !== null">{{transactionData.user | userIdentificationFilter: false}}</span>
+          </td>
+          <td md-cell>
+            <a href="" ui-sref="application.internal.item.read({id: transactionData.item.id})">{{transactionData.item.name}}</a>
+          </td>
+          <td md-cell>
+            <span ng-show="transactionData.transaction.amount > 0 && transactionData.transaction.currency === 'USD'">&#36;</span>
+            <span ng-show="transactionData.transaction.amount > 0 && transactionData.transaction.currency === 'EUR'">&#128;</span>
+            <span ng-show="transactionData.transaction.amount > 0">{{transactionData.transaction.amount| number: 2}}</span>
+          </td>
+          <td md-cell>
+            <span ng-show="transactionData.transaction > 0">{{transactionData.transaction.quantity}}</span>
+          </td>
+          <td md-cell>
+            <ng-md-icon ng-show="transactionData.transaction.status === 0" class="payment-complete" icon="check_circle"></ng-md-icon>
+            <ng-md-icon ng-show="transactionData.transaction.status === 1 || transactionData.transaction.status === 6 || transactionData.transaction.status === 7" class="payment-pending" icon="send"></ng-md-icon>
+            <ng-md-icon ng-show="transactionData.transaction.status === 2" class="payment-bad" icon="money_off"></ng-md-icon>
+            <ng-md-icon ng-show="transactionData.transaction.status === 3" class="payment-bad" icon="report"></ng-md-icon>
+            <ng-md-icon ng-show="transactionData.transaction.status === 4" class="payment-refund" icon="undo"></ng-md-icon>
+            <ng-md-icon ng-show="transactionData.transaction.status === 5" class="payment-bad" icon="clear"></ng-md-icon>
+          </td>
+          <td md-cell>
+            <md-menu md-position-mode="target-right target">
+              <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+                <ng-md-icon icon="more_vert"></ng-md-icon>
+              </md-button>
+              <md-menu-content width="2">
+                <md-menu-item>
+                  <md-button ng-click="controller.readTransaction(transactionData.transaction, transactionData.user, transactionData.item)">
+                    <span md-menu-align-target>view transaction</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-show="transactionData.transaction.linkedObjectClass !== 'PaypalIPN'">
+                  <md-button ng-click="controller.deleteTransaction(transactionData.transaction, $event)">
+                    <span md-menu-align-target>delete transaction</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-show="transactionData.transaction.status === 0">
+                  <md-button ng-click="controller.revokeTransaction(transactionData.transaction, $event)">
+                    <span md-menu-align-target>revoke transaction</span>
+                  </md-button>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+          </td>
+        </tr>
+        <tr ng-show="paging.data.entity.length === 0" md-row>
+          <td md-cell colspan="5">
+            <span class="md-subheader">No data found</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </md-table-container>
+  <md-table-pagination ng-show="controller.searchText.length === 0" md-limit="query.limit" md-limit-options="[10, 20, 50]" md-page="query.page" md-total="{{paging.data.count}}" md-on-paginate="paginate" md-page-select>
+  </md-table-pagination>
+</div>
+<div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
+  <md-progress-circular  md-mode="indeterminate"></md-progress-circular>
+</div>

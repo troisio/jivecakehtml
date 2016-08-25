@@ -1,0 +1,59 @@
+<md-toolbar class="md-hue-2">
+  <div class="md-toolbar-tools">
+    <h3>Checkout</h3>
+  </div>
+</md-toolbar>
+<div layout-padding ng-show="uiReady" class="md-inline-form">
+  <form ng-submit="submit(item, free)">
+    <md-input-container class="md-block">
+      <label>Name</label>
+      <input ng-model="item.name" maxlength="255" required>
+    </md-input-container>
+    <md-input-container class="md-block">
+      <md-checkbox ng-model="free" aria-label="Free">
+        Free
+      </md-checkbox>
+    </md-input-container>
+    <div layout layout-sm="column">
+      <md-input-container ng-show="!free" class="md-block" flex>
+        <label>Price</label>
+        <input pattern="\d+(\.\d{2})?" type="number" step="0.01" ng-model="item.amount" min="0" ng-required="!free">
+      </md-input-container>
+      <md-input-container ng-show="!free" flex>
+        <label>Currency</label>
+        <md-select ng-required="!free" ng-model="item.currency">
+          <md-option value=""></md-option>
+          <md-option value="USD">US Dollars</md-option>
+          <md-option value="EUR">Euro</md-option>
+        </md-select>
+      </md-input-container>
+    </div>
+    <md-input-container ng-show="!free" class="md-block" flex>
+      <label>Payment Profile</label>
+      <a href="" ng-click="createPaymentProfile()" ng-show="paymentProfiles.length === 0">Create a Payment Profile</a>
+      <md-select ng-show="paymentProfiles.length > 0" ng-model="item.paymentProfileId" aria-label="Payment Profile">
+        <md-option ng-value="null"></md-option>
+        <md-option ng-repeat="profile in paymentProfiles track by profile.id" value="{{profile.id}}">{{profile.name}}</md-option>
+      </md-select>
+    </md-input-container>
+    <div layout layout-sm="column">
+      <label>Start Time</label>
+      <md-datepicker ng-model="item.timeStart">
+      </md-datepicker>
+      <label>End Time</label>
+      <md-datepicker ng-model="item.timeEnd">
+      </md-datepicker>
+    </div>
+    <div layout="row">
+      <md-input-container>
+        <md-button ui-sref="application.internal.item.read({eventId: item.eventId})" class="md-raised">Cancel</md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button type="submit" class="md-raised md-primary">Update</md-button>
+      </md-input-container>
+    </div>
+  </form>
+</div>
+<md-input-container ng-show="!uiReady" layout-align="center center" class="md-block">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+</md-input-container>

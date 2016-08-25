@@ -1,0 +1,38 @@
+<md-dialog flex="80">
+  <div layout-padding>
+    <div ng-show="uiReady && events.length > 0" class="md-inline-form">
+      <h2>Create Item</h2>
+      <form ng-submit="controller.submit(item, event)">
+        <md-input-container class="md-block">
+          <label>Name</label>
+          <input ng-model="item.name" autocomplete="off" required>
+        </md-input-container>
+        <md-autocomplete
+          ng-required="true"
+          md-selected-item="event"
+          md-search-text="eventSearchText"
+          md-items="event in events | filter: eventSearchText"
+          md-item-text="event.name"
+          md-min-length="0"
+          placeholder="search for associated event">
+          <md-item-template>
+            <span md-highlight-text="eventSearchText" md-highlight-flags="^i">{{event.name}}</span>
+          </md-item-template>
+          <md-not-found>No events found</md-not-found>
+        </md-autocomplete>
+        <md-input-container ng-show="!loading" class="md-block">
+          <md-button type="submit" class="md-raised md-primary">Create</md-button>
+        </md-input-container>
+        <md-input-container layout-align="center center" ng-show="loading" class="md-block">
+          <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+        </md-input-container>
+      </form>
+    </div>
+    <div ng-show="events.length === 0">
+      <h4>Please create an event before creating items</h4>
+    </div>
+    <md-input-container ng-show="!uiReady" layout-align="center center" class="md-block">
+      <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+    </md-input-container>
+  </div>
+</md-dialog>

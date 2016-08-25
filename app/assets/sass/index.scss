@@ -1,0 +1,42 @@
+@import './color';
+
+@import './mixin/mobile';
+
+@import 'all';
+@import './transactions';
+@import './page/event_modal';
+@import './page/index';
+@import './page/item_modal';
+@import './page/public_item';
+@import './page/public_event';
+@import './page/transactions';
+@import './page/update_event';
+@import './page/update_item';
+
+ng-md-icon[ng-click],
+ng-md-icon[data-ng-click] {
+  cursor: pointer;
+}
+
+.logo-color {
+  color: $logo-color;
+}
+
+.jivecake {
+  &.warn {
+    color: rgb(221,44,0);
+  }
+}
+
+div[ng-messages] p[ng-message] {
+  color: rgb(221, 44, 0);
+}
+
+.md-fab {
+  fill: #fff;
+
+  ng-md-icon {
+    position: relative;
+    top: 0.5rem; // adjust for svg viewbox
+  }
+}

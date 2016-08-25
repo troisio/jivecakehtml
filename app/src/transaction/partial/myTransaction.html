@@ -1,0 +1,47 @@
+<md-table-container ng-show="uiReady">
+  <table ng-model="controller.selected" md-table multiple>
+    <tbody md-body>
+      <tr md-row md-auto-select ng-repeat="transactionData in paging.data.entity track by transactionData.transaction.id">
+        <td md-cell>
+          <a href="" ng-click="controller.viewItem(transactionData.item)">{{transactionData.item.name}}</a>
+        </td>
+        <td md-cell>
+          <span ng-show="transactionData.transaction.quantity > 1">{{transactionData.transaction.quantity}} &#215;</span>
+          <span ng-show="transactionData.transaction.amount > 0 && transactionData.transaction.currency === 'USD'">&#36;</span>
+          <span ng-show="transactionData.transaction.amount > 0 && transactionData.transaction.currency === 'EUR'">&#128;</span>
+          <span ng-show="transactionData.transaction.amount > 0">{{transactionData.transaction.amount| number: 2}}</span>
+        </td>
+        <td md-cell>
+          <ng-md-icon ng-show="transactionData.transaction.status === 0" class="payment-complete" icon="check_circle"></ng-md-icon>
+          <ng-md-icon ng-show="transactionData.transaction.status === 1 || transactionData.transaction.status === 6 || transactionData.transaction.status === 7" class="payment-pending" icon="send"></ng-md-icon>
+          <ng-md-icon ng-show="transactionData.transaction.status === 2" class="payment-bad" icon="money_off"></ng-md-icon>
+          <ng-md-icon ng-show="transactionData.transaction.status === 3" class="payment-bad" icon="report"></ng-md-icon>
+          <ng-md-icon ng-show="transactionData.transaction.status === 4" class="payment-refund" icon="undo"></ng-md-icon>
+          <ng-md-icon ng-show="transactionData.transaction.status === 5" class="payment-bad" icon="clear"></ng-md-icon>
+        </td>
+        <td md-cell>
+          <md-menu md-position-mode="target-right target">
+            <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+              <ng-md-icon icon="more_vert"></ng-md-icon>
+            </md-button>
+            <md-menu-content width="2">
+              <md-menu-item>
+                <md-button ng-click="controller.readTransaction(transactionData.transaction, transactionData.user, transactionData.item)">
+                  <span md-menu-align-target>view transaction</span>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+        </td>
+      </tr>
+      <tr md-row>
+        <td md-cell colspan="4">
+          <span class="md-subheader" ng-show="paging.data.entity.length === 0">You have no transactions</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</md-table-container>
+<div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+</div>

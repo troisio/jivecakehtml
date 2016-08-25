@@ -1,0 +1,31 @@
+<md-dialog flex="80">
+  <div layout-padding class="md-inline-form" ng-show="uiReady">
+    <h3>Create Organization</h3>
+    <form ng-submit="!loading && controller.submit(organization)">
+      <div layout="row">
+        <md-input-container flex>
+          <label>Organization Name</label>
+          <input ng-model="organization.name" autocomplete="off" pattern="[a-zA-Z0-9\- ]+" title="Letters, Numbers Dashes" maxlength="255" required>
+        </md-input-container>
+        <md-input-container flex>
+          <label>Organization Email</label>
+          <input ng-model="organization.email" type="email" autocomplete="off" maxlength="255" required>
+        </md-input-container>
+      </div>
+      <div layout layout-sm="column">
+        <md-input-container>
+          <md-button ng-click="close()" class="md-raised">Cancel</md-button>
+        </md-input-container>
+        <md-input-container>
+          <md-button type="submit" class="md-raised md-primary">Create</md-button>
+        </md-input-container>
+        <md-input-container ng-show="loading">
+          <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+        </md-input-container>
+      </div>
+    </form>
+  </div>
+  <md-input-container layout-align="center center" ng-show="!uiReady" class="md-block">
+    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+  </md-input-container>
+</md-dialog>

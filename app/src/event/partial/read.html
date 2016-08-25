@@ -1,0 +1,69 @@
+<div ng-show="uiReady">
+  <md-table-container>
+    <table ng-model="selected" md-table md-row-select multiple>
+      <tbody md-body>
+        <tr md-row md-auto-select ng-repeat="eventData in paging.data.entity track by eventData.event.id">
+          <td md-cell>
+            <a ui-sref="application.public.event.item({id: eventData.event.id})" ng-show="eventData.event.status === 1">{{eventData.event.name}}</a>
+            <p ng-show="eventData.event.status !== 1">{{eventData.event.name}}</p>
+          </td>
+          <td md-cell>
+            <a ui-sref="application.internal.organization.read({id: eventData.organization.id})">{{eventData.organization.name}}</a>
+          </td>
+          <td md-cell>
+            <md-input-container class="md-block">
+              <md-checkbox ng-true-value="1" ng-false-value="0" ng-change="controller.toggleStatus(eventData, $event)" ng-model="eventData.event.status" aria-label="Active">active</md-checkbox>
+            </md-input-container>
+          </td>
+          <td md-cell>
+            <md-menu md-position-mode="target-right target">
+              <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+              <ng-md-icon icon="more_vert"></ng-md-icon>
+              </md-button>
+              <md-menu-content width="2">
+                <md-menu-item>
+                  <md-button ui-sref="application.internal.item.read({eventId: eventData.event.id})">
+                    <span md-menu-align-target>view items</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ui-sref="application.internal.transaction.read({eventId: eventData.event.id})">
+                    <span md-menu-align-target>view transactions</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ui-sref="application.internal.event.update({eventId: eventData.event.id})">
+                    <span md-menu-align-target>update event</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ng-href="{{apiUri + '/transaction/excel?eventId=' + eventData.event.id + '&Authorization=Bearer ' + token}}">
+                    <span md-menu-align-target>download transactions</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item>
+                  <md-button ng-click="controller.delete(eventData, $event)">
+                    <span md-menu-align-target>delete</span>
+                  </md-button>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+          </td>
+        </tr>
+        <tr md-row ng-show="paging.data.entity.length === 0">
+          <td md-cell colspan="4">
+            <span class="md-subheader">No data found</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </md-table-container>
+  <md-table-pagination md-limit="query.limit" md-limit-options="[10, 20, 50]" md-page="query.page" md-total="{{paging.total}}" md-on-paginate="paginate" md-page-select>
+  </md-table-pagination>
+</div>
+<md-button class="md-fab md-fab-bottom-right md-ink-ripple" aria-label="Add" ng-click="controller.createEvent()">
+  <ng-md-icon size="35" icon="add"></ng-md-icon>
+</md-button>
+<div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+</div>

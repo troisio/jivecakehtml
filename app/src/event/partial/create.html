@@ -1,0 +1,29 @@
+<md-dialog flex="80">
+  <div ng-show="uiReady" layout-padding layout="column">
+    <h3>Create Event</h3>
+    <form name="form" ng-submit="!loading && controller.createEvent(event)">
+      <md-input-container class="md-block">
+        <label>Name</label>
+        <input ng-model="event.name" name="name" autocomplete="off" title="Letters, Numbers Dashes" maxlength="255" required>
+      </md-input-container>
+      <md-input-container ng-show="organizations.length > 1" class="md-block">
+        <label>Organization</label>
+        <md-select ng-model="event.organizationId">
+          <md-option ng-value="null"></md-option>
+          <md-option ng-repeat="organization in organizations track by organization.id" ng-value="organization.id">{{organization.name}}</md-option>
+        </md-select>
+      </md-input-container>
+      <div layout-sm="column">
+        <md-input-container>
+          <md-button ng-disabled="loading || event.organizationId === null" type="submit" class="md-raised md-primary">Create</md-button>
+        </md-input-container>
+        <md-input-container ng-show="loading">
+          <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+        </md-input-container>
+      </div>
+    </form>
+  </div>
+  <div ng-show="!uiReady" layout="row" layout-align="center">
+    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+  </div>
+</md-dialog>

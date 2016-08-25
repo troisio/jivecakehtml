@@ -1,0 +1,14 @@
+<md-dialog layout-padding>
+  <h3>Check your email! Your account is not yet verified</h3>
+  <div layout layout-sm="row">
+    <md-input-container class="md-block">
+      <md-button ng-click="!loading && controller.verify()" class="md-primary md-raised">Verify Email</md-button>
+    </md-input-container>
+    <md-input-container class="md-block">
+      <md-button ng-click="!loading && controller.resend()" class="md-raised">Resend Email</md-button>
+    </md-input-container>
+    <md-input-container ng-show="loading" class="md-block">
+      <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+    </md-input-container>
+  </div>
+</md-dialog>

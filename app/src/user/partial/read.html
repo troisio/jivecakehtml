@@ -1,0 +1,49 @@
+<md-toolbar class="md-hue-2">
+  <div class="md-toolbar-tools">
+    <h3>Users</h3>
+  </div>
+</md-toolbar>
+<md-list>
+  <md-list-item ng-show="paging.pageCount > 1">
+    <div>
+      <md-button ng-click="loadPage(paging.page - 1, paging.pageSize)" ng-disabled="paging.page === 0" class="md-raised md-primary">
+        <span>&lt;</span>
+      </md-button>
+    </div>
+    <span flex></span>
+    <div>
+      <span ng-show="paging.pageCount > 1" class="md-subheader">{{paging.page + 1}} of {{paging.pageCount}}</span>
+    </div>
+    <span flex></span>
+    <div>
+      <md-button ng-click="loadPage(paging.page + 1, paging.pageSize)" ng-disabled="paging.page + 1 === paging.pageCount || paging.pageCount === 0" class="md-raised md-primary">
+          <span>&gt;</span>
+      </md-button>
+    </div>
+  </md-list-item>
+  <md-list-item ng-repeat="user in paging.data">
+    <div>
+      <h5 ng-show="!(user.given_name || user.family_name)">(unknown)</h5>
+      <h5 ng-show="user.given_name || user.family_name">{{user.given_name}} {{user.family_name}}</h5>
+    </div>
+    <span flex></span>
+    <md-menu md-position-mode="target-right target">
+      <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+      <ng-md-icon icon="more_vert"></ng-md-icon>
+      </md-button>
+      <md-menu-content width="2">
+        <md-menu-item ng-show="hasApplicationWrite">
+          <md-button ng-click="logout(user)">
+            <span md-menu-align-target>logout</span>
+          </md-button>
+        </md-menu-item>
+      </md-menu-content>
+    </md-menu>
+  </md-list-item>
+  <md-divider></md-divider>
+  <md-list-item class="md-subheader">
+    <span ng-show="paging.data.length === 0">No data found</span>
+    <span ng-show="paging.data.length === 1">{{paging.data.length}} user found</span>
+    <span ng-show="paging.data.length > 1">{{paging.data.length}} users found</span>
+  </md-list-item>
+</md-list>

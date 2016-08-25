@@ -1,0 +1,61 @@
+<md-dialog layout-padding flex="80">
+  <div layout="row">
+    <md-list flex>
+      <md-list-item ng-show="user !== null || transaction.given_name || transaction.family_name" class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h3>Name</h3>
+          <p ng-show="user === null">{{transaction.given_name}} {{transaction.family_name}}</p>
+          <p ng-show="user === null">{{transaction.email}}</p>
+          <p ng-show="user !== null">{{user| userIdentificationFilter: true}}</p>
+        </div>
+      </md-list-item>
+      <md-list-item class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h3>Item</h3>
+          <span>{{item.name}}</span>
+        </div>
+      </md-list-item>
+      <md-list-item ng-show="transaction.quantity > 0" class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h3>Quantity</h3>
+          <span>{{transaction.quantity}}</span>
+        </div>
+      </md-list-item>
+      <md-list-item class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h3>Status</h3>
+          <span ng-show="transaction.status === 0">Payment Complete</span>
+          <span ng-show="transaction.status === 1 || transaction.status === 6 || transaction.status === 7">Payment Pending</span>
+          <span ng-show="transaction.status === 2">Invalid Payment</span>
+          <span ng-show="transaction.status === 3">Malformed Data</span>
+          <span ng-show="transaction.status === 4">Refunded</span>
+          <span ng-show="transaction.status === 5">Revoked</span>
+        </div>
+      </md-list-item>
+      <md-list-item ng-show="transaction.amount > 0" class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h3>Amount</h3>
+          <p>
+            <span ng-show="transaction.currency === 'USD'">&#36;</span>
+            <span ng-show="transaction.currency === 'EUR'">&#128;</span>
+            <span>{{transaction.amount| number: 2}}</span>
+          </p>
+        </div>
+      </md-list-item>
+      <md-list-item class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h3>Time</h3>
+          <span>{{transaction.timeCreated | date:'yyyy-MM-dd HH:mm:s'}} {{time| browserTimeZoneAbbreviation}}</span>
+        </div>
+      </md-list-item>
+      <md-list-item ng-show="transaction.linkedObjectClass.startsWith('Paypal')" class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h3>Payment Method</h3>
+          <p>
+            <span>Paypal</span>
+          </p>
+        </div>
+      </md-list-item>
+    </md-list>
+  </div>
+</md-dialog>

@@ -1,0 +1,27 @@
+<md-dialog class="item-modal-page" layout-padding flex="80">
+  <div layout="row">
+    <md-list flex>
+      <md-list-item class="md-1-line">
+        <h3>{{item.name}}</h3>
+      </md-list-item>
+      <md-list-item ng-show="item.timeStart !== null || item.timeEnd !== null" class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h4 ng-show="item.timeStart !== null && item.timeEnd !== null">Time</h4>
+          <h4 ng-show="item.timeEnd === null">Start Time</h4>
+          <h4 ng-show="item.timeStart === null">End Time</h4>
+          <div layout-padding>
+            <strong ng-show="item.timeStart !== null && item.timeEnd !== null">{{item.timeStart | date: 'dd MMMM HH:mm'}} to {{item.timeEnd | date: 'dd MMMM HH:mm'}}</strong>
+            <strong ng-show="item.timeEnd === null">{{item.timeStart | date: 'dd MMMM HH:mm'}} </strong>
+            <strong ng-show="item.timeStart === null">{{item.timeEnd | date: 'dd MMMM HH:mm'}}</strong>
+            <strong>{{time| browserTimeZoneAbbreviation}}</strong>
+          </div>
+        </div>
+      </md-list-item>
+      <md-list-item ng-show="item.description" class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <pre layout-padding marked="$sanitize(item.description)"></pre>
+        </div>
+      </md-list-item>
+    </md-list>
+  </div>
+</md-dialog>

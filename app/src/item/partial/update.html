@@ -1,0 +1,180 @@
+<div class="update-item-page">
+  <md-toolbar class="md-hue-2">
+    <div class="md-toolbar-tools">
+      <h3>Update {{itemName}}</h3>
+      <span flex></span>
+      <div flex>
+        <ng-md-icon size="30" ng-click="controller.showInformation()" icon="info"></ng-md-icon>
+      </div>
+    </div>
+  </md-toolbar>
+  <div ng-show="uiReady" layout-padding class="md-inline-form">
+    <form ng-submit="controller.submit(item, free, enableScheduledPriceModifications, timeStart, timeEnd)">
+      <md-input-container class="md-block">
+        <label>Name</label>
+        <input ng-model="item.name" maxlength="255" required>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Description</label>
+        <textarea ng-model="item.description" maxlength="1000" rows="3" md-select-on-focus>
+        </textarea>
+      </md-input-container>
+      <div>
+        <h5>Timezone {{currentDate| browserTimeZoneAbbreviation}}</h5>
+      </div>
+      <div layout="row">
+        <md-datepicker md-placeholder="Start Date" ng-model="timeStart.time"></md-datepicker>
+        <md-input-container class="md-block">
+          <md-select ng-model="timeStart.hour" aria-label="Start Time Hour">
+            <md-option ng-value="null"></md-option>
+            <md-option ng-repeat="hour in hours track by hour" ng-value="hour">{{hour &lt; 10 ? '0' +  hour : hour}}</md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block">
+          <md-select ng-model="timeStart.minute" aria-label="Start Time Minute">
+            <md-option ng-value="null"></md-option>
+            <md-option ng-repeat="minute in minutes track by minute" ng-value="minute">{{minute &lt; 10 ? '0' + minute : minute}}</md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+      <div layout="row">
+        <md-datepicker md-placeholder="End Date" ng-model="timeEnd.time"></md-datepicker>
+        <md-input-container class="md-block">
+          <md-select ng-model="timeEnd.hour" name="timeEndHour" aria-label="End Time Hour">
+            <md-option ng-value="null">
+            </md-option>
+            <md-option ng-repeat="hour in hours track by hour" ng-value="hour">{{hour &lt; 10 ? '0' +  hour : hour}}</md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block">
+          <md-select ng-model="timeEnd.minute" name="timeEndMinute" aria-label="End Time Minute">
+            <md-option ng-value="null">
+            </md-option>
+            <md-option ng-repeat="minute in minutes track by minute" ng-value="minute">{{minute &lt; 10 ? '0' + minute : minute}}</md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+      <md-input-container class="md-block">
+        <label>Total Availible</label>
+        <input ng-model="item.totalAvailible" type="number" step="1" min="1">
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Maximum Per User</label>
+        <input ng-model="item.maximumPerUser" type="number" step="1" min="0">
+      </md-input-container>
+      <md-input-container class="md-block">
+        <md-checkbox ng-true-value="0" ng-false-value="1" ng-model="item.status" aria-label="Active">Active</md-checkbox>
+      </md-input-container>
+      <md-input-container class="md-block" layout="row">
+        <md-checkbox ng-disabled="event.paymentProfileId === null" ng-model="free" aria-label="Free">Free</md-checkbox>
+        <div>
+          <h5 ng-show="event.paymentProfileId === null">
+            Add a <a ui-sref="application.internal.event.update({eventId: event.id})">Payment Profile</a> to enable payments
+          </h5>
+        </div>
+      </md-input-container>
+      <md-input-container ng-show="!free" flex layout="column">
+        <label>Price</label>
+        <input type="number" step="0.01" ng-model="item.amount" min="0" ng-required="!free">
+      </md-input-container>
+      <md-input-container ng-show="!free" class="md-block" layout="row">
+        <md-checkbox ng-model="enableScheduledPriceModifications" aria-label="Enable Scheduled Price Modifications">Enable Scheduled Price Modifications</md-checkbox>
+      </md-input-container>
+      <section ng-show="!free && enableScheduledPriceModifications">
+        <div layout-padding layout="row">
+          <div>
+            <h4>Scheduled Price Modifications</h4>
+          </div>
+          <span flex></span>
+          <div>
+            <md-menu md-position-mode="target-right target">
+              <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+              <ng-md-icon icon="more_vert"></ng-md-icon>
+              </md-button>
+              <md-menu-content width="2">
+                <md-menu-item>
+                  <md-button ng-click="controller.createEventSubscription()">
+                    <span md-menu-align-target>add subscription</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-show="hasApplicationWrite">
+                  <md-button ng-click="controller.createOrganizationFeature(organization)">
+                    <span md-menu-align-target>add feature</span>
+                  </md-button>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+          </div>
+        </div>
+        <md-table-container>
+          <table ng-model="selected" md-table multiple>
+            <thead md-head>
+              <tr md-row>
+                <th md-column>Price</th>
+                <th md-column>Enabled After Time (Timezone: {{currentDate| browserTimeZoneAbbreviation}})</th>
+              </tr>
+            </thead>
+            <tbody md-body>
+              <tr md-row md-auto-select ng-repeat="timeAmount in item.timeAmounts | orderBy:'after' track by $index">
+                <td md-cell>
+                  <h5>
+                    <span>{{timeAmount.amount| number: 2}}</span>
+                  </h5>
+                </td>
+                <td md-cell>
+                  <span>{{timeAmount.after| date:'yyyy-MM-dd hh:mm'}}</span>
+                </td>
+                <td md-cell>
+                  <ng-md-icon ng-click="item.timeAmounts.splice(item.timeAmounts.indexOf(timeAmount), 1)" icon="delete"></ng-md-icon>
+                </td>
+              </tr>
+              <tr md-row>
+                <td md-cell>
+                  <md-input-container>
+                    <input placeholder="price" type="number" step="0.01" ng-model="amount" min="0">
+                  </md-input-container>
+                </td>
+                <td md-cell>
+                  <div layout="row">
+                    <md-datepicker md-placeholder="day" ng-model="time.date"></md-datepicker>
+                    <md-input-container>
+                      <md-select ng-model="time.hour" placeholder="hour" aria-label="Time Hour">
+                        <md-option ng-value="null"></md-option>
+                        <md-option ng-repeat="hour in hours track by hour" ng-value="hour">{{hour &lt; 10 ? '0' +  hour : hour}}</md-option>
+                      </md-select>
+                    </md-input-container>
+                    <md-input-container>
+                      <md-select ng-model="time.minute" placeholder="minute" aria-label="Time Minute">
+                        <md-option ng-value="null"></md-option>
+                        <md-option ng-repeat="minute in minutes track by minute" ng-value="minute">{{minute &lt; 10 ? '0' + minute : minute}}</md-option>
+                      </md-select>
+                    </md-input-container>
+                  </div>
+                </td>
+                <td md-cell>
+                  <ng-md-icon ng-click="controller.addTimeAmount(amount, time)" icon="add"></ng-md-icon>
+                </td>
+              </tr>
+              <tr ng-show="item.timeAmounts === 0" md-row layout-padding>
+                <td md-cell>
+                  <span class="md-subheader">No data found</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+      </section>
+      <div layout="row">
+        <md-input-container>
+          <md-button ui-sref="application.internal.item.read({eventId: item.eventId})" class="md-raised">Cancel</md-button>
+        </md-input-container>
+        <md-input-container>
+          <md-button type="submit" class="md-raised md-primary">Update</md-button>
+        </md-input-container>
+      </div>
+    </form>
+  </div>
+  <div ng-show="!uiReady" layout="row" layout-align="center">
+    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+  </div>
+</div>

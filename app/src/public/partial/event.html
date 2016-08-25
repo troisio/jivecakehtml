@@ -1,0 +1,18 @@
+<div class="public-event-page">
+  <md-toolbar class="md-hue-2">
+    <div ng-show="uiReady" class="md-toolbar-tools">
+      <div flex>
+        <h3 ng-show="event !== null">{{event.name}}</h3>
+        <h3 ng-show="event === null">Not found</h3>
+      </div>
+      <span flex></span>
+      <div flex>
+        <ng-md-icon size="30" ng-click="controller.showInformation(event)" icon="info"></ng-md-icon>
+      </div>
+    </div>
+  </md-toolbar>
+  <ui-view ng-show="event !== null"></ui-view>
+  <div ng-show="uiReady && event === null" layout-padding>
+    <p class="message">Sorry, this event does not exist or has been made unavailible</p>
+  </div>
+</div>

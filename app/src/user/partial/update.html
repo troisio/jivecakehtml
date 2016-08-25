@@ -1,0 +1,29 @@
+<div layout-padding ng-show="uiReady">
+  <div>
+    <form ng-submit="!loading && controller.submit(user)">
+      <div layout layout-sm="column">
+        <md-input-container flex class="md-block">
+          <label>First Name</label>
+          <input ng-model="user.given_name" ng-disabled="isIdentityProviderAccount" required maxlength="255">
+        </md-input-container>
+        <md-input-container flex class="md-block">
+          <label>Last Name</label>
+          <input ng-model="user.family_name" ng-disabled="isIdentityProviderAccount" required maxlength="255">
+        </md-input-container>
+      </div>
+      <md-input-container flex class="md-block">
+        <label>Email</label>
+        <input ng-model="user.email" type="email" ng-disabled="isIdentityProviderAccount" required maxlength="255">
+      </md-input-container>
+      <div layout layout-sm="column">
+        <md-input-container flex layout="row">
+          <md-button type="submit" ng-disabled="isIdentityProviderAccount" class="md-raised md-primary">Update</md-button>
+          <md-progress-circular ng-show="loading" md-diameter="45" md-mode="indeterminate"></md-progress-circular>
+        </md-input-container>
+      </div>
+    </form>
+  </div>
+</div>
+<div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+</div>

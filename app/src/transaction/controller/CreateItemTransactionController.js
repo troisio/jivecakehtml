@@ -1,0 +1,179 @@
+export default class CreateItemTransactionController {
+  constructor(
+    angular,
+    $window,
+    $q,
+    $rootScope,
+    $scope,
+    $state,
+    auth0Service,
+    $stateParams,
+    $mdDialog,
+    $mdToast,
+    ItemTransaction,
+    itemService,
+    eventService,
+    organizationService,
+    itemTransactionService,
+    storageService,
+    uiService
+  ) {
+    this.angular = angular;
+    this.$window = $window;
+    this.$q = $q;
+    this.$rootScope = $rootScope;
+    this.$scope = $scope;
+    this.$state = $state;
+    this.auth0Service = auth0Service;
+    this.$stateParams = $stateParams;
+    this.$mdDialog = $mdDialog;
+    this.$mdToast = $mdToast;
+    this.ItemTransaction = ItemTransaction;
+    this.itemService = itemService;
+    this.eventService = eventService;
+    this.organizationService = organizationService;
+    this.itemTransactionService = itemTransactionService;
+    this.uiService = uiService;
+
+    this.storage = storageService.read();
+    this.itemFuture = this.itemService.read(this.storage.token, this.$stateParams.itemId);
+
+    this.run();
+  }
+
+  run() {
+    this.$scope.uiReady = false;
+
+    this.itemFuture.then(() => {
+      return this.setDefaults();
+    }, () => {
+      this.uiService.notify('Unable to find item');
+    }).finally(() => {
+      this.$scope.uiReady = true;
+    });
+  }
+
+  setDefaults() {
+    this.$scope.selected = '';
+    this.$scope.text = '';
+
+    this.$scope.transaction = new this.ItemTransaction();
+    this.$scope.transaction.quantity = 1;
+
+    return this.itemFuture.then((item) => {
+      this.$scope.item = item;
+
+      const eventFuture = this.eventService.read(this.storage.token, item.eventId).then(event => {
+        this.$scope.transaction.currency = event.currency;
+        this.$scope.event = event;
+      });
+
+      const derivedAmountFuture = this.itemService.getDerivedAmount(item, this.itemTransactionService).then(amount => {
+        this.$scope.transaction.amount = amount === null ? 0 : amount;
+      });
+
+      return this.$q.all([eventFuture, derivedAmountFuture]);
+    });
+  }
+
+  cancel() {
+    this.itemFuture.then((item) => {
+      const parameters = {};
+
+      if (item instanceof this.EventItem) {
+        parameters.eventId = item.eventId;
+      } else if (item instanceof this.OrganizationItem) {
+        parameters.organizationId = item.organizationId;
+      }
+
+      this.$state.go('application.internal.item.read', parameters);
+    });
+  }
+
+  query(search) {
+    const terms = search.split(new this.$window.RegExp('\\s+', 'g')).join(' ');
+    const queryParts = ['user_metadata.given_name', 'user_metadata.family_name', 'family_name', 'given_name', 'email', 'name'].map(field => field + ':' + terms + '*');
+
+    let query = queryParts.join(' OR ');
+
+    return this.auth0Service.searchUsers(this.storage.token, {
+      q: query,
+      search_engine: 'v2'
+    });
+  }
+
+  select(user) {
+    if (user === null || typeof user === 'undefined') {
+      this.$scope.transaction.user_id = null;
+    } else {
+      this.$scope.transaction.user_id = user.user_id;
+    }
+  }
+
+  submit(transaction, item, selectedUser, event) {
+    this.$scope.loading = true;
+    const transactionCopy = this.angular.copy(transaction);
+
+    this.itemTransactionService.search(this.storage.token, {
+      itemId: item.id
+    }).then((searchEntity) => {
+      if (selectedUser !== null) {
+        transactionCopy.user_id = selectedUser.user_id;
+        transactionCopy.given_name = null;
+        transactionCopy.middleName = null;
+        transactionCopy.family_name = null;
+        transactionCopy.email = null;
+      }
+
+      if (event.currency !== null) {
+        transactionCopy.currency = event.currency;
+      }
+
+      this.itemTransactionService.create(this.storage.token, item.id, transactionCopy).then(data => {
+        const deviceSupportsServerSentEvents = 'EventSource' in this.$window;
+
+        if (!deviceSupportsServerSentEvents) {
+          this.uiService.notify('Transaction created');
+        }
+
+        return this.setDefaults();
+      }, response => {
+        let message = 'Unable to create transaction for ' + item.name;
+
+        if (response.status === 400 && 'data' in response) {
+          if (response.data.error === 'totalAvailible') {
+            message = 'Can not create more transactions';
+          } else if (response.data.error === 'inactive') {
+            message = 'The event for this item is not active';
+          }
+        }
+
+        this.uiService.notify(message);
+      });
+    }, () => {
+      this.uiService.notify('Unable to read transaction for ' + item.name);
+    }).finally(() => {
+      this.$scope.loading = false;
+    });
+  }
+}
+
+CreateItemTransactionController.$inject = [
+  'angular',
+  '$window',
+  '$q',
+  '$rootScope',
+  '$scope',
+  '$state',
+  'Auth0Service',
+  '$stateParams',
+  '$mdDialog',
+  '$mdToast',
+  'ItemTransaction',
+  'ItemService',
+  'EventService',
+  'OrganizationService',
+  'ItemTransactionService',
+  'StorageService',
+  'UIService'
+];

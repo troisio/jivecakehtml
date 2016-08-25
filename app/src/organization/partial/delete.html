@@ -1,0 +1,20 @@
+<md-dialog flex="80">
+  <div class="md-inline-form" layout-padding>
+    <form ng-submit="submit(organization)">
+      <md-input-container class="layout-padding md-block">
+        <p>Are you sure you want to delete &quot;{{organization.name}}&quot;?</p>
+      </md-input-container>
+      <div layout layout-sm="column">
+        <md-input-container ng-show="!loading" flex>
+          <md-button ng-click="close()" type="button" class="md-raised">cancel</md-button>
+        </md-input-container>
+        <md-input-container ng-show="!loading" flex>
+          <md-button type="submit" class="md-raised md-warn">delete</md-button>
+        </md-input-container>
+      </div>
+      <md-input-container ng-show="loading" layout-align="center center" class="md-block">
+        <md-progress-circular  md-mode="indeterminate"></md-progress-circular>
+      </md-input-container>
+    </form>
+  </div>
+</md-dialog>

@@ -1,0 +1,78 @@
+<md-toolbar class="md-hue-2">
+  <div class="md-toolbar-tools">
+    <h3>Create Transaction for {{item.name}}</h3>
+  </div>
+</md-toolbar>
+<div layout-padding class="md-inline-form">
+  <form ng-submit="!loading && controller.submit(transaction, item, selectedUser, event)">
+    <md-autocomplete
+    ng-show="!(transaction.given_name || transaction.middleName || transaction.family_name)"
+    autocomplete="off"
+    md-selected-item-change="controller.select(selected)"
+    ng-model="selected"
+    md-no-cache="true"
+    md-selected-item="selectedUser"
+    md-search-text="text"
+    md-items="user in controller.query(text)"
+    md-delay="700"
+    md-min-length="2"
+    md-item-text="user| userIdentificationFilter: true"
+    placeholder="Search for an existing user..."
+    >
+      <md-item-template>
+        <span md-highlight-text="searchText" md-highlight-flags="^i">{{user| userIdentificationFilter: true}}</span>
+      </md-item-template>
+      <md-not-found>No users found</md-not-found>
+    </md-autocomplete>
+    <div ng-show="!selected" layout layout-sm="column">
+      <md-input-container flex class="md-block">
+        <label>First Name</label>
+        <input ng-model="transaction.given_name" maxlength="255">
+      </md-input-container>
+      <md-input-container flex class="md-block">
+        <label>Middle Name</label>
+        <input ng-model="transaction.middleName" maxlength="255">
+      </md-input-container>
+      <md-input-container flex class="md-block">
+        <label>Last Name</label>
+        <input ng-model="transaction.family_name" maxlength="255">
+      </md-input-container>
+    </div>
+    <md-input-container ng-show="!selected" class="md-block">
+      <label>Email</label>
+      <input ng-model="transaction.email" type="email" class="form-control" maxlength="255" placeholder="Email" autocomplete="off">
+    </md-input-container>
+    <md-input-container class="md-block">
+      <label>Amount Paid</label>
+      <input ng-model="transaction.amount" type="number" min="0" step="0.01" class="form-control" placeholder="Amount" autocomplete="off" required>
+    </md-input-container>
+    <md-input-container class="md-block">
+      <label>Quantity</label>
+      <input ng-model="transaction.quantity" type="number" min="1" step="1" class="form-control" placeholder="quantity" autocomplete="off" required>
+    </md-input-container>
+    <md-input-container class="md-block">
+      <label>Currency</label>
+      <p ng-show="event.currency === 'USD'">US Dollars</p>
+      <p ng-show="event.currency === 'EUR'">Euro</p>
+      <md-select ng-show="event.currency === null" ng-model="transaction.currency" aria-label="Currency">
+        <md-option value=""></md-option>
+        <md-option value="USD">US Dollars</md-option>
+        <md-option value="EUR">Euro</md-option>
+      </md-select>
+    </md-input-container>
+    <div>
+      <md-input-container>
+        <md-button ng-click="controller.setDefaults()" type="button" class="md-raised">Reset</md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="cancel()" class="md-raised">Cancel</md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button type="submit" class="md-raised md-primary">Create</md-button>
+      </md-input-container>
+      <md-input-container ng-show="loading">
+        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+      </md-input-container>
+    </div>
+  </form>
+</div>

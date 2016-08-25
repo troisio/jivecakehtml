@@ -1,0 +1,25 @@
+<md-dialog flex="80">
+  <div layout-padding class="md-inline-form">
+    <form ng-submit="submit(profile)">
+      <md-input-container class="md-block">
+        <label>Name</label>
+        <input autocomplete="off" title="Letters, Numbers Dashes" ng-model="profile.name" maxlength="255" required>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Paypal Email</label>
+        <input autocomplete="off" type="email" ng-model="profile.email" maxlength="255" required>
+      </md-input-container>
+      <div layout layout-sm="row">
+        <md-input-container ng-show="!loading" class="md-block">
+          <md-button type="button" ng-click="close()" class="md-raised">Cancel</md-button>
+        </md-input-container>
+        <md-input-container ng-show="!loading" class="md-block">
+          <md-button type="submit" class="md-raised md-primary">Create</md-button>
+        </md-input-container>
+      </div>
+      <md-input-container layout-align="center center" ng-show="loading" class="md-block">
+        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+      </md-input-container>
+    </form>
+  </div>
+</md-dialog>

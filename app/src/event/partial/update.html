@@ -1,0 +1,93 @@
+<div class="update-event-page">
+  <md-toolbar class="md-hue-2">
+    <div class="md-toolbar-tools">
+      <h3>Update {{::event.name}}</h3>
+      <span flex></span>
+      <div flex>
+        <ng-md-icon size="30" ng-click="controller.showInformation()" icon="info"></ng-md-icon>
+      </div>
+    </div>
+  </md-toolbar>
+  <div class="md-inline-form" ng-show="uiReady" layout-padding>
+    <form ng-submit="form.$valid && controller.submit(event, timeStart, timeEnd)" name="form">
+      <md-input-container class="md-block">
+        <label>Name</label>
+        <input ng-model="event.name" maxlength="255" placeholder="price" required>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Description</label>
+        <textarea ng-model="event.description" maxlength="1000" rows="3" md-select-on-focus>
+        </textarea>
+      </md-input-container>
+      <div>
+        <h5>Start and End Time ({{currentDate| browserTimeZoneAbbreviation}} Timezone)</h5>
+      </div>
+      <div layout="row">
+        <md-datepicker md-placeholder="Start Date" ng-model="timeStart.time"></md-datepicker>
+        <md-input-container class="md-block">
+          <md-select ng-model="timeStart.hour" aria-label="Start Time Hour">
+            <md-option ng-value="null"></md-option>
+            <md-option ng-repeat="hour in hours track by hour" ng-value="hour">{{hour &lt; 10 ? '0' +  hour : hour}}</md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block">
+          <md-select ng-model="timeStart.minute" aria-label="Start Time Minute">
+            <md-option ng-value="null"></md-option>
+            <md-option ng-repeat="minute in minutes track by minute" ng-value="minute">{{minute &lt; 10 ? '0' + minute : minute}}</md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+      <div layout="row">
+        <md-datepicker md-placeholder="End Date" ng-model="timeEnd.time"></md-datepicker>
+        <md-input-container class="md-block">
+          <md-select ng-model="timeEnd.hour" name="timeEndHour" aria-label="End Time Hour">
+            <md-option ng-value="null"></md-option>
+            <md-option ng-repeat="hour in hours track by hour" ng-value="hour">{{hour &lt; 10 ? '0' +  hour : hour}}</md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container class="md-block">
+          <md-select ng-model="timeEnd.minute" name="timeEndMinute" aria-label="End Time Minute">
+            <md-option ng-value="null"></md-option>
+            <md-option ng-repeat="minute in minutes track by minute" ng-value="minute">{{minute &lt; 10 ? '0' + minute : minute}}</md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+      <md-input-container class="md-block">
+        <label>Payment Profile</label>
+        <a href="" ng-click="controller.createPaymentProfile()" ng-show="paymentProfiles.length === 0">Create a Payment Profile</a>
+        <md-select ng-show="paymentProfiles.length > 0" ng-model="event.paymentProfileId" ng-required="event.currency" aria-label="Payment Profile" name="paymentProfile">
+          <md-option ng-selected="true" ng-value="null"></md-option>
+          <md-option ng-repeat="profile in paymentProfiles track by profile.id" ng-value="profile.id">{{profile.name}} ({{profile.email}})</md-option>
+        </md-select>
+        <div ng-messages="form.paymentProfile.$error">
+          <p ng-message="required">Payment Profile is required</p>
+        </div>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Currency</label>
+        <md-select ng-model="event.currency" ng-required="event.paymentProfileId" name="currency">
+          <md-option ng-selected="true" ng-value="null"></md-option>
+          <md-option value="USD">US Dollars</md-option>
+          <md-option value="EUR">Euro</md-option>
+        </md-select>
+        <div class="errors" ng-messages="form.currency.$error" ng-if="form.$dirty">
+          <div ng-message="required">Currency is required</div>
+        </div>
+      </md-input-container>
+      <div layout layout-sm="row">
+        <md-input-container class="md-block">
+          <md-button ng-click="controller.run()" class="md-raised">Reset</md-button>
+        </md-input-container>
+        <md-input-container class="md-block">
+          <md-button ui-sref="application.internal.event.read({organizationId: organizationIds})" class="md-raised">Cancel</md-button>
+        </md-input-container>
+        <md-input-container class="md-block">
+          <md-button type="submit" class="md-raised md-primary">Update</md-button>
+        </md-input-container>
+      </div>
+    </form>
+  </div>
+  <div ng-show="!uiReady" layout="row" layout-align="center">
+    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+  </div>
+</div>

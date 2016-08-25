@@ -1,0 +1,30 @@
+<md-dialog class="event-modal-page" layout-padding flex="90">
+  <div layout="row">
+    <md-list>
+      <md-list-item class="md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h3>{{event.name}}</h3>
+        </div>
+      </md-list-item>
+      <md-list-item ng-show="event.timeStart !== null || event.timeEnd !== null" class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <h4 ng-show="event.timeStart !== null && event.timeEnd !== null">Time</h4>
+          <h4 ng-show="event.timeEnd === null">Start Time</h4>
+          <h4 ng-show="event.timeStart === null">End Time</h4>
+          <div layout-padding>
+            <strong ng-show="event.timeStart !== null && event.timeEnd !== null">{{event.timeStart | date: 'dd MMMM yyyy'}} to {{event.timeEnd | date: 'dd MMMM yyyy'}}</strong>
+            <strong ng-show="event.timeEnd === null">{{event.timeStart | date: 'dd MMMM yyyy'}} </strong>
+            <strong ng-show="event.timeStart === null">{{event.timeEnd | date: 'dd MMMM yyyy'}}</strong>
+            <strong>{{time| browserTimeZoneAbbreviation}}</strong>
+          </div>
+        </div>
+      </md-list-item>
+      <md-list-item ng-show="event.description !== null && event.description.length > 0" class="layout-padding md-1-line">
+        <div class="md-list-item-text" layout="column">
+          <div layout-padding marked="$sanitize(event.description)">
+          </div>
+        </div>
+      </md-list-item>
+    </md-list>
+  </div>
+</md-dialog>

@@ -1,0 +1,52 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.main {
+  height: 100vh;
+  width: 100vw;
+  padding-top: 1vh;
+}
+
+.logo-color {
+  color: #6495ED;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, a {
+  font-family: 'Open Sans', sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+header {
+  width: 80%;
+  margin: 3% auto 0 auto;
+}
+
+header > div:not(:first-child) {
+  margin-top: 3%;
+}
+
+header .title {
+  display: inline-block;
+}
+
+article {
+  margin: 3vh auto 0 auto;
+  width: 80%;
+}
+
+article > *:not(:first-child) {
+  margin-top: 1%;;
+}
+
+article:last-child {
+  margin-bottom: 2em;
+}
+
+.space-left {
+  margin-left: 2em;
+}
