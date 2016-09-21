@@ -15,6 +15,7 @@ export default class ApplicationController {
     itemService,
     organizationService,
     permissionService,
+    auth0Service,
     uiService,
     connectionService,
     storageService,
@@ -36,6 +37,7 @@ export default class ApplicationController {
     this.itemService = itemService;
     this.organizationService = organizationService;
     this.permissionService = permissionService;
+    this.auth0Service = auth0Service;
     this.uiService = uiService;
     this.connectionService = connectionService;
     this.storageService = storageService;
@@ -65,14 +67,16 @@ export default class ApplicationController {
       this.$scope.user = resolve.user;
       this.loadScopePermissions(this.$scope, resolve.permission.entity);
 
-      if (!this.storage.profile.email_verified) {
-        this.$mdDialog.show({
-          templateUrl: '/src/access/partial/verified.html',
-          controller: 'EmailVerifiedController',
-          controllerAs: 'controller',
-          clickOutsideToClose: false,
-        });
-      }
+      this.auth0Service.getUser(this.storage.token, this.storage.profile.user_id).then((profile) => {
+        if (!profile.email_verified && profile.user_id.startsWith('auth0')) {
+          this.$mdDialog.show({
+            templateUrl: '/src/access/partial/verified.html',
+            controller: 'EmailVerifiedController',
+            controllerAs: 'controller',
+            clickOutsideToClose: false,
+          });
+        }
+      });
     }, () => {
       this.storageService.reset();
       if (!this.$state.$current.name.startsWith('application.public')) {
@@ -189,6 +193,7 @@ ApplicationController.$inject = [
   'ItemService',
   'OrganizationService',
   'PermissionService',
+  'Auth0Service',
   'UIService',
   'ConnectionService',
   'StorageService',
