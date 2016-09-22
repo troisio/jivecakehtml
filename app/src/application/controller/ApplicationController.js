@@ -68,7 +68,11 @@ export default class ApplicationController {
       this.loadScopePermissions(this.$scope, resolve.permission.entity);
 
       this.auth0Service.getUser(this.storage.token, this.storage.profile.user_id).then((profile) => {
-        if (!profile.email_verified && profile.user_id.startsWith('auth0')) {
+        const showEmailUnverified = profile.user_id.startsWith('auth0') &&
+                                    !profile.email_verified &&
+                                    profile.logins_count > 1;
+
+        if (showEmailUnverified) {
           this.$mdDialog.show({
             templateUrl: '/src/access/partial/verified.html',
             controller: 'EmailVerifiedController',
