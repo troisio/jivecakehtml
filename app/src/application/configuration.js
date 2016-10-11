@@ -124,7 +124,7 @@ export default [
       }
     })
     .state('application.internal.organization.update', {
-      url: '/{organizationId}/update',
+      url: '/organization/{organizationId}/update',
       templateUrl: '/src/organization/partial/update.html',
       controller: 'UpdateOrganizationController',
       controllerAs: 'controller'

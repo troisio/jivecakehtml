@@ -26,6 +26,7 @@ import SessionWarningController from './access/controller/SessionWarningControll
 import CreateEventController from './event/controller/CreateEventController';
 import CreateOrganizationAndEventController from './event/controller/CreateOrganizationAndEventController';
 import EventController from './event/controller/EventController';
+import InsufficientSubscriptionController from './event/controller/InsufficientSubscriptionsController';
 import ReadEventController from './event/controller/ReadEventController';
 import UpdateEventController from './event/controller/UpdateEventController';
 
@@ -92,6 +93,7 @@ angular.module('jivecakeweb', [
 .controller('CreateEventController', CreateEventController)
 .controller('CreateOrganizationAndEventController', CreateOrganizationAndEventController)
 .controller('EventController', EventController)
+.controller('InsufficientSubscriptionController', InsufficientSubscriptionController)
 .controller('ReadEventController', ReadEventController)
 .controller('UpdateEventController', UpdateEventController)
 

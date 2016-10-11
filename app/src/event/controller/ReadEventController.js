@@ -119,22 +119,26 @@ export default class ReadEventController {
       status: eventData.event.status
     }).then(function() {
     }, (response) => {
-      let message;
-
       if (this.$window.Array.isArray(response.data)) {
         const features = response.data;
-        const message = (features.length === 0 ? eventData.organization.name + ' does not have any subscriptions.' : eventData.organization.name + ' only has ' + features.length + ' subscriptions.') +
-                        ' You can add more event subscriptions by updating your organization';
 
-        this.$mdDialog.show(
-          this.$mdDialog.alert()
-            .clickOutsideToClose(true)
-            .title('Insufficient subscriptions')
-            .textContent(message)
-            .ariaLabel('Insufficient subscriptions')
-            .ok('Ok')
-            .targetEvent($event)
-        );
+        this.$mdDialog.show({
+          controllerAs: 'controller',
+          controller: 'InsufficientSubscriptionController',
+          templateUrl: '/src/event/partial/insufficientSubscriptions.html',
+          clickOutsideToClose: true,
+          locals: {
+            features: features,
+            organization: eventData.organization
+          },
+          resolve: {
+            user: () => {
+              return this.$scope.$parent.ready.then(function(resolve) {
+                return resolve.user;
+              });
+            }
+          }
+        });
       } else {
         const message = response.status === 401 ? 'You do not have permission to update this event' : 'Unable to update event' ;
         this.uiService.notify(message);

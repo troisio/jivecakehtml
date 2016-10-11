@@ -6,9 +6,8 @@ You will also need an [auth0](https://auth0.com) account and will need to config
 Create a `single page application` web client.
 Under that client set the following:
 
-- Allowed Logout URLs: `projectHost:port.com`
-- Allowed callback URLs: `https://projectHost:port/oauth/redirect, http://projectHost:port/oauth/redirect`
-- If you're running on docker, the projectHost:port will probably just be `192.168.99.100`
+- Allowed Logout URLs: `{yourOrigin}`
+- Allowed callback URLs: `{yourOrigin}/oauth/redirect, {yourOrigin}oauth/redirect`, e.g., `http://127.0.0.1/oauth/redirect, https://localhost/oauth/redirect`
 
 We only use Google and FaceBook for social identity logins
 
@@ -16,11 +15,11 @@ In your auth0 account, go to Connection -> Social -> FaceBook and enable the `em
 
 ### Required Software
 
-I would tell you what this is but it's best to run your project via `docker`. Go read `DOCKER.md`. If you're going to be a ding dong and not do this, then you'll need `npm`, `nodejs`, `nginx`. I would tell you what versions but you can just go to the `docker` directory and see what all the dependency versions are.
+Run your project via [docker](https://docker.com).
 
-You will also need to run the api for this client
+To watch local changes to your project you'll need [nodejs](https:/.nodejs.org) on your development machine. A `nodejs` install will also come with `npm`.
 
-Check it out [here](https://github.com/troisio/jivecakeapi)
+You will also need to run [jivecakepi](https://github.com/troisio/jivecakeapi) for this client.
 
 ### Running
 

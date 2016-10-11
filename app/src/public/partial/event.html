@@ -7,12 +7,12 @@
       </div>
       <span flex></span>
       <div flex>
-        <ng-md-icon size="30" ng-click="controller.showInformation(event)" icon="info"></ng-md-icon>
+        <ng-md-icon ng-show="event !== null" size="30" ng-click="controller.showInformation(event)" icon="info"></ng-md-icon>
       </div>
     </div>
   </md-toolbar>
   <ui-view ng-show="event !== null"></ui-view>
   <div ng-show="uiReady && event === null" layout-padding>
-    <p class="message">Sorry, this event does not exist or has been made unavailible</p>
+    <p class="message">Sorry, this event does not exist or is not availible</p>
   </div>
 </div>
