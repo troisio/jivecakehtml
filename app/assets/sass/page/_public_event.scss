@@ -6,4 +6,8 @@
   .message {
     padding: 15px;
   }
+
+  .md-toolbar-tools > div:not(:first-child) {
+    margin-left: 1em;
+  }
 }

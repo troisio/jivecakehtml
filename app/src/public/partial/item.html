@@ -18,8 +18,7 @@
             </td>
             <td md-cell>
               <md-input-container ng-show="user !== null && itemData.amountSelections.length > 0">
-                <label>quantity</label>
-                <md-select ng-model="itemFormData[itemData.item.id].amount">
+                <md-select aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
                   <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
                 </md-select>
               </md-input-container>

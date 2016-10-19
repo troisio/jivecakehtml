@@ -115,14 +115,12 @@ export default class UpdateOrganizationController {
     });
 
     return this.permissionService.write(this.storage.token, this.$stateParams.organizationId, permissions).then(() => {
-      return this.$q.all({
-        organization: this.organizationService.update(this.storage.token, organization)
-      }).then((resolve) => {
+      return this.organizationService.update(this.storage.token, organization).then((organization) => {
         loading.dialog.finally(() => {
           this.uiService.notify('Updated organization');
         });
 
-        return this.loadUI(resolve.organization.id);
+        return this.loadUI(organization.id);
       }, () => {
         this.uiService.notify('Unable to update organization');
       });

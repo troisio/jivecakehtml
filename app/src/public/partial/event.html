@@ -5,8 +5,8 @@
         <p ng-show="event !== null">{{event.name}}</p>
         <p ng-show="event === null">Not found</p>
       </div>
-      <div style="margin-left:10px;">
-        <ng-md-icon ng-show="event !== null" size="30" ng-click="controller.showInformation(event)" icon="info"></ng-md-icon>
+      <div>
+        <ng-md-icon ng-show="event !== null" size="30" ng-click="controller.showInformation(event, organization)" icon="info"></ng-md-icon>
       </div>
     </div>
   </md-toolbar>

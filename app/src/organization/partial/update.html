@@ -4,10 +4,18 @@
   </div>
 </md-toolbar>
 <div ng-show="uiReady" layout-padding class="md-inline-form">
-  <form ng-disabled="true" ng-submit="controller.submit(organization, userPermissionModel)">
+  <form ng-submit="controller.submit(organization, userPermissionModel)">
     <section layout-padding>
       <div layout="row">
-        <div layout-padding>
+        <md-input-container flex>
+          <label>Organization Email</label>
+          <input ng-model="organization.email" autocomplete="off" type="email" required>
+        </md-input-container>
+      </div>
+    </section>
+    <section layout-padding>
+      <div layout="row">
+        <div>
           <h4>Users</h4>
         </div>
         <span flex></span>
@@ -167,6 +175,6 @@
     </div>
   </form>
 </div>
-<div ng-show="!uiReady" layout="row" layout-align="center">
+<div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
   <md-progress-circular md-mode="indeterminate"></md-progress-circular>
 </div>
