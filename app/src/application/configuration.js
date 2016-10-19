@@ -47,7 +47,9 @@ export default [
     })
     .state('application.public.home', {
       url: '/',
-      templateUrl: '/src/application/partial/home.html'
+      templateUrl: '/src/application/partial/home.html',
+      controller: 'HomeController',
+      controllerAs: 'controller'
     })
     .state('application.public.terms', {
       url: '/terms',

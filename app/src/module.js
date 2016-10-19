@@ -13,6 +13,7 @@ import jiveCakeServiceModule from './service/module';
 import configuration from './application/configuration';
 
 import ApplicationController from './application/controller/ApplicationController';
+import HomeController from './application/controller/HomeController';
 import InternalApplicationController from './application/controller/InternalApplicationController';
 
 import CartController from './checkout/controller/CartController';
@@ -80,6 +81,7 @@ angular.module('jivecakeweb', [
   auth.hookEvents();
 }])
 .controller('ApplicationController', ApplicationController)
+.controller('HomeController', HomeController)
 .controller('InternalApplicationController', InternalApplicationController)
 
 .controller('CartController', CartController)

@@ -1,17 +1,29 @@
-<md-toolbar class="md-hue-2">
-  <div class="md-toolbar-tools">
-    <h3>JiveCake</h3>
-  </div>
-</md-toolbar>
+<div layout="row">
+  <md-autocomplete flex
+      md-search-text="searchText"
+      md-selected-item="event"
+      md-items="event in controller.query(searchText)"
+      md-item-text="event.name"
+      md-delay="500"
+      md-min-length="2"
+      md-selected-item-change="controller.selected()"
+      placeholder="search">
+      <md-item-template>
+        <span md-highlight-text="eventSearchText" md-highlight-flags="^i">{{event.name}}</span>
+      </md-item-template>
+      <md-not-found>no results found</md-not-found>
+  </md-autocomplete>
+</div>
 <div layout-padding class="home-page">
-  <h3>The simple way to manage registrations</h3>
-  <h2>The low down:</h2>
+  <h3>The simpler way to manage registrations</h3>
   <div layout-padding>
     <div class="pricing" layout="column">
-      <h3>Pricing:</h3>
-      <p>$30 per month per event + <a href="https://www.paypal.com/webapps/mpp/paypal-fees">paypal fees</a></p>
+      <h3>Pricing</h3>
       <div layout-padding>
         <ul>
+          <li>
+            <p>$30 per month per event + <a href="https://www.paypal.com/webapps/mpp/paypal-fees">paypal fees</a></p>
+          </li>
           <li>
             <p>No hidden fees</p>
           </li>
@@ -45,7 +57,7 @@
             <p>Quickly sort and export all your transactions</p>
           </li>
           <li>
-            <p>Use FaceBook or Google to sign up or login</p>
+            <p>Use Facebook or Google to sign up or login</p>
           </li>
         </ul>
       </div>

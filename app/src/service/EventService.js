@@ -6,8 +6,6 @@ export default class EventService {
     this.settings = settings;
     this.toolsService = toolsService;
     this.Event = Event;
-
-    this.eventFields = Object.keys(new Event());
   }
 
   read(token, id) {
@@ -17,8 +15,8 @@ export default class EventService {
       headers: {
         Authorization : 'Bearer ' + token
       }
-    }).then((data) => {
-      return this.toObject(data.data);
+    }).then(response => {
+      return this.toObject(response.data);
     });
   }
 
