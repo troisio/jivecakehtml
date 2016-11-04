@@ -9,7 +9,6 @@ export default class CreateItemTransactionController {
     auth0Service,
     $stateParams,
     $mdDialog,
-    $mdToast,
     ItemTransaction,
     itemService,
     eventService,
@@ -27,7 +26,6 @@ export default class CreateItemTransactionController {
     this.auth0Service = auth0Service;
     this.$stateParams = $stateParams;
     this.$mdDialog = $mdDialog;
-    this.$mdToast = $mdToast;
     this.ItemTransaction = ItemTransaction;
     this.itemService = itemService;
     this.eventService = eventService;
@@ -168,7 +166,6 @@ CreateItemTransactionController.$inject = [
   'Auth0Service',
   '$stateParams',
   '$mdDialog',
-  '$mdToast',
   'ItemTransaction',
   'ItemService',
   'EventService',

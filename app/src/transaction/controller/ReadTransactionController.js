@@ -38,9 +38,7 @@ export default class ReadItemTransactionController {
     this.searchText = '';
 
     this.storage = storageService.read();
-    this.pagingService = new this.Paging((data) => {
-      return this.$q.resolve(data.count);
-    }, (limit, offset) => {
+    this.pagingService = new this.Paging(data => this.$q.resolve(data.count), (limit, offset) => {
       const query = this.toolsService.stateParamsToQuery($stateParams);
 
       delete query.page;
@@ -76,15 +74,6 @@ export default class ReadItemTransactionController {
   }
 
   run() {
-    ['ITEM.TRANSACTION.CREATED'].forEach((event) => {
-      this.$scope.$on(event, () => {
-        this.loadPage(
-          this.$window.parseInt(this.$scope.paging.page),
-          this.$window.parseInt(this.$scope.paging.pageSize)
-        );
-      });
-    });
-
     this.$scope.$parent.ready.then((resolve) => {
       this.readOrganizationIds = resolve.permission.entity.filter((permission) => {
         return permission.objectClass === this.organizationService.getObjectClassName() &&
@@ -118,11 +107,15 @@ export default class ReadItemTransactionController {
     });
   }
 
-  openSearch() {
+  transferTransaction(transaction) {
     this.$mdDialog.show({
-      controller: 'SearchItemTransactionController',
-      templateUrl: '/src/transaction/partial/searchItemTransaction.html',
-      clickOutsideToClose: true
+      controller: 'TransferPassController',
+      controllerAs: 'controller',
+      templateUrl: '/src/transaction/partial/transferTransaction.html',
+      clickOutsideToClose: true,
+      locals: {
+        transaction: transaction
+      }
     });
   }
 

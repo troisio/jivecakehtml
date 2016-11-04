@@ -12,14 +12,9 @@
           <td md-cell>
             <md-menu md-position-mode="target-right target">
               <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
-              <ng-md-icon icon="more_vert"></ng-md-icon>
+                <ng-md-icon icon="more_vert"></ng-md-icon>
               </md-button>
               <md-menu-content width="2">
-                <md-menu-item>
-                  <md-button ui-sref="application.internal.transaction.read({itemId: itemData.item.id})">
-                    <span md-menu-align-target>view transactions</span>
-                  </md-button>
-                </md-menu-item>
                 <md-menu-item>
                   <md-button ui-sref="application.internal.transaction.create({itemId: itemData.item.id})">
                     <span md-menu-align-target>create transaction</span>
@@ -47,10 +42,13 @@
                 </md-menu-item>
               </md-menu-content>
             </md-menu>
+            <md-button ui-sref="application.internal.transaction.read({itemId: itemData.item.id})" aria-label="View Transactions" class="md-icon-button">
+              <ng-md-icon icon="arrow_forward"></ng-md-icon>
+            </md-button>
           </td>
         </tr>
         <tr md-row ng-show="paging.data.entity.length === 0">
-          <td md-cell colspan="3">
+          <td md-cell colspan="4">
             <span class="md-subheader">No data found</span>
           </td>
         </tr>
@@ -60,7 +58,7 @@
   <md-table-pagination md-limit="query.limit" md-limit-options="[10, 20, 50]" md-page="query.page" md-total="{{paging.data.count}}" md-on-paginate="paginate" md-page-select>
   </md-table-pagination>
 </div>
-<div ng-show="!uiReady" layout="row" layout-align="center">
+<div ng-show="!uiReady" layout-margin layout="row" layout-align="center">
   <md-progress-circular md-mode="indeterminate"></md-progress-circular>
 </div>
 <md-button class="md-fab md-fab-bottom-right md-ink-ripple" aria-label="Add" ng-click="controller.createItem()">

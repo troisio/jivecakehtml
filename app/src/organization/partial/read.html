@@ -8,14 +8,9 @@
         <td md-cell>
           <md-menu md-position-mode="target-right target">
             <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
-            <ng-md-icon icon="more_vert"></ng-md-icon>
+              <ng-md-icon icon="more_vert"></ng-md-icon>
             </md-button>
             <md-menu-content width="2">
-              <md-menu-item>
-                <md-button ui-sref="application.internal.event.read({organizationId: data.organization.id})">
-                  <span md-menu-align-target>view events</span>
-                </md-button>
-              </md-menu-item>
               <md-menu-item ng-show="data.permissions.has(controller.organizationService.getWritePermission())">
                 <md-button ui-sref="application.internal.organization.update({organizationId: data.organization.id})">
                   <span md-menu-align-target>update</span>
@@ -28,6 +23,9 @@
               </md-menu-item>
             </md-menu-content>
           </md-menu>
+          <md-button ui-sref="application.internal.event.read({organizationId: data.organization.id})" aria-label="View Events" class="md-icon-button">
+            <ng-md-icon icon="arrow_forward"></ng-md-icon>
+          </md-button>
         </td>
       </tr>
       <tr ng-show="paging.data.length === 0" md-row>
@@ -38,7 +36,7 @@
     </tbody>
   </table>
 </md-table-container>
-<div ng-show="!uiReady" layout="row" layout-align="center">
+<div ng-show="!uiReady" layout-margin layout="row" layout-align="center">
   <md-progress-circular md-mode="indeterminate"></md-progress-circular>
 </div>
 <md-button class="md-fab md-fab-bottom-right md-ink-ripple" aria-label="Add" ng-click="controller.createOrganization()">

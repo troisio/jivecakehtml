@@ -150,9 +150,10 @@ export default class ReadItemController {
       const event = resolve.event;
       const time = new this.$window.Date().getTime();
       const txn_id = time.toString();
+
       this.paypalService.getCartIpn(
         [{
-          quantity: 1,
+          quantity: 3,
           item: item
         }],
         new this.$window.Date().getTime(),

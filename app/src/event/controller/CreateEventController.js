@@ -29,6 +29,7 @@ export default class CreateEventController {
 
   run() {
     this.$scope.event = new this.Event();
+    this.$scope.event.minimumTimeBetweenTransactionTransfer = -1;
 
     this.organizationService.getOrganizationArrayWithPermissions(this.storage.token, this.user.user_id).then(data => {
       const organizations = data.filter(datum => datum.permissions.has(this.organizationService.getWritePermission()))

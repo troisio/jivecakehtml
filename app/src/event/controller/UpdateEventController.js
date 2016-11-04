@@ -86,6 +86,8 @@ export default class UpdateEventController {
           this.$scope.timeEnd.minute = this.$scope.timeEnd.time.getMinutes();
         }
 
+        this.$scope.minimumTimeBetweenTransactionTransferEnabled = event.minimumTimeBetweenTransactionTransfer > -1;
+
         this.$scope.event = event;
 
         return this.$q.all({
@@ -133,8 +135,12 @@ export default class UpdateEventController {
     });
   }
 
-  submit(event, timeStart, timeEnd) {
+  submit(event, timeStart, timeEnd, minimumTimeBetweenTransactionTransferEnabled) {
     const eventCopy = this.angular.copy(event);
+
+    if (!minimumTimeBetweenTransactionTransferEnabled) {
+      eventCopy.minimumTimeBetweenTransactionTransfer = -1;
+    }
 
     if (timeStart.time === null) {
       eventCopy.timeStart = null;

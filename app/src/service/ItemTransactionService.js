@@ -111,17 +111,23 @@ export default class ItemTransactionService {
     }).then(response => this.toObject(response.data));
   }
 
-  /*
-    returns a promise
-    the resoloution value is an array of transactions, each with its associated user and item
-  */
+  transfer(token, id, user_id) {
+    const url = [this.settings.jivecakeapi.uri, 'transaction', id, 'transfer', user_id].join('/');
+
+    return this.$http.post(url, '', {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.data.map(this.toObject, this));
+  }
+
   getTransactionData(itemService, token, query) {
     return this.search(token, query).then((searchResult) => {
-      const transactioinIds = searchResult.entity.map(transaction => transaction.id);
+      const transactionIds = searchResult.entity.map(transaction => transaction.id);
       const itemIds = searchResult.entity.map(transaction => transaction.itemId);
 
-      const usersFuture = transactioinIds.length === 0 ? this.$q.resolve([]) : this.searchUsers(token, {
-        id: transactioinIds
+      const usersFuture = transactionIds.length === 0 ? this.$q.resolve([]) : this.searchUsers(token, {
+        id: transactionIds
       });
       const itemsFuture = itemIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : itemService.publicSearch({
         id: itemIds
@@ -194,6 +200,10 @@ export default class ItemTransactionService {
 
   getPendingWithInvalidPayment() {
       return 7;
+  }
+
+  getTransferredStatus() {
+    return 8;
   }
 
   toObject(subject) {

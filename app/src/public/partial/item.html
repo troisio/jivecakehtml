@@ -10,9 +10,7 @@
             </td>
             <td md-cell>
               <div ng-show="itemData.amount !== null && groupData.parent.currency " class="amount" layout-align="column">
-                <span ng-show="groupData.parent.currency === 'USD'">&#36;</span>
-                <span ng-show="groupData.parent.currency === 'EUR'">&#128;</span>
-                <span>{{itemData.amount | number:2}}</span>
+                <span ng-show="groupData.parent.currency === 'USD'">&#36;</span><span ng-show="groupData.parent.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
               </div>
               <span ng-show="itemData.amount === null">free</span>
             </td>
@@ -41,7 +39,7 @@
       </table>
     </md-table-container>
   </section>
-  <div ng-show="!uiReady" layout="row" layout-align="center">
+  <div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
     <md-progress-circular md-mode="indeterminate"></md-progress-circular>
   </div>
   <div ng-show="user === null && groupData.itemData.length > 0" layout-padding>

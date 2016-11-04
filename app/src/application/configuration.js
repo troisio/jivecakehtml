@@ -140,7 +140,7 @@ export default [
     .state('application.internal.transaction.read', {
       url: '/?page&pageSize&organizationId&eventId&itemId&user_id&eventStatus&leaf',
       templateUrl: '/src/transaction/partial/read.html',
-      controller: 'ReadItemTransactionController',
+      controller: 'ReadTransactionController',
       controllerAs: 'controller',
       params: {
         page: '0',

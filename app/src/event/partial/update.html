@@ -9,7 +9,7 @@
     </div>
   </md-toolbar>
   <div class="md-inline-form" ng-show="uiReady" layout-padding>
-    <form ng-submit="form.$valid && controller.submit(event, timeStart, timeEnd)" name="form">
+    <form ng-submit="form.$valid && controller.submit(event, timeStart, timeEnd, minimumTimeBetweenTransactionTransferEnabled)" name="form">
       <md-input-container class="md-block">
         <label>Name</label>
         <input ng-model="event.name" maxlength="255" placeholder="price" required>
@@ -69,6 +69,22 @@
           <md-option ng-selected="true" ng-value="null"></md-option>
           <md-option value="USD">US Dollars</md-option>
           <md-option value="EUR">Euro</md-option>
+        </md-select>
+        <div class="errors" ng-messages="form.currency.$error" ng-if="form.$dirty">
+          <div ng-message="required">Currency is required</div>
+        </div>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <md-checkbox ng-model="minimumTimeBetweenTransactionTransferEnabled" aria-label="Active">Enable Pass Transfers between users</md-checkbox>
+      </md-input-container>
+      <md-input-container ng-show="minimumTimeBetweenTransactionTransferEnabled" class="md-block">
+        <label>Minimum Time Between Repeated Transfers</label>
+        <md-select ng-model="event.minimumTimeBetweenTransactionTransfer">
+          <md-option ng-value="-1"></md-option>
+          <md-option ng-value="3600000">1 Hour</md-option>
+          <md-option ng-value="43200000">12 Hours</md-option>
+          <md-option ng-value="86400000">1 Day</md-option>
+          <md-option ng-value="604800000">1 Week</md-option>
         </md-select>
         <div class="errors" ng-messages="form.currency.$error" ng-if="form.$dirty">
           <div ng-message="required">Currency is required</div>

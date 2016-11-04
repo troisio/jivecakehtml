@@ -1,8 +1,13 @@
 <md-dialog flex="80">
   <div layout-padding>
     <div ng-show="uiReady && events.length > 0" class="md-inline-form">
-      <h2>Create Item</h2>
-      <form ng-submit="controller.submit(item, event)">
+      <div layout="row" layout-align="space-between center">
+        <h2>Create Item</h2>
+        <div ng-show="loading">
+          <md-progress-circular flex md-diameter="40" md-mode="indeterminate"></md-progress-circular>
+        </div>
+      </div>
+      <form ng-submit="!loading && controller.submit(item, event)">
         <md-input-container class="md-block">
           <label>Name</label>
           <input ng-model="item.name" autocomplete="off" required>
@@ -20,11 +25,8 @@
           </md-item-template>
           <md-not-found>No events found</md-not-found>
         </md-autocomplete>
-        <md-input-container ng-show="!loading" class="md-block">
+        <md-input-container layout="column" ng-show="!loading">
           <md-button type="submit" class="md-raised md-primary">Create</md-button>
-        </md-input-container>
-        <md-input-container layout-align="center center" ng-show="loading" class="md-block">
-          <md-progress-circular md-mode="indeterminate"></md-progress-circular>
         </md-input-container>
       </form>
     </div>

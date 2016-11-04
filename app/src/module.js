@@ -53,7 +53,8 @@ import MyTransactionController from './transaction/controller/MyTransactionContr
 
 import CreateItemTransactionController from './transaction/controller/CreateItemTransactionController';
 import ItemTransactionController from './transaction/controller/ItemTransactionController';
-import ReadItemTransactionController from './transaction/controller/ReadItemTransactionController';
+import ReadTransactionController from './transaction/controller/ReadTransactionController';
+import TransferPassController from './transaction/controller/TransferPassController';
 
 import UpdateAccountController from './user/controller/UpdateAccountController';
 
@@ -121,7 +122,8 @@ angular.module('jivecakeweb', [
 
 .controller('CreateItemTransactionController', CreateItemTransactionController)
 .controller('ItemTransactionController', ItemTransactionController)
-.controller('ReadItemTransactionController', ReadItemTransactionController)
+.controller('ReadTransactionController', ReadTransactionController)
+.controller('TransferPassController', TransferPassController)
 
 .controller('UpdateAccountController', UpdateAccountController)
 .constant('angular', angular);

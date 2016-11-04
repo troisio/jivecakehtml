@@ -30,6 +30,7 @@
           <span ng-show="transaction.status === 3">Malformed Data</span>
           <span ng-show="transaction.status === 4">Refunded</span>
           <span ng-show="transaction.status === 5">Revoked</span>
+          <span ng-show="transaction.status === 8">Transferred</span>
         </div>
       </md-list-item>
       <md-list-item ng-show="transaction.amount > 0" class="layout-padding md-1-line">

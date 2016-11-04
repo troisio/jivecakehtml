@@ -1,8 +1,6 @@
 export default class EventService {
-  constructor($http, $q, itemService, settings, toolsService, Event) {
+  constructor($http, settings, toolsService, Event) {
     this.$http = $http;
-    this.$q = $q;
-    this.itemService = itemService;
     this.settings = settings;
     this.toolsService = toolsService;
     this.Event = Event;
@@ -107,4 +105,4 @@ export default class EventService {
   }
 }
 
-EventService.$inject = ['$http', '$q', 'ItemService', 'settings', 'ToolsService', 'Event'];
+EventService.$inject = ['$http', 'settings', 'ToolsService', 'Event'];

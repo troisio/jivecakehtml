@@ -2,6 +2,7 @@ export default class Event {
   constructor() {
     this.id = null;
     this.name = null;
+    this.minimumTimeBetweenTransactionTransfer = null;
     this.description = null;
     this.status = null;
     this.organizationId = null;

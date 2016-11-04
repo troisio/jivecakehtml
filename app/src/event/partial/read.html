@@ -22,11 +22,6 @@
               </md-button>
               <md-menu-content width="2">
                 <md-menu-item>
-                  <md-button ui-sref="application.internal.item.read({eventId: eventData.event.id})">
-                    <span md-menu-align-target>view items</span>
-                  </md-button>
-                </md-menu-item>
-                <md-menu-item>
                   <md-button ui-sref="application.internal.transaction.read({eventId: eventData.event.id})">
                     <span md-menu-align-target>view transactions</span>
                   </md-button>
@@ -48,6 +43,9 @@
                 </md-menu-item>
               </md-menu-content>
             </md-menu>
+            <md-button ui-sref="application.internal.item.read({eventId: eventData.event.id})" aria-label="View Items" class="md-icon-button">
+              <ng-md-icon icon="arrow_forward"></ng-md-icon>
+            </md-button>
           </td>
         </tr>
         <tr md-row ng-show="paging.data.entity.length === 0">

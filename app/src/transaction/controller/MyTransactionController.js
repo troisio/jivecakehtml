@@ -77,7 +77,7 @@ export default class MyTransactionController {
     return this.pagingService.getPaging(page, pageSize).then((paging) => {
       this.$scope.paging = paging;
     }, () => {
-      this.uiService.notify('Unable to load transactions');
+      this.uiService.notify('Unable to retrieve transactions');
     });
   }
 

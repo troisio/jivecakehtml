@@ -6,10 +6,10 @@
           <a href="" ng-click="controller.viewItem(transactionData.item)">{{transactionData.item.name}}</a>
         </td>
         <td md-cell>
-          <span ng-show="transactionData.transaction.quantity > 1">{{transactionData.transaction.quantity}} &#215;</span>
           <span ng-show="transactionData.transaction.amount > 0 && transactionData.transaction.currency === 'USD'">&#36;</span>
           <span ng-show="transactionData.transaction.amount > 0 && transactionData.transaction.currency === 'EUR'">&#128;</span>
-          <span ng-show="transactionData.transaction.amount > 0">{{transactionData.transaction.amount| number: 2}}</span>
+          <span ng-show="transactionData.transaction.amount > 0">{{transactionData.transaction.amount / transactionData.transaction.quantity | number: 2}}</span>
+          <span ng-show="transactionData.transaction.quantity > 1">({{transactionData.transaction.quantity}})</span>
         </td>
         <td md-cell>
           <ng-md-icon ng-show="transactionData.transaction.status === 0" class="payment-complete" icon="check_circle"></ng-md-icon>
@@ -18,6 +18,7 @@
           <ng-md-icon ng-show="transactionData.transaction.status === 3" class="payment-bad" icon="report"></ng-md-icon>
           <ng-md-icon ng-show="transactionData.transaction.status === 4" class="payment-refund" icon="undo"></ng-md-icon>
           <ng-md-icon ng-show="transactionData.transaction.status === 5" class="payment-bad" icon="clear"></ng-md-icon>
+          <ng-md-icon ng-show="transactionData.transaction.status === 8" class="payment-pending" icon="swap_horiz"></ng-md-icon>
         </td>
         <td md-cell>
           <md-menu md-position-mode="target-right target">
@@ -30,6 +31,13 @@
                   <span md-menu-align-target>view transaction</span>
                 </md-button>
               </md-menu-item>
+<!--
+              <md-menu-item>
+                <md-button ng-click="controller.transferTransaction(transactionData.transaction)">
+                  <span md-menu-align-target>transfer transaction</span>
+                </md-button>
+              </md-menu-item>
+-->
             </md-menu-content>
           </md-menu>
         </td>
