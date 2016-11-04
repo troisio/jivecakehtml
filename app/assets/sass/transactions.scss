@@ -1,17 +1,19 @@
 @import './color';
 
-ng-md-icon.payment-complete {
-  fill: $payment-complete;
-}
+ng-md-icon{
+  &.payment-complete {
+    fill: $payment-complete;
+  }
 
-ng-md-icon.payment-refund {
-  fill: #FF6347;
-}
+  &.payment-refund {
+    fill: $payment-refund;
+  }
 
-ng-md-icon.payment-pending {
-  fill: #6495ED;
-}
+  &.payment-pending {
+    fill: $payment-pending;
+  }
 
-ng-md-icon.payment-bad {
-  fill: rgb(221,44,0);
+  &.payment-bad {
+    fill: $payment-bad;
+  }
 }

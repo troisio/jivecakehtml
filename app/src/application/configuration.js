@@ -145,7 +145,8 @@ export default [
       params: {
         page: '0',
         pageSize: '10',
-        order: '-timeCreated'
+        order: '-timeCreated',
+        leaf: 'true'
       }
     })
     .state('application.internal.transaction.create', {

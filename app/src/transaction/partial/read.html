@@ -17,20 +17,17 @@
             <a href="" ui-sref="application.internal.item.read({id: transactionData.item.id})">{{transactionData.item.name}}</a>
           </td>
           <td md-cell>
-            <span ng-show="transactionData.transaction.amount > 0 && transactionData.transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.transaction.amount > 0 && transactionData.transaction.currency === 'EUR'">&#128;</span><span ng-show="transactionData.transaction.amount > 0">{{transactionData.transaction.amount / transactionData.transaction.quantity | number: 2}}</span>
-            <span ng-show="transactionData.transaction.quantity > 1">({{transactionData.transaction.quantity}})</span>
-          </td>
-          <td md-cell>
-            <span ng-show="transactionData.transaction > 0">{{transactionData.transaction.quantity}}</span>
-          </td>
-          <td md-cell>
-            <ng-md-icon ng-show="transactionData.transaction.status === 0" class="payment-complete" icon="check_circle"></ng-md-icon>
-            <ng-md-icon ng-show="transactionData.transaction.status === 1 || transactionData.transaction.status === 6 || transactionData.transaction.status === 7" class="payment-pending" icon="send"></ng-md-icon>
-            <ng-md-icon ng-show="transactionData.transaction.status === 2" class="payment-bad" icon="money_off"></ng-md-icon>
-            <ng-md-icon ng-show="transactionData.transaction.status === 3" class="payment-bad" icon="report"></ng-md-icon>
-            <ng-md-icon ng-show="transactionData.transaction.status === 4" class="payment-refund" icon="undo"></ng-md-icon>
-            <ng-md-icon ng-show="transactionData.transaction.status === 5" class="payment-bad" icon="clear"></ng-md-icon>
-            <ng-md-icon ng-show="transactionData.transaction.status === 8" class="payment-pending" icon="swap_horiz"></ng-md-icon>
+            <p ng-show="[0, 4].indexOf(transactionData.transaction.status) > -1">
+              <strong ng-show="transactionData.transaction.amount > 0" class="payment-complete">+</strong>
+              <strong ng-show="transactionData.transaction.amount < 0" class="payment-bad">-</strong>
+              <span ng-show="transactionData.transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.transaction.currency === 'EUR'">&#128;</span><span>{{transactionData.transaction.amount / transactionData.transaction.quantity | absoluteValue | number: 2}}</span>
+              <span ng-show="transactionData.transaction.quantity > 1">({{transactionData.transaction.quantity}})</span>
+            </p>
+            <span ng-show="transactionData.transaction.status === 1 || transactionData.transaction.status === 6 || transactionData.transaction.status === 7" class="payment-pending">pending</span>
+            <span ng-show="transactionData.transaction.status === 2" class="payment-bad">invalid payment</span>
+            <span ng-show="transactionData.transaction.status === 3" class="payment-bad">malformed data</span>
+            <span ng-show="transactionData.transaction.status === 5" class="payment-bad">revoked</span>
+            <span ng-show="transactionData.transaction.status === 8" class="payment-pending">transferred</span>
           </td>
           <td md-cell>
             <md-menu md-position-mode="target-right target">
@@ -65,7 +62,7 @@
           </td>
         </tr>
         <tr ng-show="paging.data.entity.length === 0" md-row>
-          <td md-cell colspan="5">
+          <td md-cell colspan="4">
             <span class="md-subheader">No data found</span>
           </td>
         </tr>

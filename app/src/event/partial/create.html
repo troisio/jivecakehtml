@@ -1,6 +1,11 @@
 <md-dialog flex="80">
+  <div layout="row" layout-padding layout-align="space-between center">
+    <h2>Create Event</h2>
+    <div ng-show="loading || !uiReady">
+      <md-progress-circular flex md-diameter="40" md-mode="indeterminate"></md-progress-circular>
+    </div>
+  </div>
   <div ng-show="uiReady" layout-padding layout="column">
-    <h3>Create Event</h3>
     <form name="form" ng-submit="!loading && controller.createEvent(event)">
       <md-input-container class="md-block">
         <label>Name</label>
@@ -15,15 +20,12 @@
       </md-input-container>
       <div layout-sm="column">
         <md-input-container>
-          <md-button ng-disabled="loading || event.organizationId === null" type="submit" class="md-raised md-primary">Create</md-button>
+          <md-button ng-disabled="event.organizationId === null" type="submit" class="md-raised md-primary">Create</md-button>
         </md-input-container>
         <md-input-container ng-show="loading">
           <md-progress-circular md-mode="indeterminate"></md-progress-circular>
         </md-input-container>
       </div>
     </form>
-  </div>
-  <div ng-show="!uiReady" layout-margin layout="row" layout-align="center">
-    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
   </div>
 </md-dialog>

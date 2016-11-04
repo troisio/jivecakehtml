@@ -17,9 +17,7 @@
         </td>
         <td md-cell>
           <h5>
-            <span ng-show="group.parent.currency === 'USD'">&#36;</span>
-            <span ng-show="group.parent.currency === 'EUR'">&#128;</span>
-            <span>{{itemData.amount| number: 2}}</span>
+            <span ng-show="group.parent.currency === 'USD'">&#36;</span><span ng-show="group.parent.currency === 'EUR'">&#128;</span><span>{{itemData.amount| number: 2}}</span>
           </h5>
         </td>
         <td md-cell>
@@ -44,8 +42,6 @@
 <div layout-padding>
   <h4 ng-show="groups.length === 0">Your cart is empty</h4>
 </div>
-<div layout="row" layout-align="center">
-  <md-input-container ng-show="!uiReady">
-    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-  </md-input-container>
+<div layout="row" layout-margin ng-show="!uiReady" layout-align="center">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
 </div>

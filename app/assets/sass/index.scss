@@ -28,6 +28,24 @@ ng-md-icon[data-ng-click] {
   }
 }
 
+span, strong {
+  &.payment-complete {
+    color: $payment-complete;
+  }
+
+  &.payment-refund {
+    color: #FF6347;
+  }
+
+  &.payment-bad {
+    color: rgb(221,44,0);
+  }
+
+  &.payment-pending {
+    color: #6495ED;
+  }
+}
+
 div[ng-messages] p[ng-message] {
   color: rgb(221, 44, 0);
 }

@@ -28,9 +28,10 @@ export default class UpdateEventController {
     this.uiService = uiService;
 
     this.$scope.currentDate = new this.$window.Date();
+    this.$scope.paymentProfiles = null;
 
-    this.$scope.hours = this.$window.Array.from(new this.$window.Array(24), (item, index) => index);
-    this.$scope.minutes = this.$window.Array.from(new this.$window.Array(60), (item, index) => index);
+    this.$scope.hours = this.$window.Array.from(new this.$window.Array(24), (_, index) => index);
+    this.$scope.minutes = this.$window.Array.from(new this.$window.Array(60), (_, index) => index);
 
     this.storage = storageService.read();
     this.timeSelections = this.uiService.getTimeSelections();

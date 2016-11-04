@@ -55,8 +55,8 @@
       <md-input-container class="md-block">
         <label>Payment Profile</label>
         <a href="" ng-click="controller.createPaymentProfile()" ng-show="paymentProfiles.length === 0">Create a Payment Profile</a>
-        <md-select ng-show="paymentProfiles.length > 0" ng-model="event.paymentProfileId" ng-required="event.currency" aria-label="Payment Profile" name="paymentProfile">
-          <md-option ng-selected="true" ng-value="null"></md-option>
+        <md-select ng-if="paymentProfiles !== null" ng-show="paymentProfiles.length > 0" ng-model="event.paymentProfileId" ng-required="event.currency" aria-label="Payment Profile" name="paymentProfile">
+          <md-option ng-value="null"></md-option>
           <md-option ng-repeat="profile in paymentProfiles track by profile.id" ng-value="profile.id">{{profile.name}} ({{profile.email}})</md-option>
         </md-select>
         <div ng-messages="form.paymentProfile.$error">
@@ -70,7 +70,7 @@
           <md-option value="USD">US Dollars</md-option>
           <md-option value="EUR">Euro</md-option>
         </md-select>
-        <div class="errors" ng-messages="form.currency.$error" ng-if="form.$dirty">
+        <div class="errors" ng-messages="form.currency.$error">
           <div ng-message="required">Currency is required</div>
         </div>
       </md-input-container>
@@ -79,7 +79,7 @@
       </md-input-container>
       <md-input-container ng-show="minimumTimeBetweenTransactionTransferEnabled" class="md-block">
         <label>Minimum Time Between Repeated Transfers</label>
-        <md-select ng-model="event.minimumTimeBetweenTransactionTransfer">
+        <md-select ng-model="event.minimumTimeBetweenTransactionTransfer" ng-required="minimumTimeBetweenTransactionTransferEnabled">
           <md-option ng-value="-1"></md-option>
           <md-option ng-value="3600000">1 Hour</md-option>
           <md-option ng-value="43200000">12 Hours</md-option>
