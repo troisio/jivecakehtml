@@ -5,7 +5,9 @@ import settings from './settings';
 
 import featureTypeFilter from './angularcomponents/featureTypeFilter';
 import HTTPInterceptor from './angularcomponents/HTTPInterceptor';
+import absoluteValue from './angularcomponents/absoluteValue';
 import userIdentificationFilter from './angularcomponents/userIdentificationFilter';
+import transactionCSSClass from './angularcomponents/transactionCSSClass';
 import browserTimeZoneAbbreviation from './angularcomponents/browserTimeZoneAbbreviation';
 
 import jiveCakeClassModule from './class/module';
@@ -74,7 +76,9 @@ angular.module('jivecakeweb', [
 ])
 .filter('featureTypeFilter', featureTypeFilter)
 .service('HTTPInterceptor', HTTPInterceptor)
+.filter('absoluteValue', absoluteValue)
 .filter('userIdentificationFilter', userIdentificationFilter)
+.filter('transactionCSSClass', transactionCSSClass)
 .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
 .constant('settings', settings)
 .config(configuration)
