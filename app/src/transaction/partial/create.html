@@ -9,7 +9,6 @@
     ng-show="!(transaction.given_name || transaction.middleName || transaction.family_name)"
     autocomplete="off"
     md-selected-item-change="controller.select(selected)"
-    ng-model="selected"
     md-no-cache="true"
     md-selected-item="selectedUser"
     md-search-text="text"
@@ -24,7 +23,7 @@
       </md-item-template>
       <md-not-found>No users found</md-not-found>
     </md-autocomplete>
-    <div ng-show="!selected" layout layout-sm="column">
+    <div ng-show="!selectedUser" layout layout-sm="column">
       <md-input-container flex class="md-block">
         <label>First Name</label>
         <input ng-model="transaction.given_name" maxlength="255">
@@ -38,7 +37,7 @@
         <input ng-model="transaction.family_name" maxlength="255">
       </md-input-container>
     </div>
-    <md-input-container ng-show="!selected" class="md-block">
+    <md-input-container ng-show="!selectedUser" class="md-block">
       <label>Email</label>
       <input ng-model="transaction.email" type="email" class="form-control" maxlength="255" placeholder="Email" autocomplete="off">
     </md-input-container>
