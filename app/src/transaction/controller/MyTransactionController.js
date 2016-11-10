@@ -37,6 +37,11 @@ export default class MyTransactionController {
       delete query.pageSize;
       delete query.page;
 
+      query.status = [
+        itemTransactionService.getPaymentCompleteStatus(),
+        itemTransactionService.getPaymentPendingStatus(),
+        itemTransactionService.getPendingWithValidPayment()
+      ];
       query.limit = limit;
       query.offset = offset;
       query.leaf = true;
@@ -111,6 +116,19 @@ export default class MyTransactionController {
       clickOutsideToClose: true,
       locals: {
         item: item
+      }
+    });
+  }
+
+  showQRCode(transaction) {
+    this.$mdDialog.show({
+      controller: ['$scope', 'transaction', function($scope, transaction) {
+        $scope.transaction = transaction;
+      }],
+      templateUrl: '/src/transaction/partial/qr.html',
+      clickOutsideToClose: true,
+      locals: {
+        transaction: transaction
       }
     });
   }

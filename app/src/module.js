@@ -72,7 +72,8 @@ angular.module('jivecakeweb', [
   'angular-storage',
   'angular-jwt',
   'md.data.table',
-  'hc.marked'
+  'hc.marked',
+  'monospaced.qrcode'
 ])
 .filter('featureTypeFilter', featureTypeFilter)
 .service('HTTPInterceptor', HTTPInterceptor)

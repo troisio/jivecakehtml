@@ -5,7 +5,7 @@ import ConnectionService from './ConnectionService';
 import EventService from './EventService';
 import FeatureService from './FeatureService';
 import ItemService from './ItemService';
-import ItemTransactionService from './ItemTransactionService';
+import TransactionService from './TransactionService';
 import NotificationService from './NotificationService';
 import OrganizationService from './OrganizationService';
 import Paging from './Paging';
@@ -27,7 +27,7 @@ export default angular.module('jivecakeservice', [])
   .service('EventService', EventService)
   .service('FeatureService', FeatureService)
   .service('ItemService', ItemService)
-  .service('ItemTransactionService', ItemTransactionService)
+  .service('ItemTransactionService', TransactionService)
   .service('NotificationService', NotificationService)
   .service('OrganizationService', OrganizationService)
   .constant('Paging', Paging)

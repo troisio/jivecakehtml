@@ -139,9 +139,11 @@ export default class ReadItemTransactionController {
   }
 
   deleteTransaction(transaction, $event) {
+    const message = transaction.status === 5 ? 'Are you sure you want to undo this revocation?' : 'Are you sure you want to delete this transaction?' ;
     const confirm = this.$mdDialog.confirm()
-          .title('Are you sure you want to delete this transaction?')
+          .title(message)
           .ariaLabel('Delete Transaction')
+          .clickOutsideToClose(true)
           .targetEvent($event)
           .ok('DELETE')
           .cancel('Cancel');
@@ -163,6 +165,7 @@ export default class ReadItemTransactionController {
     const confirm = this.$mdDialog.confirm()
           .title('Are you sure you want to revoke this transaction?')
           .ariaLabel('Revoke Transaction')
+          .clickOutsideToClose(true)
           .targetEvent($event)
           .ok('REVOKE')
           .cancel('Cancel');
