@@ -29,29 +29,30 @@ export default class MyTransactionController {
 
     this.storage = storageService.read();
     this.selected = [];
-    this.pagingService = new this.Paging((data) => {
-      return this.$q.resolve(data.count);
-    }, (limit, offset) => {
-      const query = this.toolsService.stateParamsToQuery(this.$state.params);
+    this.pagingService = new this.Paging(
+      (data) => this.$q.resolve(data.count),
+      (limit, offset) => {
+        const query = this.toolsService.stateParamsToQuery(this.$state.params);
 
-      delete query.pageSize;
-      delete query.page;
+        delete query.pageSize;
+        delete query.page;
 
-      query.status = [
-        itemTransactionService.getPaymentCompleteStatus(),
-        itemTransactionService.getPaymentPendingStatus(),
-        itemTransactionService.getPendingWithValidPayment()
-      ];
-      query.limit = limit;
-      query.offset = offset;
-      query.leaf = true;
+        query.status = [
+          itemTransactionService.getPaymentCompleteStatus(),
+          itemTransactionService.getPaymentPendingStatus(),
+          itemTransactionService.getPendingWithValidPayment()
+        ];
+        query.limit = limit;
+        query.offset = offset;
+        query.leaf = true;
 
-      query.user_id = this.$state.params.user_id;
+        query.user_id = this.$state.params.user_id;
 
-      this.toolsService.maintainKeys(query, ['user_id', 'limit', 'offset', 'order']);
+        this.toolsService.maintainKeys(query, ['user_id', 'limit', 'offset', 'order']);
 
-      return this.itemTransactionService.getTransactionData(this.itemService, this.storage.token, query);
-    });
+        return this.itemTransactionService.getTransactionData(this.itemService, this.storage.token, query);
+      }
+    );
 
     this.run();
   }
@@ -122,8 +123,15 @@ export default class MyTransactionController {
 
   showQRCode(transaction) {
     this.$mdDialog.show({
-      controller: ['$scope', 'transaction', function($scope, transaction) {
+      controller: ['$scope', 'settings', 'transaction', function($scope, settings, transaction) {
+        $scope.settings = settings;
         $scope.transaction = transaction;
+
+$scope.transaction.id = '5824973124aa9a004b2ee6aa';
+        /*
+5824973124aa9a004b2ee6aa
+5802a70d24aa9a004bc5f1af
+        */
       }],
       templateUrl: '/src/transaction/partial/qr.html',
       clickOutsideToClose: true,

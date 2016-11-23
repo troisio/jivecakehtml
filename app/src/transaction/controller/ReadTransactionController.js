@@ -1,109 +1,41 @@
 export default class ReadItemTransactionController {
   constructor(
     $window,
-    $q,
     $scope,
-    $stateParams,
+    $state,
     $mdDialog,
-    Paging,
-    auth0Service,
     storageService,
     itemService,
-    featureService,
-    organizationService,
-    relationalService,
     itemTransactionService,
     toolsService,
     uiService,
-    Page
+    TransactionLoader
   ) {
     this.$window = $window;
-    this.$q = $q;
     this.$scope = $scope;
-    this.$stateParams = $stateParams;
+    this.$state = $state;
     this.$mdDialog = $mdDialog;
-    this.Paging = Paging;
-    this.auth0Service = auth0Service;
     this.itemService = itemService;
-    this.featureService = featureService;
-    this.organizationService = organizationService;
-    this.relationalService = relationalService;
     this.itemTransactionService = itemTransactionService;
     this.toolsService = toolsService;
     this.uiService = uiService;
-    this.Page = Page;
 
-    this.selected = [];
-    this.readOrganizationIds = [];
-    this.searchText = '';
+    $scope.selected = [];
+    $scope.searchText = '';
 
     this.storage = storageService.read();
-    this.pagingService = new this.Paging(data => this.$q.resolve(data.count), (limit, offset) => {
-      const query = this.toolsService.stateParamsToQuery($stateParams);
+    $scope.$parent.selectedTab = 3;
 
-      delete query.page;
-      delete query.pageSize;
+    this.loader = new TransactionLoader($window, this.itemService, itemTransactionService, this.storage.token, 50);
+    this.loader.query = this.getQuery();
 
-      query.limit = limit;
-      query.offset = offset;
-
-      if (!('order' in query)) {
-        query.order = '-timeCreated';
-      }
-
-      if (this.searchText.length > 0) {
-        query.text = this.searchText;
-      }
-
-      return this.itemTransactionService.getTransactionData(this.itemService, this.storage.token, query);
-    });
-
-    this.$scope.$parent.selectedTab = 3;
-    this.$scope.paging = new this.Page();
-    this.$scope.paging.data = {entity: []};
-    this.$scope.query = {
-      limit: this.$window.parseInt(this.$stateParams.pageSize),
-      page: this.$window.parseInt(this.$stateParams.page) + 1
-    };
-
-    this.$scope.paginate = () => {
-      this.loadPage(this.$scope.query.page - 1, this.$scope.query.limit);
-    };
-
+    $scope.loader = this.loader;
     this.run();
   }
 
   run() {
     this.$scope.$parent.ready.then((resolve) => {
-      this.readOrganizationIds = resolve.permission.entity.filter((permission) => {
-        return permission.objectClass === this.organizationService.getObjectClassName() &&
-               permission.has(this.organizationService.getReadPermission());
-      }).map(function(permission){
-        return permission.objectId;
-      });
-
-      this.loadPage(
-        this.$window.parseInt(this.$stateParams.page),
-        this.$window.parseInt(this.$stateParams.pageSize)
-      );
-
-      this.$scope.$on('ITEM.TRANSACTION.SEARCH', (event, query) => {
-        this.$scope.loading = true;
-
-        query.organizationId = this.readOrganizationIds;
-
-        this.itemTransactionService.search(this.storage.token, query).then((data) => {
-          const paging = new this.Page();
-          paging.data = data;
-          paging.total = data.count;
-          paging.pageCount = 1;
-          paging.pageSize = data.entity.length;
-
-          this.$scope.paging = paging;
-        }).finally(() => {
-          this.$scope.loading = false;
-        });
-      });
+      this.loader.loadPage(0);
     });
   }
 
@@ -150,10 +82,7 @@ export default class ReadItemTransactionController {
 
     this.$mdDialog.show(confirm).then(() => {
       this.itemTransactionService.delete(this.storage.token, transaction.id).then((profile) => {
-        this.loadPage(
-          this.$window.parseInt(this.$stateParams.page),
-          this.$window.parseInt(this.$stateParams.pageSize)
-        );
+        this.reload();
         this.uiService.notify('Transaction deleted');
       }, (response) => {
         this.uiService.notify('Unable to delete transaction');
@@ -172,10 +101,7 @@ export default class ReadItemTransactionController {
 
     this.$mdDialog.show(confirm).then(() => {
       this.itemTransactionService.revoke(this.storage.token, transaction.id).then((profile) => {
-        this.loadPage(
-          this.$window.parseInt(this.$stateParams.page),
-          this.$window.parseInt(this.$stateParams.pageSize)
-        );
+        this.reload();
         this.uiService.notify('Transaction revoked');
       }, (response) => {
         this.uiService.notify('Unable to revoke transaction');
@@ -183,39 +109,40 @@ export default class ReadItemTransactionController {
     });
   }
 
-  onSearchTextChanged() {
-    this.loadPage(
-      this.$window.parseInt(this.$scope.paging.page),
-      this.$window.parseInt(this.$scope.paging.pageSize)
-    );
+  reload() {
+    const query = this.getQuery();
+    this.loader.reset();
+    this.loader.query = query;
+    this.loader.loadPage(0);
   }
 
-  loadPage(page, pageSize) {
-    this.$scope.uiReady = false;
+  getQuery() {
+    const query = {
+      order: '-timeCreated',
+    };
+    const stateParams = this.toolsService.stateParamsToQuery(this.$state.params);
 
-    return this.pagingService.getPaging(page, pageSize).then((paging) => {
-      this.$scope.paging = paging;
-    }).finally(() => {
-      this.$scope.uiReady = true;
-    });
+    if (this.$scope.searchText.length > 0) {
+      query.text = this.$scope.searchText;
+    }
+
+    for (let key in stateParams) {
+      query[key] = stateParams[key];
+    }
+
+    return query;
   }
 }
 
 ReadItemTransactionController.$inject = [
   '$window',
-  '$q',
   '$scope',
-  '$stateParams',
+  '$state',
   '$mdDialog',
-  'Paging',
-  'Auth0Service',
   'StorageService',
   'ItemService',
-  'FeatureService',
-  'OrganizationService',
-  'RelationalService',
   'ItemTransactionService',
   'ToolsService',
   'UIService',
-  'Page'
+  'TransactionLoader'
 ];

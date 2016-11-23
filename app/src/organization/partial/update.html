@@ -16,7 +16,7 @@
     <section layout-padding>
       <div layout="row">
         <div>
-          <h4>Users</h4>
+          <h4>Organization Users</h4>
         </div>
         <span flex></span>
         <md-menu md-position-mode="target-right target">
@@ -106,7 +106,7 @@
                   <h5>{{feature.type | featureTypeFilter}}</h5>
                 </td>
                 <td md-cell>
-                  <h5>{{feature.timeStart | date:'d MMM yyyy'}} to {{feature.timeEnd | date:'d MMM yyyy'}} </h5>
+                  <h5>{{feature.timeStart | date:'d MMM yyyy'}} - {{feature.timeEnd | date:'d MMM yyyy'}} </h5>
                 </td>
                 <td ng-show="hasApplicationWrite" ng-click="controller.deleteOrganizationFeature($event, feature)" md-cell>
                   <ng-md-icon icon="delete"></ng-md-icon>

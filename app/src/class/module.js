@@ -18,6 +18,7 @@ import PaypalPaymentProfile from './PaypalPaymentProfile';
 import Permission from './Permission';
 import SearchEntity from './SearchEntity';
 import SubscriptionPaymentDetail from './SubscriptionPaymentDetail';
+import TransactionLoader from './TransactionLoader';
 
 export default angular.module('jivecakeclass', [])
     .constant('Application', Application)
@@ -39,4 +40,5 @@ export default angular.module('jivecakeclass', [])
     .constant('PaypalPaymentProfile', PaypalPaymentProfile)
     .constant('Permission', Permission)
     .constant('SearchEntity', SearchEntity)
-    .constant('SubscriptionPaymentDetail', SubscriptionPaymentDetail);
+    .constant('SubscriptionPaymentDetail', SubscriptionPaymentDetail)
+    .constant('TransactionLoader', TransactionLoader);

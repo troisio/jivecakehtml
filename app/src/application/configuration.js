@@ -138,16 +138,10 @@ export default [
       template: '<ui-view></ui-view>'
     })
     .state('application.internal.transaction.read', {
-      url: '/?page&pageSize&organizationId&eventId&itemId&user_id&eventStatus&leaf',
+      url: '?organizationId&eventId&itemId',
       templateUrl: '/src/transaction/partial/read.html',
       controller: 'ReadTransactionController',
-      controllerAs: 'controller',
-      params: {
-        page: '0',
-        pageSize: '10',
-        order: '-timeCreated',
-        leaf: 'true'
-      }
+      controllerAs: 'controller'
     })
     .state('application.internal.transaction.create', {
       url: '/{itemId}/create',

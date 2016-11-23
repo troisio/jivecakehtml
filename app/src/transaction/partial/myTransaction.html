@@ -5,11 +5,13 @@
         <td md-cell>
           <a href="" ng-click="controller.viewItem(transactionData.item)">{{transactionData.item.name}}</a>
         </td>
+<!--
         <td md-cell>
           <md-button aria-label="View QR Code" ng-click="controller.showQRCode(transactionData.transaction)">
             <i class="fa fa-qrcode fa-2x" aria-hidden="true"></i>
           </md-button>
         </td>
+-->
         <td md-cell>
           <md-menu md-position-mode="target-right target">
             <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
@@ -33,7 +35,7 @@
         </td>
       </tr>
       <tr md-row>
-        <td md-cell colspan="4">
+        <td md-cell colspan="2">
           <span class="md-subheader" ng-show="paging.data.entity.length === 0">You have no transactions</span>
         </td>
       </tr>

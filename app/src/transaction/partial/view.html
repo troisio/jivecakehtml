@@ -35,11 +35,9 @@
       </md-list-item>
       <md-list-item ng-show="transaction.amount > 0" class="layout-padding md-1-line">
         <div class="md-list-item-text" layout="column">
-          <h3>Amount</h3>
+          <h3>Total Paid</h3>
           <p>
-            <span ng-show="transaction.currency === 'USD'">&#36;</span>
-            <span ng-show="transaction.currency === 'EUR'">&#128;</span>
-            <span>{{transaction.amount| number: 2}}</span>
+            <span ng-show="transaction.currency === 'USD'">&#36;</span><span ng-show="transaction.currency === 'EUR'">&#128;</span><span>{{transaction.amount| number: 2}}</span>
           </p>
         </div>
       </md-list-item>
