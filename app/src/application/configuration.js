@@ -135,7 +135,7 @@ export default [
       abstract: true,
       url: '/transaction',
       controller: 'ItemTransactionController',
-      template: '<ui-view></ui-view>'
+      template: '<ui-view flex layout="column"></ui-view>'
     })
     .state('application.internal.transaction.read', {
       url: '?organizationId&eventId&itemId',

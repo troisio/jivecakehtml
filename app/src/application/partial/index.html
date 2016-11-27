@@ -1,4 +1,9 @@
-<md-sidenav flex class="md-sidenav-left md-whiteframe-2dp" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
+<div layout="row">
+  <md-button ng-click="toggleSidenav('left')" hide-gt-md aria-label="Menu">
+    <ng-md-icon icon="menu"></ng-md-icon>
+  </md-button>
+</div>
+<md-sidenav class="md-sidenav-left md-whiteframe-2dp" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
   <md-list ng-show="uiReady">
     <md-item ng-show="user && hasOrganizations">
       <a ng-click="closeSideNav('left')" ui-sref="application.internal.organization.read">
@@ -85,6 +90,6 @@
     <md-progress-circular md-mode="indeterminate"></md-progress-circular>
   </div>
 </md-sidenav>
-<md-content flex>
-  <ui-view></ui-view>
+<md-content flex layout="column">
+  <ui-view flex layout="column"></ui-view>
 </md-content>

@@ -61,8 +61,8 @@
     <script src="/dist/dist.js"></script>
     <link rel="stylesheet" href="/dist/dist.css">
   </head>
-  <body data-layout="column">
-    <div data-ui-view flex layout="row"></div>
+  <body layout="column">
+    <ui-view flex layout="column"></ui-view>
     <script>
       angular.module('jivecakeweb').run(['settings', '$location', '$window', '$rootScope', function(settings, $location, $window, $rootScope) {
         if (settings.google.analytics.enabled) {

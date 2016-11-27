@@ -4,79 +4,77 @@
     <input flex ng-model="searchText" ng-change="controller.reload()" ng-model-options="{debounce: 300}" placeholder="search">
   </div>
 </md-toolbar>
-<div>
-  <md-virtual-repeat-container style="min-height: 80vh;" md-top-index="topIndex" fix-head>
-    <md-table-container>
-      <table ng-model="selected" md-table md-row-select multiple>
-        <tbody md-body>
-          <tr md-row md-auto-select md-virtual-repeat="transactionData in loader" md-on-demand>
-            <td md-cell>
-              <span ng-show="transactionData.user === null">{{transactionData.transaction.given_name}} {{transactionData.transaction.family_name}}</span>
-              <span ng-show="transactionData.user !== null">{{transactionData.user | userIdentificationFilter: false}}</span>
-            </td>
-            <td md-cell>
-              <a href="" ui-sref="application.internal.item.read({id: transactionData.item.id})">{{transactionData.item.name}}</a>
-            </td>
-            <td md-cell>
-              <p ng-show="[0, 4].indexOf(transactionData.transaction.status) > -1">
-                <strong ng-show="transactionData.transaction.amount > 0" class="payment-complete">+</strong>
-                <strong ng-show="transactionData.transaction.amount < 0" class="payment-bad">-</strong>
-                <span ng-show="transactionData.transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.transaction.currency === 'EUR'">&#128;</span><span>{{transactionData.transaction.amount / transactionData.transaction.quantity | absoluteValue | number: 2}}</span>
-                <span ng-show="transactionData.transaction.quantity > 1">({{transactionData.transaction.quantity}})</span>
-              </p>
-              <span ng-show="transactionData.transaction.status === 1 || transactionData.transaction.status === 6 || transactionData.transaction.status === 7" class="payment-pending">pending</span>
-              <span ng-show="transactionData.transaction.status === 2" class="payment-bad">invalid payment</span>
-              <span ng-show="transactionData.transaction.status === 3" class="payment-bad">malformed data</span>
-              <span ng-show="transactionData.transaction.status === 5" class="payment-bad">revoked</span>
-              <span ng-show="transactionData.transaction.status === 8" class="payment-pending">transferred</span>
-            </td>
-            <td md-cell>
-              <md-menu md-position-mode="target-right target">
-                <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
-                  <ng-md-icon icon="more_vert"></ng-md-icon>
-                </md-button>
-                <md-menu-content width="2">
-                  <md-menu-item>
-                    <md-button ng-click="controller.readTransaction(transactionData.transaction, transactionData.user, transactionData.item)">
-                      <span md-menu-align-target>view transaction</span>
-                    </md-button>
-                  </md-menu-item>
-  <!--
-                  <md-menu-item>
-                    <md-button ng-click="controller.transferTransaction(transactionData.transaction)">
-                      <span md-menu-align-target>transfer transaction</span>
-                    </md-button>
-                  </md-menu-item>
-  -->
-                  <md-menu-item ng-show="transactionData.transaction.linkedObjectClass !== 'PaypalIPN'">
-                    <md-button ng-click="controller.deleteTransaction(transactionData.transaction, $event)">
-                      <span ng-show="transactionData.transaction.status !== 5" md-menu-align-target>delete transaction</span>
-                      <span ng-show="transactionData.transaction.status === 5" md-menu-align-target>undo revocation</span>
-                    </md-button>
-                  </md-menu-item>
-                  <md-menu-item ng-show="transactionData.transaction.status === 0">
-                    <md-button ng-click="controller.revokeTransaction(transactionData.transaction, $event)">
-                      <span md-menu-align-target>revoke transaction</span>
-                    </md-button>
-                  </md-menu-item>
-                </md-menu-content>
-              </md-menu>
-            </td>
-          </tr>
-          <tr ng-show="!loader.loading && loader.getLength() == 0" md-row>
-            <td md-cell colspan="4">
-              <span class="md-subheader">No data found</span>
-            </td>
-          </tr>
-          <tr ng-show="loader.loading" md-row>
-            <td md-cell colspan="4">
-              <div layout="row" layout-margin layout-align="center">
-                <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </md-table-container>
-  </md-virtual-repeat-container>
-</div>
+<md-virtual-repeat-container layout="column" flex md-top-index="topIndex" fix-head>
+  <md-table-container>
+    <table ng-model="selected" md-table md-row-select multiple>
+      <tbody md-body>
+        <tr md-row md-auto-select md-virtual-repeat="transactionData in loader" md-item-size="20" md-on-demand>
+          <td md-cell>
+            <span ng-show="transactionData.user === null">{{transactionData.transaction.given_name}} {{transactionData.transaction.family_name}}</span>
+            <span ng-show="transactionData.user !== null">{{transactionData.user | userIdentificationFilter: false}}</span>
+          </td>
+          <td md-cell>
+            <a href="" ui-sref="application.internal.item.read({id: transactionData.item.id})">{{transactionData.item.name}}</a>
+          </td>
+          <td md-cell>
+            <p ng-show="[0, 4].indexOf(transactionData.transaction.status) > -1">
+              <strong ng-show="transactionData.transaction.amount > 0" class="payment-complete">+</strong>
+              <strong ng-show="transactionData.transaction.amount < 0" class="payment-bad">-</strong>
+              <span ng-show="transactionData.transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.transaction.currency === 'EUR'">&#128;</span><span>{{transactionData.transaction.amount / transactionData.transaction.quantity | absoluteValue | number: 2}}</span>
+              <span ng-show="transactionData.transaction.quantity > 1">({{transactionData.transaction.quantity}})</span>
+            </p>
+            <span ng-show="transactionData.transaction.status === 1 || transactionData.transaction.status === 6 || transactionData.transaction.status === 7" class="payment-pending">pending</span>
+            <span ng-show="transactionData.transaction.status === 2" class="payment-bad">invalid payment</span>
+            <span ng-show="transactionData.transaction.status === 3" class="payment-bad">malformed data</span>
+            <span ng-show="transactionData.transaction.status === 5" class="payment-bad">revoked</span>
+            <span ng-show="transactionData.transaction.status === 8" class="payment-pending">transferred</span>
+          </td>
+          <td md-cell>
+            <md-menu md-position-mode="target-right target">
+              <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdOpenMenu($event)">
+                <ng-md-icon icon="more_vert"></ng-md-icon>
+              </md-button>
+              <md-menu-content width="2">
+                <md-menu-item>
+                  <md-button ng-click="controller.readTransaction(transactionData.transaction, transactionData.user, transactionData.item)">
+                    <span md-menu-align-target>view transaction</span>
+                  </md-button>
+                </md-menu-item>
+<!--
+                <md-menu-item>
+                  <md-button ng-click="controller.transferTransaction(transactionData.transaction)">
+                    <span md-menu-align-target>transfer transaction</span>
+                  </md-button>
+                </md-menu-item>
+-->
+                <md-menu-item ng-show="transactionData.transaction.linkedObjectClass !== 'PaypalIPN'">
+                  <md-button ng-click="controller.deleteTransaction(transactionData.transaction, $event)">
+                    <span ng-show="transactionData.transaction.status !== 5" md-menu-align-target>delete transaction</span>
+                    <span ng-show="transactionData.transaction.status === 5" md-menu-align-target>undo revocation</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-show="transactionData.transaction.status === 0">
+                  <md-button ng-click="controller.revokeTransaction(transactionData.transaction, $event)">
+                    <span md-menu-align-target>revoke transaction</span>
+                  </md-button>
+                </md-menu-item>
+              </md-menu-content>
+            </md-menu>
+          </td>
+        </tr>
+        <tr ng-show="!loader.loading && loader.getLength() == 0" md-row>
+          <td md-cell colspan="4">
+            <span class="md-subheader">No data found</span>
+          </td>
+        </tr>
+        <tr ng-show="loader.loading" md-row>
+          <td md-cell colspan="4">
+            <div layout="row" layout-margin layout-align="center">
+              <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </md-table-container>
+</md-virtual-repeat-container>
