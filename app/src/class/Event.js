@@ -13,4 +13,8 @@ export default class Event {
     this.timeCreated = 0;
     this.timeUpdated = 0;
   }
+
+  hasCurrencyAndPaymentProfile() {
+    return this.paymentProfileId !== null && this.currency !== null;
+  }
 }

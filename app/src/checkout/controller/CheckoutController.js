@@ -1,5 +1,5 @@
 export default class CheckoutController {
-  constructor($location, $window, $q, $state, $scope, $timeout, $stateParams, itemService, itemTransactionService, settings, paypalService, uiService, paymentProfileService, eventService, organizationService, storageService, Item) {
+  constructor($location, $window, $q, $state, $scope, $timeout, $stateParams, itemService, transactionService, settings, paypalService, uiService, paymentProfileService, eventService, organizationService, storageService, Item) {
     this.$window = $window;
     this.$q = $q;
     this.$state = $state;
@@ -7,7 +7,7 @@ export default class CheckoutController {
     this.$timeout = $timeout;
     this.$stateParams = $stateParams;
     this.itemService = itemService;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
     this.settings = settings;
     this.paypalService = paypalService;
     this.uiService = uiService;
@@ -119,7 +119,7 @@ CheckoutController.$inject = [
   '$timeout',
   '$stateParams',
   'ItemService',
-  'ItemTransactionService',
+  'TransactionService',
   'settings',
   'PaypalService',
   'UIService',

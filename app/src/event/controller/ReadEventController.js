@@ -176,7 +176,7 @@ export default class ReadEventController {
         const removeIndex = this.$scope.paging.data.entity.indexOf(eventData);
         this.$scope.paging.data.entity.splice(removeIndex, 1);
       }, (response) => {
-        const message = response.status === 401 ? 'You do not have permission to delete this event' : 'Unable to update event';
+        const message = response.status === 401 ? 'You do not have permission to delete this event' : 'Unable to delete event';
         this.uiService.notify(message);
       }).finally(() => {
         this.$scope.uiReady = true;

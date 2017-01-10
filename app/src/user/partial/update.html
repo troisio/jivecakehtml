@@ -15,9 +15,13 @@
         <label>Email</label>
         <input ng-model="user.email" type="email" ng-disabled="isIdentityProviderAccount" required maxlength="255">
       </md-input-container>
+      <label ng-show="false">Profile picture</label>
+      <md-input-container ng-show="false" flex class="md-block">
+        <input type="file" aria-label="A picture of you" name="photo" accept="image/*;capture=camera">
+      </md-input-container>
       <div layout layout-sm="column">
         <md-input-container flex layout="row">
-          <md-button type="submit" ng-disabled="isIdentityProviderAccount" class="md-raised md-primary">Update</md-button>
+          <md-button type="submit" class="md-raised md-primary">Update</md-button>
           <md-progress-circular ng-show="loading" md-diameter="45" md-mode="indeterminate"></md-progress-circular>
         </md-input-container>
       </div>

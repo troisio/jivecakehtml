@@ -66,12 +66,7 @@
         <md-checkbox ng-true-value="0" ng-false-value="1" ng-model="item.status" aria-label="Active">Active</md-checkbox>
       </md-input-container>
       <md-input-container class="md-block" layout="row">
-        <md-checkbox ng-disabled="event.paymentProfileId === null" ng-model="free" aria-label="Free">Free</md-checkbox>
-        <div>
-          <h5 ng-show="event.paymentProfileId === null">
-            Add a <a ui-sref="application.internal.event.update({eventId: event.id})">Payment Profile</a> to enable payments
-          </h5>
-        </div>
+        <md-checkbox ng-model="free" aria-label="Free">Free</md-checkbox>
       </md-input-container>
       <md-input-container ng-show="!free" flex layout="column">
         <label>Price</label>

@@ -1,15 +1,18 @@
 export default class UpdateAccountController {
-  constructor($scope, $mdDialog, auth0Service, storageService, uiService) {
+  constructor($window, $q, $scope, auth0Service, storageService, userService, uiService) {
+    this.$window = $window;
+    this.$q = $q;
     this.$scope = $scope;
-    this.$mdDialog = $mdDialog;
     this.auth0Service = auth0Service;
     this.uiService = uiService;
     this.storageService = storageService;
-
-    this.$scope.$parent.showTabs = false;
+    this.userService = userService;
 
     this.storage = this.storageService.read();
     this.user = null;
+
+    $scope.$parent.showTabs = false;
+    $scope.storage = this.storage;
 
     this.run();
   }
@@ -42,28 +45,68 @@ export default class UpdateAccountController {
   }
 
   submit(user) {
+    const fileElement = document.querySelector('[name=photo]');
+
+    const filePromise = this.$q.defer();
+    const futures = [filePromise.promise, this.$q.resolve()];
+
+    if (fileElement.files.length > 0) {
+      const fileReader = new this.$window.FileReader();
+      const file = fileElement.files[0];
+
+      fileReader.onloadend = (event) => {
+        const data = new this.$window.Uint8Array(event.target.result);
+        const future = this.userService.uploadSelfie(this.storage.token, this.user.user_id, data, file.type);
+
+        filePromise.resolve(future);
+      };
+
+      fileReader.readAsArrayBuffer(file);
+    } else {
+      filePromise.resolve();
+    }
+
+    if (!this.$scope.isIdentityProviderAccount) {
+      this.$scope.loading = true;
+      let body = {
+        email: user.email,
+        user_metadata: {
+          given_name: user.given_name,
+          family_name: user.family_name
+        }
+      };
+
+      const future = this.auth0Service.updateUser(this.storage.token, this.storage.profile.user_id, body).then((user) => {
+        this.$scope.$parent.$parent.user = user;
+        const storage = this.storageService.read();
+        storage.profile = user;
+        this.storageService.write(storage);
+      });
+
+      futures[1] = future;
+    }
+
     this.$scope.loading = true;
-    let body = {
-      email: user.email,
-      user_metadata: {
-        given_name: user.given_name,
-        family_name: user.family_name
-      }
-    };
 
-    this.auth0Service.updateUser(this.storage.token, this.storage.profile.user_id, body).then((user) => {
-      this.$scope.$parent.$parent.user = user;
-
-      const storage = this.storageService.read();
-      storage.profile = user;
-      this.storageService.write(storage);
+    this.$q.all(futures).then((responses) => {
       this.uiService.notify('Successfully updated');
-    }, () => {
-      this.uiService.notify('Unable to update');
+    }, (response) => {
+      let message;
+
+      const responseIsObject = typeof response.data === 'object' && response.data !== null;
+      const hasZeroOrManyFaces = response.data.error === 'selfieLength';
+
+      if (responseIsObject && hasZeroOrManyFaces) {
+        message = response.data.length === 0 ? 'Sorry, we could not find any faces in your photo' : 'Sorry, we detected more than 1 face in your photo';
+      } else {
+        message = 'Unable to update';
+      }
+
+      this.uiService.notify(message);
     }).finally(() => {
       this.$scope.loading = false;
     });
   }
 }
 
-UpdateAccountController.$inject = ['$scope', '$mdDialog', 'Auth0Service', 'StorageService', 'UIService'];
+UpdateAccountController.$inject = ['$window', '$q', '$scope', 'Auth0Service', 'StorageService', 'UserService', 'UIService'];

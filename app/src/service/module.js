@@ -18,6 +18,7 @@ import StorageService from './StorageService';
 import SubscriptionService from './SubscriptionService';
 import ToolsService from './ToolsService';
 import UIService from './UIService';
+import UserService from './UserService';
 
 export default angular.module('jivecakeservice', [])
   .service('AccessService', AccessService)
@@ -27,7 +28,7 @@ export default angular.module('jivecakeservice', [])
   .service('EventService', EventService)
   .service('FeatureService', FeatureService)
   .service('ItemService', ItemService)
-  .service('ItemTransactionService', TransactionService)
+  .service('TransactionService', TransactionService)
   .service('NotificationService', NotificationService)
   .service('OrganizationService', OrganizationService)
   .constant('Paging', Paging)
@@ -39,4 +40,5 @@ export default angular.module('jivecakeservice', [])
   .service('StorageService', StorageService)
   .service('SubscriptionService', SubscriptionService)
   .service('ToolsService', ToolsService)
-  .service('UIService', UIService);
+  .service('UIService', UIService)
+  .service('UserService', UserService);

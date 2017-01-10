@@ -1,9 +1,9 @@
 export default class ItemService {
-  constructor($window, $q, $http, itemTransactionService, settings, toolsService, relationalService, Organization, Event, Item) {
+  constructor($window, $q, $http, transactionService, settings, toolsService, relationalService, Organization, Event, Item) {
     this.$window = $window;
     this.$q = $q;
     this.$http = $http;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
     this.settings = settings;
     this.toolsService = toolsService;
     this.relationalService = relationalService;
@@ -77,7 +77,7 @@ export default class ItemService {
     });
   }
 
-  getDerivedAmounts(items, itemTransactionService) {
+  getDerivedAmounts(items, transactionService) {
     let future;
 
     if (items.length === 0) {
@@ -85,12 +85,12 @@ export default class ItemService {
     } else {
       const time = new this.$window.Date().getTime();
 
-      future = itemTransactionService.publicSearch({
+      future = transactionService.publicSearch({
         itemId: items.map(item => item.id),
-        status: itemTransactionService.getPaymentCompleteStatus(),
+        status: transactionService.getPaymentCompleteStatus(),
         leaf: true
       }).then(searchResult => {
-        const completeLeafTransactions = searchResult.entity.filter(transaction => transaction.status === itemTransactionService.getPaymentCompleteStatus() || transaction.status === itemTransactionService.getPaymentPendingStatus());
+        const completeLeafTransactions = searchResult.entity.filter(transaction => transaction.status === transactionService.getPaymentCompleteStatus() || transaction.status === transactionService.getPaymentPendingStatus());
         const transactionMap = this.relationalService.groupBy(completeLeafTransactions, false, transaction => transaction.itemId);
 
         return items.map(function(item) {
@@ -113,18 +113,18 @@ export default class ItemService {
     return future;
   }
 
-  getDerivedAmount(item, itemTransactionService) {
+  getDerivedAmount(item, transactionService) {
     let future;
 
     if (item.timeAmounts !== null) {
       future = this.$q.resolve(item.getDerivedAmountFromTime(new this.$window.Date().getTime()));
     } else if (item.countAmounts !== null) {
-      future = itemTransactionService.publicSearch({
+      future = transactionService.publicSearch({
         itemId: item.id,
-        status: itemTransactionService.getPaymentCompleteStatus(),
+        status: transactionService.getPaymentCompleteStatus(),
         leaf: true
       }).then(function(searchResult) {
-        const completeLeafTransactions = searchResult.entity.filter(transaction => transaction.status === itemTransactionService.getPaymentCompleteStatus());
+        const completeLeafTransactions = searchResult.entity.filter(transaction => transaction.status === transactionService.getPaymentCompleteStatus());
         return item.getDerivedAmountFromCounts(completeLeafTransactions.length);
       });
     } else {
@@ -148,8 +148,7 @@ export default class ItemService {
 
     return this.$http.get(url, options).then((response) => {
       response.data.forEach((group) => {
-        group.entity = this.toolsService.toObject(group.parent, this.Event);
-
+        group.parent = this.toolsService.toObject(group.parent, this.Event);
         group.itemData.forEach((itemDatum) => {
           itemDatum.item = this.toolsService.toObject(itemDatum.item, this.Item);
         });
@@ -177,4 +176,4 @@ export default class ItemService {
   }
 }
 
-ItemService.$inject = ['$window', '$q', '$http', 'ItemTransactionService', 'settings', 'ToolsService', 'RelationalService', 'Organization', 'Event', 'Item'];
+ItemService.$inject = ['$window', '$q', '$http', 'TransactionService', 'settings', 'ToolsService', 'RelationalService', 'Organization', 'Event', 'Item'];

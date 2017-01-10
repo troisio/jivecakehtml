@@ -8,7 +8,7 @@ export default class ReadItemController {
     applicationService,
     eventService,
     itemService,
-    itemTransactionService,
+    transactionService,
     permissionService,
     organizationService,
     storageService,
@@ -28,7 +28,7 @@ export default class ReadItemController {
     this.applicationService = applicationService;
     this.eventService = eventService;
     this.itemService = itemService;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
     this.permissionService = permissionService;
     this.organizationService = organizationService;
     this.uiService = uiService;
@@ -210,7 +210,7 @@ ReadItemController.$inject = [
   'ApplicationService',
   'EventService',
   'ItemService',
-  'ItemTransactionService',
+  'TransactionService',
   'PermissionService',
   'OrganizationService',
   'StorageService',

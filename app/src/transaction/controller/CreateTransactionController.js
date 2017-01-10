@@ -1,4 +1,4 @@
-export default class CreateItemTransactionController {
+export default class CreateTransactionController {
   constructor(
     angular,
     $window,
@@ -9,11 +9,11 @@ export default class CreateItemTransactionController {
     auth0Service,
     $stateParams,
     $mdDialog,
-    ItemTransaction,
+    Transaction,
     itemService,
     eventService,
     organizationService,
-    itemTransactionService,
+    transactionService,
     storageService,
     uiService
   ) {
@@ -26,11 +26,11 @@ export default class CreateItemTransactionController {
     this.auth0Service = auth0Service;
     this.$stateParams = $stateParams;
     this.$mdDialog = $mdDialog;
-    this.ItemTransaction = ItemTransaction;
+    this.Transaction = Transaction;
     this.itemService = itemService;
     this.eventService = eventService;
     this.organizationService = organizationService;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
     this.uiService = uiService;
 
     this.storage = storageService.read();
@@ -55,7 +55,7 @@ export default class CreateItemTransactionController {
     this.$scope.selected = '';
     this.$scope.text = '';
 
-    this.$scope.transaction = new this.ItemTransaction();
+    this.$scope.transaction = new this.Transaction();
     this.$scope.transaction.quantity = 1;
 
     return this.itemFuture.then((item) => {
@@ -66,7 +66,7 @@ export default class CreateItemTransactionController {
         this.$scope.event = event;
       });
 
-      const derivedAmountFuture = this.itemService.getDerivedAmount(item, this.itemTransactionService).then(amount => {
+      const derivedAmountFuture = this.itemService.getDerivedAmount(item, this.transactionService).then(amount => {
         this.$scope.transaction.amount = amount === null ? 0 : amount;
       });
 
@@ -76,15 +76,7 @@ export default class CreateItemTransactionController {
 
   cancel() {
     this.itemFuture.then((item) => {
-      const parameters = {};
-
-      if (item instanceof this.EventItem) {
-        parameters.eventId = item.eventId;
-      } else if (item instanceof this.OrganizationItem) {
-        parameters.organizationId = item.organizationId;
-      }
-
-      this.$state.go('application.internal.item.read', parameters);
+      this.$state.go('application.internal.item.read', {eventId: item.eventId});
     });
   }
 
@@ -112,7 +104,7 @@ export default class CreateItemTransactionController {
     this.$scope.loading = true;
     const transactionCopy = this.angular.copy(transaction);
 
-    this.itemTransactionService.search(this.storage.token, {
+    this.transactionService.search(this.storage.token, {
       itemId: item.id
     }).then((searchEntity) => {
       if (selectedUser !== null) {
@@ -127,7 +119,7 @@ export default class CreateItemTransactionController {
         transactionCopy.currency = event.currency;
       }
 
-      this.itemTransactionService.create(this.storage.token, item.id, transactionCopy).then(data => {
+      this.transactionService.create(this.storage.token, item.id, transactionCopy).then(data => {
         const deviceSupportsServerSentEvents = 'EventSource' in this.$window;
 
         if (!deviceSupportsServerSentEvents) {
@@ -156,7 +148,7 @@ export default class CreateItemTransactionController {
   }
 }
 
-CreateItemTransactionController.$inject = [
+CreateTransactionController.$inject = [
   'angular',
   '$window',
   '$q',
@@ -166,11 +158,11 @@ CreateItemTransactionController.$inject = [
   'Auth0Service',
   '$stateParams',
   '$mdDialog',
-  'ItemTransaction',
+  'Transaction',
   'ItemService',
   'EventService',
   'OrganizationService',
-  'ItemTransactionService',
+  'TransactionService',
   'StorageService',
   'UIService'
 ];

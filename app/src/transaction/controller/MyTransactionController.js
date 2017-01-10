@@ -8,7 +8,7 @@ export default class MyTransactionController {
     Paging,
     storageService,
     itemService,
-    itemTransactionService,
+    transactionService,
     toolsService,
     uiService,
     Page
@@ -20,7 +20,7 @@ export default class MyTransactionController {
     this.$mdDialog = $mdDialog;
     this.Paging = Paging;
     this.itemService = itemService;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
     this.toolsService = toolsService;
     this.uiService = uiService;
     this.Page = Page;
@@ -38,9 +38,9 @@ export default class MyTransactionController {
         delete query.page;
 
         query.status = [
-          itemTransactionService.getPaymentCompleteStatus(),
-          itemTransactionService.getPaymentPendingStatus(),
-          itemTransactionService.getPendingWithValidPayment()
+          transactionService.getPaymentCompleteStatus(),
+          transactionService.getPaymentPendingStatus(),
+          transactionService.getPendingWithValidPayment()
         ];
         query.limit = limit;
         query.offset = offset;
@@ -50,7 +50,7 @@ export default class MyTransactionController {
 
         this.toolsService.maintainKeys(query, ['user_id', 'limit', 'offset', 'order']);
 
-        return this.itemTransactionService.getTransactionData(this.itemService, this.storage.token, query);
+        return this.transactionService.getTransactionData(this.itemService, this.storage.token, query);
       }
     );
 
@@ -151,7 +151,7 @@ MyTransactionController.$inject = [
   'Paging',
   'StorageService',
   'ItemService',
-  'ItemTransactionService',
+  'TransactionService',
   'ToolsService',
   'UIService',
   'Page'

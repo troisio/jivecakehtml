@@ -1,8 +1,8 @@
-export default class ItemTransactionService {
-  constructor($q, $http, ItemTransaction, settings, toolsService, relationalService, SearchEntity) {
+export default class TransactionService {
+  constructor($q, $http, Transaction, settings, toolsService, relationalService, SearchEntity) {
     this.$q = $q;
     this.$http = $http;
-    this.ItemTransaction = ItemTransaction;
+    this.Transaction = Transaction;
     this.settings = settings;
     this.toolsService = toolsService;
     this.relationalService = relationalService;
@@ -77,28 +77,24 @@ export default class ItemTransactionService {
     });
   }
 
-  delete(token, itemTransactionId) {
-    const url = [this.settings.jivecakeapi.uri, 'transaction', itemTransactionId].join('/');
+  delete(token, transactionId) {
+    const url = [this.settings.jivecakeapi.uri, 'transaction', transactionId].join('/');
 
     return this.$http.delete(url, {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toObject(response.data));
   }
 
-  revoke(token, itemTransactionId) {
-    const url = [this.settings.jivecakeapi.uri, 'transaction', itemTransactionId, 'revoke'].join('/');
+  revoke(token, transactionId) {
+    const url = [this.settings.jivecakeapi.uri, 'transaction', transactionId, 'revoke'].join('/');
 
     return this.$http.post(url, null, {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toObject(response.data));
   }
 
   purchase(token, id, body) {
@@ -207,8 +203,8 @@ export default class ItemTransactionService {
   }
 
   toObject(subject) {
-    return this.toolsService.toObject(subject, this.ItemTransaction);
+    return this.toolsService.toObject(subject, this.Transaction);
   }
 }
 
-ItemTransactionService.$inject = ['$q', '$http', 'ItemTransaction', 'settings', 'ToolsService', 'RelationalService', 'SearchEntity'];
+TransactionService.$inject = ['$q', '$http', 'Transaction', 'settings', 'ToolsService', 'RelationalService', 'SearchEntity'];

@@ -6,7 +6,7 @@ import Event from './Event';
 import Feature from './Feature';
 import IndexedOrganizationNode from './IndexedOrganizationNode';
 import Item from './Item';
-import ItemTransaction from './ItemTransaction';
+import Transaction from './Transaction';
 import JiveCakeLocalStorage from './JiveCakeLocalStorage';
 import Organization from './Organization';
 import OrganizationFeature from './OrganizationFeature';
@@ -29,7 +29,7 @@ export default angular.module('jivecakeclass', [])
     .constant('Feature', Feature)
     .constant('IndexedOrganizationNode', IndexedOrganizationNode)
     .constant('Item', Item)
-    .constant('ItemTransaction', ItemTransaction)
+    .constant('Transaction', Transaction)
     .constant('JiveCakeLocalStorage', JiveCakeLocalStorage)
     .constant('Organization', Organization)
     .constant('OrganizationFeature', OrganizationFeature)

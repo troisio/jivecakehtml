@@ -1,4 +1,4 @@
-export default class ItemTransaction {
+export default class Transaction {
   constructor() {
     this.id = null;
     this.parentTransactionId = null;

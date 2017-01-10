@@ -1,4 +1,4 @@
-export default class ReadItemTransactionController {
+export default class ReadTransactionController {
   constructor(
     $window,
     $scope,
@@ -6,7 +6,7 @@ export default class ReadItemTransactionController {
     $mdDialog,
     storageService,
     itemService,
-    itemTransactionService,
+    transactionService,
     toolsService,
     uiService,
     TransactionLoader
@@ -16,7 +16,7 @@ export default class ReadItemTransactionController {
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.itemService = itemService;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
     this.toolsService = toolsService;
     this.uiService = uiService;
 
@@ -26,7 +26,7 @@ export default class ReadItemTransactionController {
     this.storage = storageService.read();
     $scope.$parent.selectedTab = 3;
 
-    this.loader = new TransactionLoader($window, this.itemService, itemTransactionService, this.storage.token, 50);
+    this.loader = new TransactionLoader($window, this.itemService, transactionService, this.storage.token, 50);
     this.loader.query = this.getQuery();
 
     $scope.loader = this.loader;
@@ -71,17 +71,28 @@ export default class ReadItemTransactionController {
   }
 
   deleteTransaction(transaction, $event) {
-    const message = transaction.status === 5 ? 'Are you sure you want to undo this revocation?' : 'Are you sure you want to delete this transaction?' ;
-    const confirm = this.$mdDialog.confirm()
-          .title(message)
-          .ariaLabel('Delete Transaction')
-          .clickOutsideToClose(true)
-          .targetEvent($event)
-          .ok('DELETE')
-          .cancel('Cancel');
+    let confirm;
+
+    if (transaction.status === 5) {
+      confirm = this.$mdDialog.confirm()
+            .title('Are you sure you want to undo this revocation?')
+            .ariaLabel('Revoke Transaction')
+            .clickOutsideToClose(true)
+            .targetEvent($event)
+            .ok('REVOKE')
+            .cancel('Cancel');
+    } else {
+      confirm = this.$mdDialog.confirm()
+            .title('Are you sure you want to delete this revocation?')
+            .ariaLabel('Delete Transaction')
+            .clickOutsideToClose(true)
+            .targetEvent($event)
+            .ok('DELETE')
+            .cancel('Cancel');
+    }
 
     this.$mdDialog.show(confirm).then(() => {
-      this.itemTransactionService.delete(this.storage.token, transaction.id).then((profile) => {
+      this.transactionService.delete(this.storage.token, transaction.id).then((profile) => {
         this.reload();
         this.uiService.notify('Transaction deleted');
       }, (response) => {
@@ -100,7 +111,7 @@ export default class ReadItemTransactionController {
           .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.itemTransactionService.revoke(this.storage.token, transaction.id).then((profile) => {
+      this.transactionService.revoke(this.storage.token, transaction.id).then((profile) => {
         this.reload();
         this.uiService.notify('Transaction revoked');
       }, (response) => {
@@ -119,6 +130,7 @@ export default class ReadItemTransactionController {
   getQuery() {
     const query = {
       order: '-timeCreated',
+      leaf: 'true'
     };
     const stateParams = this.toolsService.stateParamsToQuery(this.$state.params);
 
@@ -134,14 +146,14 @@ export default class ReadItemTransactionController {
   }
 }
 
-ReadItemTransactionController.$inject = [
+ReadTransactionController.$inject = [
   '$window',
   '$scope',
   '$state',
   '$mdDialog',
   'StorageService',
   'ItemService',
-  'ItemTransactionService',
+  'TransactionService',
   'ToolsService',
   'UIService',
   'TransactionLoader'

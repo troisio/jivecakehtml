@@ -1,7 +1,6 @@
-<div class="public-item-page">
-  <section>
-    <p ng-show="groupData.itemData.length === 0" class="message">Sorry, this event does not have any items to display</p>
-    <md-table-container ng-show="uiReady">
+<div class="public-item-page" ng-show="uiReady">
+  <section ng-show="groupData.parent.currency !== null && groupData.parent.paymentProfileId !== null">
+    <md-table-container>
       <table ng-model="selected" md-table multiple>
         <tbody md-body>
           <tr md-row md-auto-select ng-repeat="itemData in groupData.itemData track by itemData.item.id">
@@ -9,14 +8,14 @@
               <a href="" ng-click="controller.viewItem(itemData.item)">{{itemData.item.name}}</a>
             </td>
             <td md-cell>
-              <div ng-show="itemData.amount !== null && groupData.parent.currency " class="amount" layout-align="column">
+              <div ng-show="itemData.amount !== null" class="amount" layout-align="column">
                 <span ng-show="groupData.parent.currency === 'USD'">&#36;</span><span ng-show="groupData.parent.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
               </div>
               <span ng-show="itemData.amount === null">free</span>
             </td>
             <td md-cell>
-              <md-input-container ng-show="user !== null && itemData.amountSelections.length > 0">
-                <md-select aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
+              <md-input-container>
+                <md-select ng-show="itemData.amountSelections.length > 0" ng-disabled="user === null || itemData.amountSelections.length === 0 || !groupData.parent.hasCurrencyAndPaymentProfile()" aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
                   <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
                 </md-select>
               </md-input-container>
@@ -26,8 +25,7 @@
                 <ng-md-icon ng-show="itemData.amount !== null && itemData.amount > 0 && user !== null" ng-click="user !== null && controller.addToCart(itemData, itemFormData[itemData.item.id].amount)" icon="add_shopping_cart"></ng-md-icon>
                 <ng-md-icon ng-show="(itemData.amount === null || itemData.amount === 0) && user !== null" ng-click="controller.purchase(itemData.item, itemFormData[itemData.item.id].amount)" icon="add"></ng-md-icon>
               </div>
-              <md-button ng-show="itemData.remainingTotalAvailibleTransactions !== null && itemData.remainingTotalAvailibleTransactions &lt; 1" ng-disabled="true" class="md-raised">sold out</md-button>
-              <md-button ng-show="(itemData.remainingTotalAvailibleTransactions === null || itemData.remainingTotalAvailibleTransactions &gt; 0) && (itemData.remaingUserTransactions !== null && itemData.remaingUserTransactions &lt; 1)" ng-disabled="true" class="md-raised">limit reached</md-button>
+              <ng-md-icon ng-show="itemData.remainingTotalAvailibleTransactions !== null && itemData.remainingTotalAvailibleTransactions &lt; 1 || ((itemData.remaingUserTransactions !== null && itemData.remaingUserTransactions &lt; 1))" icon="block"></ng-md-icon>
             </td>
           </tr>
           <tr ng-show="data.length === 0" md-row>
@@ -44,5 +42,11 @@
   </div>
   <div ng-show="user === null && groupData.itemData.length > 0" layout-padding>
     <h4>You must <a href="" ng-click="controller.login()">log in</a> to purchase items</h4>
+  </div>
+  <div ng-show="groupData.itemData.length === 0" layout-padding>
+    <p class="message">Sorry, this event does not have any items to display</p>
+  </div>
+  <div ng-show="groupData.parent.currency === null || groupData.parent.paymentProfileId === null" layout-padding>
+    <p>Sorry, this event does not have any valid payment options</p>
   </div>
 </div>

@@ -1,11 +1,11 @@
 export default class PublicEventItemController {
-  constructor($window, $mdDialog, $timeout, $scope, itemService, itemTransactionService, accessService, uiService, storageService) {
+  constructor($window, $mdDialog, $timeout, $scope, itemService, transactionService, accessService, uiService, storageService) {
     this.$window = $window;
     this.$mdDialog = $mdDialog;
     this.$timeout = $timeout;
     this.$scope = $scope;
     this.itemService = itemService;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
     this.accessService = accessService;
     this.uiService = uiService;
     this.storageService = storageService;
@@ -30,80 +30,82 @@ export default class PublicEventItemController {
     this.$scope.ready.then(() => {
       this.$scope.event = this.$scope.$parent.event;
 
-      const storage = this.storageService.read();
-      const currentTime = new this.$window.Date().getTime();
+      if (this.$scope.event !== null) {
+        const storage = this.storageService.read();
+        const currentTime = new this.$window.Date().getTime();
 
-      return this.itemService.getAggregatedItemData(storage.token, {
-        eventId: this.$scope.event.id
-      }).then((aggregatedData) => {
-        let groupData;
+        return this.itemService.getAggregatedItemData(storage.token, {
+          eventId: this.$scope.event.id
+        }).then((aggregatedData) => {
+          let groupData;
 
-        if (aggregatedData.length > 0) {
-          groupData = aggregatedData[0];
-        } else {
-          groupData = {
-            itemData: []
-          };
-        }
-
-        groupData.itemData.forEach((itemData) => {
-          const completOrPendingFilter = (transaction) => transaction.status === this.itemTransactionService.getPaymentCompleteStatus() || transaction.status === this.itemTransactionService.getPaymentPendingStatus();
-          const completeOrPendingTransactions = itemData.transactions.filter(completOrPendingFilter);
-
-          let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
-
-          if (storage.profile === null) {
-            itemData.completOrPendingUserTransactions = null;
+          if (aggregatedData.length > 0) {
+            groupData = aggregatedData[0];
           } else {
-            itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.profile.user_id)
-                                                                             .filter(completOrPendingFilter);
+            groupData = {
+              itemData: []
+            };
+          }
 
-            if (itemData.item.maximumPerUser !== null) {
-              remaingUserTransactions = itemData.item.maximumPerUser - itemData.completOrPendingUserTransactions.length;
+          groupData.itemData.forEach((itemData) => {
+            const completOrPendingFilter = (transaction) => transaction.status === this.transactionService.getPaymentCompleteStatus() || transaction.status === this.transactionService.getPaymentPendingStatus();
+            const completeOrPendingTransactions = itemData.transactions.filter(completOrPendingFilter);
+
+            let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
+
+            if (storage.profile === null) {
+              itemData.completOrPendingUserTransactions = null;
+            } else {
+              itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.profile.user_id)
+                                                                               .filter(completOrPendingFilter);
+
+              if (itemData.item.maximumPerUser !== null) {
+                remaingUserTransactions = itemData.item.maximumPerUser - itemData.completOrPendingUserTransactions.length;
+              }
             }
-          }
 
-          if (itemData.item.totalAvailible !== null) {
-            remainingTotalAvailibleTransactions = itemData.item.totalAvailible - completeOrPendingTransactions.length;
-          }
+            if (itemData.item.totalAvailible !== null) {
+              remainingTotalAvailibleTransactions = itemData.item.totalAvailible - completeOrPendingTransactions.length;
+            }
 
-          let amountSelectionSize;
+            let amountSelectionSize;
 
-          if (remainingTotalAvailibleTransactions === null && remaingUserTransactions === null) {
-            amountSelectionSize = this.defaultAmountSize;
-          } else if (remaingUserTransactions === null) {
-            amountSelectionSize = remainingTotalAvailibleTransactions;
-          } else if (remainingTotalAvailibleTransactions === null) {
-            amountSelectionSize = remaingUserTransactions;
-          } else {
-            amountSelectionSize = this.$window.Math.min(remaingUserTransactions, remainingTotalAvailibleTransactions);
-          }
+            if (remainingTotalAvailibleTransactions === null && remaingUserTransactions === null) {
+              amountSelectionSize = this.defaultAmountSize;
+            } else if (remaingUserTransactions === null) {
+              amountSelectionSize = remainingTotalAvailibleTransactions;
+            } else if (remainingTotalAvailibleTransactions === null) {
+              amountSelectionSize = remaingUserTransactions;
+            } else {
+              amountSelectionSize = this.$window.Math.min(remaingUserTransactions, remainingTotalAvailibleTransactions);
+            }
 
-          itemData.remainingTotalAvailibleTransactions = remainingTotalAvailibleTransactions;
-          itemData.remaingUserTransactions = remaingUserTransactions;
-          itemData.amountSelections = amountSelectionSize > -1 ? this.$window.Array.from(new this.$window.Array(amountSelectionSize), (item, index) => index + 1): [];
-          itemData.completeOrPendingTransactions = completeOrPendingTransactions;
+            itemData.remainingTotalAvailibleTransactions = remainingTotalAvailibleTransactions;
+            itemData.remaingUserTransactions = remaingUserTransactions;
+            itemData.amountSelections = amountSelectionSize > -1 ? this.$window.Array.from(new this.$window.Array(amountSelectionSize), (item, index) => index + 1): [];
+            itemData.completeOrPendingTransactions = completeOrPendingTransactions;
+          });
+
+          this.$scope.groupData = groupData;
+
+          const positiveTimes = groupData.itemData
+              .filter(itemData => itemData.item.timeAmounts !== null)
+              .reduce((array, itemData) => {
+                array.push.apply(array, itemData.item.timeAmounts.map(timeAmount => timeAmount.after));
+                return array;
+              }, [])
+              .map(time => time - currentTime)
+              .filter(time => time > 0 && !this.scheduledModificationTimes.has(time));
+
+          positiveTimes.forEach(this.scheduledModificationTimes.add, this.scheduledModificationTimes);
+          positiveTimes.forEach(time => {
+            this.$timeout(() => {
+              this.uiService.notify('Updating data');
+              this.run();
+            }, time);
+          });
         });
-
-        this.$scope.groupData = groupData;
-
-        const positiveTimes = groupData.itemData
-            .filter(itemData => itemData.item.timeAmounts !== null)
-            .reduce((array, itemData) => {
-              array.push.apply(array, itemData.item.timeAmounts.map(timeAmount => timeAmount.after));
-              return array;
-            }, [])
-            .map(time => time - currentTime)
-            .filter(time => time > 0 && !this.scheduledModificationTimes.has(time));
-
-        positiveTimes.forEach(this.scheduledModificationTimes.add, this.scheduledModificationTimes);
-        positiveTimes.forEach(time => {
-          this.$timeout(() => {
-            this.uiService.notify('Updating data');
-            this.run();
-          }, time);
-        });
-      });
+      }
     }).finally(() => {
       this.$scope.uiReady = true;
     });
@@ -164,7 +166,7 @@ export default class PublicEventItemController {
   purchase(item, quantity) {
     const storage = this.storageService.read();
 
-    this.itemTransactionService.purchase(storage.token, item.id, {quantity: quantity}).then(() => {
+    this.transactionService.purchase(storage.token, item.id, {quantity: quantity}).then(() => {
       if (!('EventSource' in this.$window)) {
         this.uiService.notify('Item succesfully purchased');
       }
@@ -186,7 +188,7 @@ PublicEventItemController.$inject = [
   '$timeout',
   '$scope',
   'ItemService',
-  'ItemTransactionService',
+  'TransactionService',
   'AccessService',
   'UIService',
   'StorageService'

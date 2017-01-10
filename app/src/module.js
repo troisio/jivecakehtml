@@ -53,8 +53,8 @@ import PublicEventController from './public/controller/PublicEventController';
 import PublicEventItemController from './public/controller/PublicEventItemController';
 import MyTransactionController from './transaction/controller/MyTransactionController';
 
-import CreateItemTransactionController from './transaction/controller/CreateItemTransactionController';
-import ItemTransactionController from './transaction/controller/ItemTransactionController';
+import CreateTransactionController from './transaction/controller/CreateTransactionController';
+import TransactionController from './transaction/controller/TransactionController';
 import ReadTransactionController from './transaction/controller/ReadTransactionController';
 import TransferPassController from './transaction/controller/TransferPassController';
 
@@ -125,8 +125,8 @@ angular.module('jivecakeweb', [
 .controller('PublicEventItemController', PublicEventItemController)
 .controller('MyTransactionController', MyTransactionController)
 
-.controller('CreateItemTransactionController', CreateItemTransactionController)
-.controller('ItemTransactionController', ItemTransactionController)
+.controller('CreateTransactionController', CreateTransactionController)
+.controller('TransactionController', TransactionController)
 .controller('ReadTransactionController', ReadTransactionController)
 .controller('TransferPassController', TransferPassController)
 

@@ -1,10 +1,10 @@
 export default class PaypalService {
-  constructor($window, $http, settings, itemService, itemTransactionService) {
+  constructor($window, $http, settings, itemService, transactionService) {
     this.$window = $window;
     this.$http = $http;
     this.settings = settings;
     this.itemService = itemService;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
   }
 
   searchIpn(token, params) {
@@ -173,7 +173,7 @@ export default class PaypalService {
 
     const items = itemQuantities.map(subject => subject.item);
 
-    return this.itemService.getDerivedAmounts(items, this.itemTransactionService).then((amounts) => {
+    return this.itemService.getDerivedAmounts(items, this.transactionService).then((amounts) => {
       let mc_gross = 0;
 
       for (let index = 0; index < itemQuantities.length; index++) {
@@ -215,4 +215,4 @@ export default class PaypalService {
   }
 }
 
-PaypalService.$inject = ['$window', '$http', 'settings', 'ItemService', 'ItemTransactionService'];
+PaypalService.$inject = ['$window', '$http', 'settings', 'ItemService', 'TransactionService'];

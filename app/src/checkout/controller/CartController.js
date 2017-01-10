@@ -1,5 +1,5 @@
 export default class CartController {
-  constructor($window, $scope, $q, $state, Event, Organization, itemService, itemTransactionService, storageService, uiService) {
+  constructor($window, $scope, $q, $state, Event, Organization, itemService, transactionService, storageService, uiService) {
     this.$window = $window;
     this.$scope = $scope;
     this.$q = $q;
@@ -7,7 +7,7 @@ export default class CartController {
     this.Event = Event;
     this.Organization = Organization;
     this.itemService = itemService;
-    this.itemTransactionService = itemTransactionService;
+    this.transactionService = transactionService;
     this.storageService = storageService;
     this.uiService = uiService;
 
@@ -51,7 +51,7 @@ export default class CartController {
     return future.then((groups) => {
       groups.forEach((groupData) => {
         groupData.itemData.forEach((itemData) => {
-          const completOrPendingFilter = (transaction) => transaction.status === this.itemTransactionService.getPaymentCompleteStatus() || transaction.status === this.itemTransactionService.getPaymentPendingStatus();
+          const completOrPendingFilter = (transaction) => transaction.status === this.transactionService.getPaymentCompleteStatus() || transaction.status === this.transactionService.getPaymentPendingStatus();
           const completeOrPendingTransactions = itemData.transactions.filter(completOrPendingFilter);
 
           let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
@@ -169,7 +169,7 @@ CartController.$inject = [
   'Event',
   'Organization',
   'ItemService',
-  'ItemTransactionService',
+  'TransactionService',
   'StorageService',
   'UIService'
 ];

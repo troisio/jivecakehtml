@@ -134,7 +134,7 @@ export default [
     .state('application.internal.transaction', {
       abstract: true,
       url: '/transaction',
-      controller: 'ItemTransactionController',
+      controller: 'TransactionController',
       template: '<ui-view flex layout="column"></ui-view>'
     })
     .state('application.internal.transaction.read', {
@@ -146,7 +146,7 @@ export default [
     .state('application.internal.transaction.create', {
       url: '/{itemId}/create',
       templateUrl: '/src/transaction/partial/create.html',
-      controller: 'CreateItemTransactionController',
+      controller: 'CreateTransactionController',
       controllerAs: 'controller'
     })
     .state('application.internal.account', {
