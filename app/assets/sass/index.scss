@@ -5,6 +5,7 @@
 @import 'all';
 @import './transactions';
 @import './page/event_modal';
+@import './page/home_page';
 @import './page/index';
 @import './page/item_modal';
 @import './page/public_item';
@@ -55,6 +56,6 @@ div[ng-messages] p[ng-message] {
 
   ng-md-icon {
     position: relative;
-    top: 0.5rem; // adjust for svg viewbox
+    top: 0.5em; // adjust for svg viewbox
   }
 }

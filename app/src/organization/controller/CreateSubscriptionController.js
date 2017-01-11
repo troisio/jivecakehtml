@@ -33,11 +33,10 @@ export default class CreateSubscriptionController {
 
     this.organizationService.createSubscriptionPaymentDetail(this.storage.token, this.organization.id, detail).then((detail) => {
       if (mock) {
-        const ipn = this.paypalService.getSubscriptionPaymentIpn({
-          mc_gross: this.subscriptionService.getMonthlySubscriptionRate().toString(),
-          custom: detail.custom,
-          txn_id: this.$window.Math.random().toString(36).slice(2)
-        });
+        const ipn = this.paypalService.getTrialSubscriptionIpn();
+        ipn.amount3 = this.subscriptionService.getMonthlySubscriptionRate().toString();
+        ipn.custom = detail.custom;
+        ipn.txn_id = this.$window.Math.random().toString(36).slice(2);
 
         return this.paypalService.submitIpn(this.storage.token, ipn, this.paypalService.getVerified()).then((response) => {
           loader.dialog.finally(() => {

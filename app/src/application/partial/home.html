@@ -7,66 +7,40 @@
       md-delay="500"
       md-min-length="2"
       md-selected-item-change="controller.selected()"
-      placeholder="search">
+      placeholder="looking for an event?">
       <md-item-template>
         <span md-highlight-text="eventSearchText" md-highlight-flags="^i">{{event.name}}</span>
       </md-item-template>
       <md-not-found>no results found</md-not-found>
   </md-autocomplete>
 </div>
-<div layout-padding class="home-page">
-  <h3>The simpler way to manage registrations</h3>
-  <div layout-padding>
-    <div class="pricing" layout="column">
-      <h3>Pricing</h3>
-      <div layout-padding>
-        <ul>
-          <li>
-            <p>$30 per month per event + <a href="https://www.paypal.com/webapps/mpp/paypal-fees">paypal fees</a></p>
-          </li>
-          <li>
-            <p>No hidden fees</p>
-          </li>
-          <li>
-            <p>Unlimited transactions</p>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div layout="column">
-      <h3>Get Paid</h3>
-      <div layout-padding>
-        <ul>
-          <li>
-            <p>Use your <a href="https://www.paypal.com">Paypal</a> account to get paid instantly</p>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div layout="column">
-      <h3>Management</h3>
-      <div layout-padding>
-        <ul>
-          <li>
-            <p>No need for paper, whip out that phone and view your purchases</p>
-          </li>
-          <li>
-            <p>Set automatic price increases for your items</p>
-          </li>
-          <li>
-            <p>Quickly sort and export all your transactions</p>
-          </li>
-          <li>
-            <p>Use Facebook or Google to sign up or login</p>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div layout="column">
-    <h3>business stuff</h3>
-    <div layout-padding>
+<div class="home-page">
+  <section class="jivecake">
+    <h1>jivecake</h1>
+    <h3>simple online registration</h3>
+  </section>
+  <section class="paid">
+    <h1>it's your money</h1>
+    <h5>get your money instantly with <a href="https://www.paypal.com/">paypal</a></h5>
+    <h5>track cash transactions</h5>
+  </section>
+  <section class="registration">
+    <h1>manage your registrations</h1>
+    <h5>manage automated price increases</h5>
+    <h5>get the information you need instantly</h5>
+    <h5>search, revoke, create, manage all your customers with elegance</h5>
+  </section>
+  <section class="pricing">
+    <h1>$30 per month per event</h1>
+    <h1>1st month is free</h1>
+    <h5>flat pricing, no hidden fees</h5>
+    <h5>unlimited transactions</h5>
+  </section>
+  <section class="footer">
       <ul>
+        <li>
+          <a href="https://github.com/troisio">we're 100% open source</a>
+        </li>
         <li>
           <a ui-sref="application.public.terms">terms of service</a>
         </li>
@@ -77,6 +51,5 @@
           contact@jivecake.com
         </li>
       </ul>
-    </div>
-  </div>
+  </section>
 </div>

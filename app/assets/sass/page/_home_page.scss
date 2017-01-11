@@ -1,0 +1,60 @@
+.home-page {
+  a {
+    text-decoration: underline;
+  }
+
+  section {
+    text-align: left;
+    padding: 1em 0em 1em 1em;
+    min-height: 20vh;
+
+    > :not(:first-child){
+      margin-top: 1em;
+    }
+
+    &.jivecake {
+      background-color: $logo-color;
+
+      h1, h2, h3, h4, h5, h6 {
+        color: white;
+      }
+    }
+
+    &.paid {
+      background-color: #2F4F4F;
+      color: white;
+
+      a {
+        color: white;
+      }
+    }
+
+    &.registration {
+      background-color: #F5F5F5;
+      color: black;
+    }
+
+    &.pricing {
+      background-color: #F6AE2D;
+      color: #bf4000;
+    }
+
+    &.footer {
+      text-align: left;
+      background-color: #2F4858;
+      color: white;
+      min-height: 10vh;
+      padding: 2vh 0 5vh 3vh;
+
+      li {
+        margin-top: 0.2em;
+      }
+
+      a {
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+      }
+    }
+  }
+}

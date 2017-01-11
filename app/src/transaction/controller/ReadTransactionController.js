@@ -79,7 +79,7 @@ export default class ReadTransactionController {
             .ariaLabel('Revoke Transaction')
             .clickOutsideToClose(true)
             .targetEvent($event)
-            .ok('REVOKE')
+            .ok('UNDO')
             .cancel('Cancel');
     } else {
       confirm = this.$mdDialog.confirm()
