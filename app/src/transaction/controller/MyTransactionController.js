@@ -37,11 +37,7 @@ export default class MyTransactionController {
         delete query.pageSize;
         delete query.page;
 
-        query.status = [
-          transactionService.getPaymentCompleteStatus(),
-          transactionService.getPaymentPendingStatus(),
-          transactionService.getPendingWithValidPayment()
-        ];
+        query.status = transactionService.getUsedForCountingStatuses();
         query.limit = limit;
         query.offset = offset;
         query.leaf = true;

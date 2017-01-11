@@ -202,6 +202,14 @@ export default class TransactionService {
     return 8;
   }
 
+  getUsedForCountingStatuses() {
+    return [
+      this.getPaymentCompleteStatus(),
+      this.getPaymentPendingStatus(),
+      this.getPendingWithValidPayment()
+    ];
+  }
+
   toObject(subject) {
     return this.toolsService.toObject(subject, this.Transaction);
   }

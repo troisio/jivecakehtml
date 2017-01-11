@@ -50,21 +50,54 @@ export default class ReadItemController {
       query.limit = limit;
       query.offset = offset;
 
-      return this.itemService.search(this.storage.token, query).then((itemSearch) => {
-        const eventIds = itemSearch.entity.map(item => item.eventId);
-        const evenFuture = eventIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : this.eventService.search(this.storage.token, {id: eventIds});
+      return this.itemService.search(this.storage.token, query).then((itemSearchResult) => {
+        const items = itemSearchResult.entity;
+        const eventIds = items.map(item => item.eventId);
+        const itemIds = items.map(item => item.id);
+        const eventFuture = eventIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : this.eventService.search(this.storage.token, {id: eventIds});
 
-        return evenFuture.then((eventSearch) => {
-          const data = this.relationalService.oneToOneJoin(itemSearch.entity, 'eventId', eventSearch.entity, 'id').map((data) => {
+        let transactionFuture;
+
+        if (itemIds.length > 0) {
+          transactionFuture = this.transactionService.search(this.storage.token, {
+            itemId: itemIds,
+            leaf: true,
+            status: this.transactionService.getUsedForCountingStatuses()
+          });
+        } else {
+          transactionFuture = this.$q.resolve(new this.SearchEntity());
+        }
+
+        return this.$q.all([
+          transactionFuture,
+          eventFuture
+        ]).then((resolve) => {
+          const transactionSearchResult = resolve[0];
+          const eventSearchResult = resolve[1];
+          const itemsWithEvent = this.relationalService.oneToOneJoin(
+            items,
+            'eventId',
+            eventSearchResult.entity,
+            'id'
+          );
+          const itemWithTransactions = this.relationalService.leftJoin(
+            items,
+            'id',
+            transactionSearchResult.entity,
+            'itemId'
+          );
+
+          const data = items.map(function(item, index) {
             return {
-              item: data.entity,
-              event: data.foreign
+              item: item,
+              transactions: itemWithTransactions[index].foreign,
+              event: itemsWithEvent[index].foreign
             };
           });
 
           return {
             entity: data,
-            count: itemSearch.count
+            count: itemSearchResult.count
           };
         });
       });
@@ -91,15 +124,15 @@ export default class ReadItemController {
 
     this.$scope.$parent.ready.then((resolve) => {
       const permissions = resolve.permission.entity;
-      const applicationWritePermissions = permissions.filter((permission) => {
-        return permission.objectClass === this.applicationService.getObjectClassName() &&
-               permission.has(this.applicationService.getReadPermission());
-      });
+      const applicationWritePermissions = permissions.filter((permission) =>
+        permission.objectClass === this.applicationService.getObjectClassName() &&
+        permission.has(this.applicationService.getReadPermission())
+      );
 
-      const organizationWritePermissions = permissions.filter((permission) => {
-        return permission.objectClass === this.organizationService.getObjectClassName() &&
-               permission.has(this.organizationService.getWritePermission());
-      });
+      const organizationWritePermissions = permissions.filter((permission) =>
+        permission.objectClass === this.organizationService.getObjectClassName() &&
+        permission.has(this.organizationService.getWritePermission())
+      );
 
       this.$scope.hasOrganizationWrite = organizationWritePermissions.length > 0;
       this.$scope.hasApplicationWrite = applicationWritePermissions.length > 0;

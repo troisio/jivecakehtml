@@ -37,9 +37,6 @@
       </table>
     </md-table-container>
   </section>
-  <div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
-    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-  </div>
   <div ng-show="user === null && groupData.itemData.length > 0" layout-padding>
     <h4>You must <a href="" ng-click="controller.login()">log in</a> to purchase items</h4>
   </div>
@@ -49,4 +46,7 @@
   <div ng-show="groupData.parent.currency === null || groupData.parent.paymentProfileId === null" layout-padding>
     <p>Sorry, this event does not have any valid payment options</p>
   </div>
+</div>
+<div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
 </div>

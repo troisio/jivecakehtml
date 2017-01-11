@@ -3,11 +3,12 @@
     <table ng-model="selected" md-table md-row-select multiple>
       <tbody md-body>
         <tr md-row md-auto-select ng-repeat="itemData in paging.data.entity track by itemData.item.id">
-          <td md-cell>
-            <span>{{itemData.item.name}}</span>
+          <td md-cell class="name">
+            <p>{{itemData.item.name}}</p>
+            <a ui-sref="application.internal.event.read({id: itemData.event.id})">{{itemData.event.name}}</a>
           </td>
           <td md-cell>
-            <a ui-sref="application.internal.event.read({id: itemData.event.id})">{{itemData.event.name}}</a>
+            <span>{{itemData.transactions.length}}</span><span>&nbsp;/&nbsp;</span><span ng-show="itemData.item.totalAvailible === null">&infin;</span><span ng-show="itemData.item.totalAvailible !== null">{{itemData.item.totalAvailible}}</span>
           </td>
           <td md-cell>
             <md-menu md-position-mode="target-right target">
@@ -48,7 +49,7 @@
           </td>
         </tr>
         <tr md-row ng-show="paging.data.entity.length === 0">
-          <td md-cell colspan="4">
+          <td md-cell colspan="3">
             <span class="md-subheader">No data found</span>
           </td>
         </tr>
