@@ -53,7 +53,7 @@ export default class CreateSubscriptionController {
         });
       } else {
         const form = $event.target;
-        this.$scope.custom = detail.custom;
+        form.querySelector('[name=custom]').setAttribute('value', detail.custom);
 
         this.$timeout(function() {
           form.submit();
