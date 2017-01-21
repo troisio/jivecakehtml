@@ -88,9 +88,13 @@ export default class ReadItemController {
           );
 
           const data = items.map(function(item, index) {
+            const transactions = itemWithTransactions[index].foreign;
+            const transactionCount = transactions.reduce((previous, next) => previous + next.quantity, 0);
+
             return {
               item: item,
-              transactions: itemWithTransactions[index].foreign,
+              transactions: transactions,
+              transactionCount: transactionCount,
               event: itemsWithEvent[index].foreign
             };
           });

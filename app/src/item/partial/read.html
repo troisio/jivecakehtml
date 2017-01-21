@@ -8,7 +8,7 @@
             <a ui-sref="application.internal.event.read({id: itemData.event.id})">{{itemData.event.name}}</a>
           </td>
           <td md-cell>
-            <span>{{itemData.transactions.length}}</span><span>&nbsp;/&nbsp;</span><span ng-show="itemData.item.totalAvailible === null">&infin;</span><span ng-show="itemData.item.totalAvailible !== null">{{itemData.item.totalAvailible}}</span>
+            <span>{{itemData.transactionCount}}</span><span>&nbsp;/&nbsp;</span><span ng-show="itemData.item.totalAvailible === null">&infin;</span><span ng-show="itemData.item.totalAvailible !== null">{{itemData.item.totalAvailible}}</span>
           </td>
           <td md-cell>
             <md-menu md-position-mode="target-right target">
