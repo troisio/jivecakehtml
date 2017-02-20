@@ -16,10 +16,9 @@ export default class StorageService {
     let result;
 
     if (string === null) {
-      const storage = new this.JiveCakeLocalStorage();
-      storage.timeCreated = new this.$window.Date().getTime();
-      this.write(storage);
-      result = storage;
+      result = new this.JiveCakeLocalStorage();
+      result.timeCreated = new this.$window.Date().getTime();
+      this.write(result);
     } else {
       let json;
 
@@ -33,10 +32,12 @@ export default class StorageService {
 
       if (json === null) {
         result.timeCreated = new this.$window.Date().getTime();
-        this.write(storage);
+        this.write(result);
       } else {
         for (let key in result) {
-          result[key] = json[key];
+          if (key in json) {
+            result[key] = json[key];
+          }
         }
       }
     }
