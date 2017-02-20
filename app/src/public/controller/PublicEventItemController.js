@@ -294,7 +294,7 @@ export default class PublicEventItemController {
               const elements = this.angular.element(`
                 <input type="hidden" name="item_name_${index + 1}" value="${data.itemData.item.name}">
                 <input type="hidden" name="amount_${index + 1}" value="${data.itemData.amount}">
-                <input type="hidden" name="item_number_${index + 1}" value="${data.itemData.item.itemId}">
+                <input type="hidden" name="item_number_${index + 1}" value="${data.itemData.item.id}">
                 <input type="hidden" name="quantity_${index + 1}" value="${data.selection.amount}">`
               );
 
