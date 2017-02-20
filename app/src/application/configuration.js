@@ -6,7 +6,7 @@ export default [
   '$mdDateLocaleProvider',
   '$httpProvider',
   'settings',
-  'authProvider',
+  'lockProvider',
    function(
      $locationProvider,
      $stateProvider,
@@ -15,7 +15,7 @@ export default [
      $mdDateLocaleProvider,
      $httpProvider,
      settings,
-     authProvider
+     lockProvider
    ) {
     $httpProvider.interceptors.push('HTTPInterceptor');
 
@@ -173,20 +173,9 @@ export default [
       controllerAs: 'controller'
     })
     .state('application.internal.myTransaction', {
-      url: '/transaction/{user_id}?order&page&pageSize',
+      url: '/transaction/{user_id}',
       templateUrl: '/src/transaction/partial/myTransaction.html',
       controller: 'MyTransactionController',
-      controllerAs: 'controller',
-      params: {
-        page: '0',
-        pageSize: '10',
-        order: '-timeCreated'
-      }
-    })
-    .state('application.public.cart', {
-      url: '/cart',
-      templateUrl: '/src/checkout/partial/cart.html',
-      controller: 'CartController',
       controllerAs: 'controller'
     })
     .state('application.public.checkoutConfirmation', {
@@ -194,82 +183,14 @@ export default [
       templateUrl: '/src/checkout/partial/confirmation.html',
       controller: 'ConfirmationController',
       controllerAs: 'controller'
-    })
-    .state('application.public.checkout', {
-      url: '/checkout/{entityId}',
-      templateUrl: '/src/checkout/partial/checkout.html',
-      controller: 'CheckoutController'
     });
 
-    authProvider.init({
+    lockProvider.init({
       domain: settings.oauth.auth0.domain,
-      clientID: settings.oauth.auth0.client_id
-    });
-
-    authProvider.on('loginSuccess', [
-      'angular',
-      '$window',
-      '$location',
-      '$state',
-      '$mdDialog',
-      'profilePromise',
-      'idToken',
-      'state',
-      'OrganizationService',
-      'PermissionService',
-      'UIService',
-      'StorageService',
-      'JiveCakeLocalStorage',
-      function(
-        angular,
-        $window,
-        $location,
-        $state,
-        $mdDialog,
-        profilePromise,
-        idToken,
-        state,
-        organizationService,
-        permissionService,
-        uiService,
-        storageService,
-        JiveCakeLocalStorage
-      ) {
-        profilePromise.then(function(profile) {
-          const storage = new JiveCakeLocalStorage();
-          storage.timeCreated = new window.Date().getTime();
-          storage.token = idToken;
-          storage.profile = profile;
-
-          storageService.write(storage);
-
-          return permissionService.search(idToken, {
-            user_id: profile.user_id,
-            objectClass: organizationService.getObjectClassName()
-          }).then(function(search) {
-            const routerParameters = angular.fromJson(state);
-
-            if (routerParameters.name === 'application.public.home') {
-              if (search.entity.length > 0) {
-                $state.go('application.internal.organization.read', {}, {reload: true});
-              } else {
-                $state.go('application.internal.myTransaction', {
-                  user_id: profile.user_id
-                }, {
-                  reload: true
-                });
-              }
-            } else {
-              $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-            }
-          });
-        }, function() {
-          uiService.notify('Unable to login');
-        });
+      clientID: settings.oauth.auth0.client_id,
+      auth: {
+        redirectUrl: window.location.origin + '/oauth/redirect'
       }
-    ]);
-
-    authProvider.on('loginFailure', function() {
     });
   }
 ];

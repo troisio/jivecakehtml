@@ -26,7 +26,7 @@ export default class ReadTransactionController {
     this.storage = storageService.read();
     $scope.$parent.selectedTab = 3;
 
-    this.loader = new TransactionLoader($window, this.itemService, transactionService, this.storage.token, 50);
+    this.loader = new TransactionLoader($window, this.itemService, transactionService, this.storage.auth.idToken, 100);
     this.loader.query = this.getQuery();
 
     $scope.loader = this.loader;
@@ -75,24 +75,24 @@ export default class ReadTransactionController {
 
     if (transaction.status === 5) {
       confirm = this.$mdDialog.confirm()
-            .title('Are you sure you want to undo this revocation?')
-            .ariaLabel('Revoke Transaction')
-            .clickOutsideToClose(true)
-            .targetEvent($event)
-            .ok('UNDO')
-            .cancel('Cancel');
+        .title('Are you sure you want to undo this revocation?')
+        .ariaLabel('Revoke Transaction')
+        .clickOutsideToClose(true)
+        .targetEvent($event)
+        .ok('UNDO')
+        .cancel('Cancel');
     } else {
       confirm = this.$mdDialog.confirm()
-            .title('Are you sure you want to delete this revocation?')
-            .ariaLabel('Delete Transaction')
-            .clickOutsideToClose(true)
-            .targetEvent($event)
-            .ok('DELETE')
-            .cancel('Cancel');
+        .title('Are you sure you want to delete this revocation?')
+        .ariaLabel('Delete Transaction')
+        .clickOutsideToClose(true)
+        .targetEvent($event)
+        .ok('DELETE')
+        .cancel('Cancel');
     }
 
     this.$mdDialog.show(confirm).then(() => {
-      this.transactionService.delete(this.storage.token, transaction.id).then((profile) => {
+      this.transactionService.delete(this.storage.auth.idToken, transaction.id).then((profile) => {
         this.reload();
         this.uiService.notify('Transaction deleted');
       }, (response) => {
@@ -103,15 +103,15 @@ export default class ReadTransactionController {
 
   revokeTransaction(transaction, $event) {
     const confirm = this.$mdDialog.confirm()
-          .title('Are you sure you want to revoke this transaction?')
-          .ariaLabel('Revoke Transaction')
-          .clickOutsideToClose(true)
-          .targetEvent($event)
-          .ok('REVOKE')
-          .cancel('Cancel');
+      .title('Are you sure you want to revoke this transaction?')
+      .ariaLabel('Revoke Transaction')
+      .clickOutsideToClose(true)
+      .targetEvent($event)
+      .ok('REVOKE')
+      .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.transactionService.revoke(this.storage.token, transaction.id).then((profile) => {
+      this.transactionService.revoke(this.storage.auth.idToken, transaction.id).then((profile) => {
         this.reload();
         this.uiService.notify('Transaction revoked');
       }, (response) => {
@@ -138,10 +138,7 @@ export default class ReadTransactionController {
       query.text = this.$scope.searchText;
     }
 
-    for (let key in stateParams) {
-      query[key] = stateParams[key];
-    }
-
+    this.$window.Object.assign(query, stateParams);
     return query;
   }
 }

@@ -1,7 +1,7 @@
 export default class AccessService {
-  constructor(angular, auth, $state, $window, storageService, connectionService, settings) {
+  constructor(angular, lock, $state, $window, storageService, connectionService, settings) {
     this.angular = angular;
-    this.auth = auth;
+    this.lock = lock;
     this.$state = $state;
     this.$window = $window;
     this.storageService = storageService;
@@ -10,22 +10,29 @@ export default class AccessService {
   }
 
   oauthSignIn() {
-    const callbackUrl = this.$window.location.origin + '/oauth/redirect';
+    const redirectUrl = this.$window.location.origin + '/oauth/redirect';
     const state = this.angular.toJson({
       name: this.$state.current.name,
       stateParams: this.$state.params
     });
 
-    this.auth.signin({
-      callbackURL: callbackUrl,
-      responseType: 'token',
-      icon: '/assets/auth0/signin.png',
+    const lock = new this.$window.Auth0Lock(this.settings.oauth.auth0.client_id, this.settings.oauth.auth0.domain, {
+      auth: {
+        redirectUrl: redirectUrl,
+        responseType: 'token',
+        params: {
+          state: state,
+          scope: 'openid email'
+        }
+      },
+      theme: {
+        logo: '/assets/auth0/signin.png'
+      },
       focusInput: false,
-      rememberLastLogin: false,
-      authParams: {
-        state: state
-      }
+      rememberLastLogin: false
     });
+
+    lock.show();
   }
 
   logout() {
@@ -37,22 +44,22 @@ export default class AccessService {
 
      let returnTo;
 
-     if (storage.profile !== null && storage.profile.user_id.startsWith('facebook')) {
+     if (storage.auth !== null && storage.auth.idTokenPayload.sub.startsWith('facebook')) {
        returnTo = this.$window.encodeURIComponent(this.$window.location.origin);
      } else {
        returnTo = this.$window.location.origin;
      }
 
      let href = 'https://' + this.settings.oauth.auth0.domain + '/v2/logout' +
-                '?returnTo=' + returnTo +
-                '&client_id=' + this.settings.oauth.auth0.client_id;
+       '?returnTo=' + returnTo +
+       '&client_id=' + this.settings.oauth.auth0.client_id;
 
-    if (storage.token !== null) {
-      href += '&access_token=' + storage.token;
+    if (storage.auth !== null) {
+      href += '&access_token=' + storage.auth.idToken;
     }
 
      this.$window.location.href = href;
   }
 }
 
-AccessService.$inject = ['angular', 'auth', '$state', '$window', 'StorageService', 'ConnectionService', 'settings'];
+AccessService.$inject = ['angular', 'lock', '$state', '$window', 'StorageService', 'ConnectionService', 'settings'];

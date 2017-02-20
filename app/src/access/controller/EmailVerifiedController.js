@@ -14,7 +14,7 @@ export default class EmailVerifiedController {
 
     const storage = this.storageService.read();
 
-    this.auth0Service.getUser(storage.token, storage.profile.user_id).then((user) => {
+    this.auth0Service.getUser(storage.auth.idToken, storage.auth.idTokenPayload.sub).then((user) => {
       if (user.email_verified) {
         this.$mdDialog.hide();
         this.uiService.notify('Email verified');
@@ -33,8 +33,8 @@ export default class EmailVerifiedController {
 
     const storage = this.storageService.read();
 
-    this.auth0Service.sendVerificationEmail(storage.token, {
-      user_id: storage.profile.user_id
+    this.auth0Service.sendVerificationEmail(storage.auth.idToken, {
+      user_id: storage.auth.idTokenPayload.sub
     }).then((user) => {
       this.uiService.notify('Verification email sent');
     }, () => {

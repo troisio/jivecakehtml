@@ -34,19 +34,16 @@ export default class MyTransactionController {
       (limit, offset) => {
         const query = this.toolsService.stateParamsToQuery(this.$state.params);
 
-        delete query.pageSize;
-        delete query.page;
-
         query.status = transactionService.getUsedForCountingStatuses();
-        query.limit = limit;
-        query.offset = offset;
+        query.limit = 100;
         query.leaf = true;
+        query.order = '-timeCreated';
 
         query.user_id = this.$state.params.user_id;
 
         this.toolsService.maintainKeys(query, ['user_id', 'limit', 'offset', 'order']);
 
-        return this.transactionService.getTransactionData(this.itemService, this.storage.token, query);
+        return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, query);
       }
     );
 
@@ -67,7 +64,7 @@ export default class MyTransactionController {
       });
     });
 
-    this.$scope.$on('SSE.TRANSACTION.CREATED', () => {
+    this.$scope.$on('downstream.transaction.created', () => {
       this.loadPage(
         this.$window.parseInt(this.$state.params.page),
         this.$window.parseInt(this.$state.params.pageSize)

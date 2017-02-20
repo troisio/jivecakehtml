@@ -34,7 +34,7 @@ export default class CreateTransactionController {
     this.uiService = uiService;
 
     this.storage = storageService.read();
-    this.itemFuture = this.itemService.read(this.storage.token, this.$stateParams.itemId);
+    this.itemFuture = this.itemService.read(this.storage.auth.idToken, this.$stateParams.itemId);
 
     this.run();
   }
@@ -61,7 +61,7 @@ export default class CreateTransactionController {
     return this.itemFuture.then((item) => {
       this.$scope.item = item;
 
-      const eventFuture = this.eventService.read(this.storage.token, item.eventId).then(event => {
+      const eventFuture = this.eventService.read(this.storage.auth.idToken, item.eventId).then(event => {
         this.$scope.transaction.currency = event.currency;
         this.$scope.event = event;
       });
@@ -86,7 +86,7 @@ export default class CreateTransactionController {
 
     let query = queryParts.join(' OR ');
 
-    return this.auth0Service.searchUsers(this.storage.token, {
+    return this.auth0Service.searchUsers(this.storage.auth.idToken, {
       q: query,
       search_engine: 'v2'
     });
@@ -104,7 +104,7 @@ export default class CreateTransactionController {
     this.$scope.loading = true;
     const transactionCopy = this.angular.copy(transaction);
 
-    this.transactionService.search(this.storage.token, {
+    this.transactionService.search(this.storage.auth.idToken, {
       itemId: item.id
     }).then((searchEntity) => {
       if (selectedUser !== null) {
@@ -119,13 +119,8 @@ export default class CreateTransactionController {
         transactionCopy.currency = event.currency;
       }
 
-      this.transactionService.create(this.storage.token, item.id, transactionCopy).then(data => {
-        const deviceSupportsServerSentEvents = 'EventSource' in this.$window;
-
-        if (!deviceSupportsServerSentEvents) {
-          this.uiService.notify('Transaction created');
-        }
-
+      return this.transactionService.create(this.storage.auth.idToken, item.id, transactionCopy).then(data => {
+        this.uiService.notify('Transaction created');
         return this.setDefaults();
       }, response => {
         let message = 'Unable to create transaction for ' + item.name;

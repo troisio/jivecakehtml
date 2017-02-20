@@ -35,10 +35,10 @@ export default class CreateOrganizationAndEventController {
     this.rootOrganizationPromise.then((rootOrganization) => {
       organization.parentId = rootOrganization.id;
 
-      return this.organizationService.create(storage.token, organization).then((organization) => {
+      return this.organizationService.create(storage.auth.idToken, organization).then((organization) => {
         event.status = this.eventService.getInactiveEventStatus();
 
-        return this.eventService.create(storage.token, organization.id, event).then((event) => {
+        return this.eventService.create(storage.auth.idToken, organization.id, event).then((event) => {
           this.$mdDialog.hide();
           this.uiService.notify('Event created');
           this.$state.go('application.internal.event.update', {eventId: event.id}, {reload: true});

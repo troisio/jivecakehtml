@@ -87,11 +87,14 @@ export default class ItemService {
 
       future = transactionService.publicSearch({
         itemId: items.map(item => item.id),
-        status: transactionService.getPaymentCompleteStatus(),
+        status: transactionService.getUsedForCountingStatuses(),
         leaf: true
       }).then(searchResult => {
-        const completeLeafTransactions = searchResult.entity.filter(transaction => transaction.status === transactionService.getPaymentCompleteStatus() || transaction.status === transactionService.getPaymentPendingStatus());
-        const transactionMap = this.relationalService.groupBy(completeLeafTransactions, false, transaction => transaction.itemId);
+        const transactionMap = this.relationalService.groupBy(
+          searchResult.entity,
+          false,
+          transaction => transaction.itemId
+        );
 
         return items.map(function(item) {
           let result;
@@ -121,11 +124,10 @@ export default class ItemService {
     } else if (item.countAmounts !== null) {
       future = transactionService.publicSearch({
         itemId: item.id,
-        status: transactionService.getPaymentCompleteStatus(),
+        status: transactionService.getUsedForCountingStatuses(),
         leaf: true
       }).then(function(searchResult) {
-        const completeLeafTransactions = searchResult.entity.filter(transaction => transaction.status === transactionService.getPaymentCompleteStatus());
-        return item.getDerivedAmountFromCounts(completeLeafTransactions.length);
+        return item.getDerivedAmountFromCounts(searchResult.entity.length);
       });
     } else {
       future = this.$q.resolve(item.amount);

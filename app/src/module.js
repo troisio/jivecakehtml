@@ -1,3 +1,4 @@
+import './polyfill/assign';
 import './polyfill/find';
 import './polyfill/from';
 
@@ -18,8 +19,6 @@ import ApplicationController from './application/controller/ApplicationControlle
 import HomeController from './application/controller/HomeController';
 import InternalApplicationController from './application/controller/InternalApplicationController';
 
-import CartController from './checkout/controller/CartController';
-import CheckoutController from './checkout/controller/CheckoutController';
 import ConfirmationController from './checkout/controller/ConfirmationController';
 
 import OAuthRedirectController from './access/controller/OAuthRedirectController';
@@ -68,8 +67,7 @@ angular.module('jivecakeweb', [
   'ngMdIcons',
   'ngSanitize',
   'ui.router',
-  'auth0',
-  'angular-storage',
+  'auth0.lock',
   'angular-jwt',
   'md.data.table',
   'hc.marked',
@@ -83,15 +81,68 @@ angular.module('jivecakeweb', [
 .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
 .constant('settings', settings)
 .config(configuration)
-.run(['auth', function(auth) {
-  auth.hookEvents();
-}])
+.run([
+  'lock',
+  'angular',
+  '$window',
+  '$location',
+  '$state',
+  '$mdDialog',
+  'OrganizationService',
+  'PermissionService',
+  'UIService',
+  'StorageService',
+  'Auth0Service',
+  'JiveCakeLocalStorage',
+  function(
+    lock,
+    angular,
+    $window,
+    $location,
+    $state,
+    $mdDialog,
+    organizationService,
+    permissionService,
+    uiService,
+    storageService,
+    auth0Service,
+    JiveCakeLocalStorage
+  ) {
+    lock.on('authenticated', function(auth) {
+      const storage = new JiveCakeLocalStorage();
+      storage.timeCreated = new $window.Date().getTime();
+      storage.auth = auth;
+      storageService.write(storage);
+
+      permissionService.search(auth.idToken, {
+        user_id: auth.idTokenPayload.sub,
+        objectClass: organizationService.getObjectClassName()
+      }).then(function(search) {
+        const routerParameters = angular.fromJson(auth.state);
+
+        if (routerParameters.name === 'application.public.home') {
+          if (search.entity.length > 0) {
+            $state.go('application.internal.organization.read', {}, {reload: true});
+          } else {
+            $state.go('application.internal.myTransaction', {
+              user_id: auth.idTokenPayload.sub
+            }, {
+              reload: true
+            });
+          }
+        } else {
+          $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+        }
+      });
+    }, function() {
+      uiService.notify('Unable to login');
+    });
+  }
+])
 .controller('ApplicationController', ApplicationController)
 .controller('HomeController', HomeController)
 .controller('InternalApplicationController', InternalApplicationController)
 
-.controller('CartController', CartController)
-.controller('CheckoutController', CheckoutController)
 .controller('ConfirmationController', ConfirmationController)
 
 .controller('OAuthRedirectController', OAuthRedirectController)

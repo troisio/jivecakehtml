@@ -15,16 +15,12 @@
             </td>
             <td md-cell>
               <md-input-container>
-                <md-select ng-show="itemData.amountSelections.length > 0" ng-disabled="user === null || itemData.amountSelections.length === 0 || !groupData.parent.hasCurrencyAndPaymentProfile()" aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
+                <md-select ng-show="itemData.amountSelections.length > 1" ng-disabled="user === null || itemData.amountSelections.length === 1 || !groupData.parent.hasCurrencyAndPaymentProfile()" aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
                   <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
                 </md-select>
               </md-input-container>
             </td>
             <td md-cell>
-              <div ng-show="(itemData.remainingTotalAvailibleTransactions === null || itemData.remainingTotalAvailibleTransactions &gt; 0) && (itemData.remaingUserTransactions === null || itemData.remaingUserTransactions > 0)">
-                <ng-md-icon ng-show="itemData.amount !== null && itemData.amount > 0 && user !== null" ng-click="user !== null && controller.addToCart(itemData, itemFormData[itemData.item.id].amount)" icon="add_shopping_cart"></ng-md-icon>
-                <ng-md-icon ng-show="(itemData.amount === null || itemData.amount === 0) && user !== null" ng-click="controller.purchase(itemData.item, itemFormData[itemData.item.id].amount)" icon="add"></ng-md-icon>
-              </div>
               <ng-md-icon ng-show="itemData.remainingTotalAvailibleTransactions !== null && itemData.remainingTotalAvailibleTransactions &lt; 1 || ((itemData.remaingUserTransactions !== null && itemData.remaingUserTransactions &lt; 1))" icon="block"></ng-md-icon>
             </td>
           </tr>
@@ -37,6 +33,9 @@
       </table>
     </md-table-container>
   </section>
+  <div ng-show="hasAnySelections && user !== null && !(groupData.parent.currency === null || groupData.parent.paymentProfileId === null)" class="checkout" ng-click="controller.checkout(groupData, itemFormData)">
+    <ng-md-icon size="50" icon="payment"></ng-md-icon>
+  </div>
   <div ng-show="user === null && groupData.itemData.length > 0" layout-padding>
     <h4>You must <a href="" ng-click="controller.login()">log in</a> to purchase items</h4>
   </div>

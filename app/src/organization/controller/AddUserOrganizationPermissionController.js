@@ -38,7 +38,7 @@ export default class AddUserOrganizationPermissionController {
     this.$scope.include = 1;
     this.$scope.permissions = {};
 
-    this.permissionService.getTypes(this.storage.token).then((types) => {
+    this.permissionService.getTypes(this.storage.auth.idToken).then((types) => {
       this.$scope.types = types.Organization;
       types.Organization.forEach((permission) => {
         this.$scope.permissions[permission] = false;
@@ -55,7 +55,7 @@ export default class AddUserOrganizationPermissionController {
 
        const query = queryParts.join(' OR ');
 
-       return this.auth0Service.searchUsers(this.storage.token, {
+       return this.auth0Service.searchUsers(this.storage.auth.idToken, {
          q: query,
          search_engine: 'v2'
        });
@@ -72,7 +72,7 @@ export default class AddUserOrganizationPermissionController {
     this.$scope.submit = (user, permissions, include) => {
       this.$scope.loading = true;
 
-      this.permissionService.search(this.storage.token, {
+      this.permissionService.search(this.storage.auth.idToken, {
         objectId: this.organization.id,
         user_id: user.user_id
       }).then((permissionSearch) => {
@@ -100,7 +100,7 @@ export default class AddUserOrganizationPermissionController {
             }
           }
 
-          future = this.permissionService.write(this.storage.token, this.organization.id, [permission]).then((permissions) => {
+          future = this.permissionService.write(this.storage.auth.idToken, this.organization.id, [permission]).then((permissions) => {
             this.$rootScope.$broadcast('ORGANIZATION.PERMISSION.WRITE', permissions);
             this.$mdDialog.hide();
 
@@ -120,7 +120,7 @@ export default class AddUserOrganizationPermissionController {
   getAccountSuffix(user) {
     let result = '';
 
-    const idKey = 'oauthId' in user ? 'oauthId' : 'user_id';
+    const idKey = 'oauthId' in user ? 'oauthId' : 'sub';
 
     if (user[idKey].startsWith('google')) {
       result = '(google)';

@@ -20,7 +20,7 @@ export default class UpdateAccountController {
   run() {
     this.$scope.uiReady = false;
 
-    this.auth0Service.getUser(this.storage.token, this.storage.profile.user_id).then((user) => {
+    this.auth0Service.getUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then((user) => {
       this.user = user;
       this.$scope.isIdentityProviderAccount = user.user_id.startsWith('facebook') || user.user_id.startsWith('google');
 
@@ -56,7 +56,7 @@ export default class UpdateAccountController {
 
       fileReader.onloadend = (event) => {
         const data = new this.$window.Uint8Array(event.target.result);
-        const future = this.userService.uploadSelfie(this.storage.token, this.user.user_id, data, file.type);
+        const future = this.userService.uploadSelfie(this.storage.auth.idToken, this.user.user_id, data, file.type);
 
         filePromise.resolve(future);
       };
@@ -76,7 +76,7 @@ export default class UpdateAccountController {
         }
       };
 
-      const future = this.auth0Service.updateUser(this.storage.token, this.storage.profile.user_id, body).then((user) => {
+      const future = this.auth0Service.updateUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub, body).then((user) => {
         this.$scope.$parent.$parent.user = user;
         const storage = this.storageService.read();
         storage.profile = user;

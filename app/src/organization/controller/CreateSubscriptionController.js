@@ -29,16 +29,16 @@ export default class CreateSubscriptionController {
 
     const detail = new this.SubscriptionPaymentDetail();
     detail.organizationId = this.organization.id;
-    detail.user_id = this.user.user_id;
+    detail.user_id = this.storage.auth.idTokenPayload.sub;
 
-    this.organizationService.createSubscriptionPaymentDetail(this.storage.token, this.organization.id, detail).then((detail) => {
+    this.organizationService.createSubscriptionPaymentDetail(this.storage.auth.idToken, this.organization.id, detail).then((detail) => {
       if (mock) {
         const ipn = this.paypalService.getTrialSubscriptionIpn();
         ipn.amount3 = this.subscriptionService.getMonthlySubscriptionRate().toString();
         ipn.custom = detail.custom;
         ipn.txn_id = this.$window.Math.random().toString(36).slice(2);
 
-        return this.paypalService.submitIpn(this.storage.token, ipn, this.paypalService.getVerified()).then((response) => {
+        return this.paypalService.submitIpn(this.storage.auth.idToken, ipn, this.paypalService.getVerified()).then((response) => {
           loader.dialog.finally(() => {
             this.uiService.notify('Subscription created');
           });

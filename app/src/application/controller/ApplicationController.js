@@ -11,16 +11,13 @@ export default class ApplicationController {
     $mdSidenav,
     accessService,
     applicationService,
-    eventService,
-    itemService,
     organizationService,
     permissionService,
     auth0Service,
     uiService,
     connectionService,
     storageService,
-    settings,
-    auth
+    settings
   ) {
     this.angular = angular;
     this.$window = $window;
@@ -33,8 +30,6 @@ export default class ApplicationController {
     this.$mdSidenav = $mdSidenav;
     this.accessService = accessService;
     this.applicationService = applicationService;
-    this.eventService = eventService;
-    this.itemService = itemService;
     this.organizationService = organizationService;
     this.permissionService = permissionService;
     this.auth0Service = auth0Service;
@@ -42,8 +37,6 @@ export default class ApplicationController {
     this.connectionService = connectionService;
     this.storageService = storageService;
     this.settings = settings;
-    this.auth = auth;
-    this.$scope.auth = auth;
 
     this.storage = storageService.read();
     this.$scope.selectedTab = 0;
@@ -55,29 +48,30 @@ export default class ApplicationController {
   run() {
     let ready;
 
-    if (this.storage.token === null) {
+    if (this.storage.auth === null) {
       ready = this.$q.reject();
     } else {
-      ready = this.getApplicationFutures(this.storage.token);
+      ready = this.getApplicationFutures(this.storage.auth.idToken);
     }
 
     this.$scope.ready = ready;
 
     ready.then(resolve => {
-      this.$scope.user = resolve.user;
       this.loadScopePermissions(this.$scope, resolve.permission.entity);
 
-      this.auth0Service.getUser(this.storage.token, this.storage.profile.user_id).then((profile) => {
+      return this.auth0Service.getUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then((profile) => {
+        this.$scope.user = profile;
+
         const showEmailUnverified = profile.user_id.startsWith('auth0') &&
-                                    !profile.email_verified &&
-                                    profile.logins_count > 1;
+          !profile.email_verified &&
+          profile.logins_count > 1;
 
         if (showEmailUnverified) {
           this.$mdDialog.show({
             templateUrl: '/src/access/partial/verified.html',
             controller: 'EmailVerifiedController',
             controllerAs: 'controller',
-            clickOutsideToClose: false,
+            clickOutsideToClose: false
           });
         }
       });
@@ -104,31 +98,13 @@ export default class ApplicationController {
   }
 
   getApplicationFutures() {
-    const user = this.storage.profile;
-
     this.connectionService.closeEventSources();
     this.connectionService.deleteEventSources();
 
-    const connectionFuture = this.connectionService.getEventSource(this.storage.token, user.user_id).then(source => {
-      source.addEventListener('item.transaction.created', (response) => {
+    const connectionFuture = this.connectionService.getEventSource(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then(source => {
+      source.addEventListener('transaction.created', (response) => {
         const transaction = this.angular.fromJson(response.data);
-
-        if (user.user_id === transaction.user_id) {
-          this.uiService.notify('You have a new transaction');
-
-          const storage = this.storageService.read();
-          storage.cart.delete(transaction.itemId);
-          this.storageService.write(storage);
-        } else {
-          this.itemService.read(this.storage.token, transaction.itemId).then((item) => {
-            this.eventService.read(this.storage.token, item.eventId).then((event) => {
-              const message = 'New item transaction for ' + event.name + ' / ' + item.name;
-              this.uiService.notify(message);
-            });
-          });
-        }
-
-        this.$rootScope.$broadcast('SSE.TRANSACTION.CREATED', transaction);
+        this.$rootScope.$broadcast('downstream.transaction.created', transaction);
       });
 
       source.addEventListener('agent.logout', () => {
@@ -138,12 +114,11 @@ export default class ApplicationController {
       return source;
     });
 
-    const permissonFuture = this.permissionService.search(this.storage.token, {
-      user_id: user.user_id
+    const permissonFuture = this.permissionService.search(this.storage.auth.idToken, {
+      user_id: this.storage.auth.idTokenPayload.sub
     });
 
     return this.$q.all({
-      user: user,
       permission: permissonFuture,
       connection: connectionFuture
     });
@@ -193,14 +168,11 @@ ApplicationController.$inject = [
   '$mdSidenav',
   'AccessService',
   'ApplicationService',
-  'EventService',
-  'ItemService',
   'OrganizationService',
   'PermissionService',
   'Auth0Service',
   'UIService',
   'ConnectionService',
   'StorageService',
-  'settings',
-  'auth'
+  'settings'
 ];

@@ -26,7 +26,7 @@ export default class TransferPassController {
 
      const query = queryParts.join(' OR ');
 
-     return this.auth0Service.searchUsers(this.storage.token, {
+     return this.auth0Service.searchUsers(this.storage.auth.idToken, {
        q: query,
        search_engine: 'v2'
      });
@@ -34,7 +34,7 @@ export default class TransferPassController {
 
   submit(user) {
     if (user !== null) {
-      this.transactionService.transfer(this.storage.token, this.transaction.id, user.user_id).then(() => {
+      this.transactionService.transfer(this.storage.auth.idToken, this.transaction.id, user.user_id).then(() => {
         this.uiService.notify('Transfer successful');
       }, () => {
         this.uiService.notify('Unable to transfer');

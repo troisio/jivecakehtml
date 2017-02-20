@@ -51,11 +51,11 @@ export default class UpdateEventController {
 
       this.$scope.organizationIds = readOrganizationIds;
 
-      this.eventService.read(this.storage.token, this.$stateParams.eventId).then((event) => {
-        const paymentProfileFuture = this.paymentProfileService.search(this.storage.token, {
+      this.eventService.read(this.storage.auth.idToken, this.$stateParams.eventId).then((event) => {
+        const paymentProfileFuture = this.paymentProfileService.search(this.storage.auth.idToken, {
           organizationId: event.organizationId
         });
-        const organizationFuture = this.organizationService.read(this.storage.token, event.organizationId);
+        const organizationFuture = this.organizationService.read(this.storage.auth.idToken, event.organizationId);
 
         if (event.timeStart === null) {
           this.$scope.timeStart = {
@@ -123,7 +123,7 @@ export default class UpdateEventController {
           return permission.objectId;
         });
 
-        this.paymentProfileService.search(this.storage.token, {
+        this.paymentProfileService.search(this.storage.auth.idToken, {
           organizationId: readOrganizationIds
         }).then((search) => {
           this.$scope.paymentProfiles = search.entity;
@@ -186,7 +186,7 @@ export default class UpdateEventController {
     if (eventCopy.timeEnd !== null && eventCopy.timeStart !== null && eventCopy.timeStart > eventCopy.timeEnd) {
       this.uiService.notify('Start Date / Time must be before End Date / Time');
     } else {
-      this.eventService.update(this.storage.token, eventCopy).then((event) => {
+      this.eventService.update(this.storage.auth.idToken, eventCopy).then((event) => {
         this.$scope.event = event;
         this.$rootScope.$broadcast('EVENT.UPDATED', event);
         this.uiService.notify('Event updated');

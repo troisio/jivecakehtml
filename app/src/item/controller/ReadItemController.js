@@ -50,16 +50,16 @@ export default class ReadItemController {
       query.limit = limit;
       query.offset = offset;
 
-      return this.itemService.search(this.storage.token, query).then((itemSearchResult) => {
+      return this.itemService.search(this.storage.auth.idToken, query).then((itemSearchResult) => {
         const items = itemSearchResult.entity;
         const eventIds = items.map(item => item.eventId);
         const itemIds = items.map(item => item.id);
-        const eventFuture = eventIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : this.eventService.search(this.storage.token, {id: eventIds});
+        const eventFuture = eventIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : this.eventService.search(this.storage.auth.idToken, {id: eventIds});
 
         let transactionFuture;
 
         if (itemIds.length > 0) {
-          transactionFuture = this.transactionService.search(this.storage.token, {
+          transactionFuture = this.transactionService.search(this.storage.auth.idToken, {
             itemId: itemIds,
             leaf: true,
             status: this.transactionService.getUsedForCountingStatuses()
@@ -123,7 +123,7 @@ export default class ReadItemController {
   }
 
   run() {
-    this.$scope.token = this.storage.token;
+    this.$scope.token = this.storage.auth.idToken;
     this.$scope.hasApplicationWrite = false;
 
     this.$scope.$parent.ready.then((resolve) => {
@@ -180,8 +180,8 @@ export default class ReadItemController {
 
   createPaypalTransaction(item) {
     this.$q.all({
-      event: this.eventService.read(this.storage.token, item.eventId),
-      detail: this.paypalService.createPaymentDetails(this.storage.token)
+      event: this.eventService.read(this.storage.auth.idToken, item.eventId),
+      detail: this.paypalService.createPaymentDetails(this.storage.auth.idToken)
     }).then(resolve => {
       const details = resolve.detail;
       const event = resolve.event;
@@ -200,7 +200,11 @@ export default class ReadItemController {
         '',
         details.custom
       ).then(ipn => {
-        this.paypalService.submitIpn(this.storage.token, ipn, 'VERIFIED');
+        this.paypalService.submitIpn(this.storage.auth.idToken, ipn, 'VERIFIED').then(() => {
+          this.uiService.notify('Transaction created');
+        }, () => {
+          this.uiService.notify('Unable to submit IPN');
+        });
       });
     }).then(function() {
     }, () => {
@@ -210,15 +214,15 @@ export default class ReadItemController {
 
   delete(itemData, $event) {
     const confirm = this.$mdDialog.confirm()
-          .title('Are you sure you want to delete this item?')
-          .ariaLabel('Delete Item')
-          .clickOutsideToClose(true)
-          .targetEvent($event)
-          .ok('DELETE')
-          .cancel('Cancel');
+      .title('Are you sure you want to delete this item?')
+      .ariaLabel('Delete Item')
+      .clickOutsideToClose(true)
+      .targetEvent($event)
+      .ok('DELETE')
+      .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.itemService.delete(this.storage.token, itemData.item.id).then(() => {
+      this.itemService.delete(this.storage.auth.idToken, itemData.item.id).then(() => {
         this.uiService.notify('Item deleted');
 
         const removeIndex = this.$scope.paging.data.entity.indexOf(itemData.item);

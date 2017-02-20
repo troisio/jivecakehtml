@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ids=$(docker ps --filter="name=jivecakeweb" -qa)
+ids=$(docker ps --filter="name=jivecakehtml" -qa)
 
 if [ "$ids" != "" ]; then
     docker stop "$ids"
@@ -10,6 +10,6 @@ fi
 docker run \
     -it \
     -p 80:80 \
-    --name=jivecakeweb \
-    -v $(dirname $(pwd)):/root/jivecakeweb \
-    jivecakeweb
+    --name=jivecakehtml \
+    -v $(dirname $(pwd)):/root/jivecakehtml \
+    jivecakehtml

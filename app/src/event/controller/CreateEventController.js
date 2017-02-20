@@ -31,7 +31,7 @@ export default class CreateEventController {
     this.$scope.event = new this.Event();
     this.$scope.event.minimumTimeBetweenTransactionTransfer = -1;
 
-    this.organizationService.getOrganizationArrayWithPermissions(this.storage.token, this.user.user_id).then(data => {
+    this.organizationService.getOrganizationArrayWithPermissions(this.storage.auth.idToken, this.user.user_id).then(data => {
       const organizations = data.filter(datum => datum.permissions.has(this.organizationService.getWritePermission()))
                                 .map(datum => datum.organization);
 
@@ -48,7 +48,7 @@ export default class CreateEventController {
   createEvent(event) {
     this.$scope.loading = true;
 
-    return this.eventService.create(this.storage.token, event.organizationId, event).then((event) => {
+    return this.eventService.create(this.storage.auth.idToken, event.organizationId, event).then((event) => {
       this.uiService.notify('Event created');
       this.$rootScope.$broadcast('EVENT.CREATED', event);
       this.$mdDialog.hide();

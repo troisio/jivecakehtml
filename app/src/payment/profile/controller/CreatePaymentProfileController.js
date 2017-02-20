@@ -31,7 +31,7 @@ export default class CreatePaymentProfileController {
     this.$scope.close = this.$mdDialog.hide;
 
     this.$scope.submit = (profile) => {
-      this.paymentProfileService.create(this.storage.token, profile).then((profile) => {
+      this.paymentProfileService.create(this.storage.auth.idToken, profile).then((profile) => {
         this.$rootScope.$broadcast('PAYMENT.PROFILE.CREATED', profile);
         this.$scope.close();
         this.uiService.notify('Payment Profile created');

@@ -113,17 +113,15 @@ export default class PaypalService {
 
     return result;
   }
-/*
-  This method needs to be refactored to support different quantities of the same item
-*/
+
   getCartIpn(itemQuantities, time, currency, txn_id, payment_status, pending_reason, custom) {
     const timestamp = new this.$window.Date(time).getTime();
     const components = new Date(time).toGMTString().split(' ');
     const day = components[1],
-                month = components[2],
-                year = components[3],
-                time24 = components[4],
-                zone = components[5];
+      month = components[2],
+      year = components[3],
+      time24 = components[4],
+      zone = components[5];
     const paymentdate = [
       [time24, month, day].join(' '),
       [year, zone].join(' ')

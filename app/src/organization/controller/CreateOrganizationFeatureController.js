@@ -18,7 +18,7 @@ export default class CreateOrganizationFeatureController {
     featureCopy.timeStart = feature.timeStart.getTime();
     featureCopy.timeEnd = feature.timeEnd.getTime();
 
-    this.featureService.create(this.storage.token, this.organization.id, featureCopy).then((feature) => {
+    this.featureService.create(this.storage.auth.idToken, this.organization.id, featureCopy).then((feature) => {
       loader.dialog.finally(() => {
         this.uiService.notify('Organization feature created');
         this.$rootScope.$broadcast('FEATURE.ORGANIZATION.WRITE', feature);

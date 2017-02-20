@@ -48,7 +48,7 @@ export default class UpdateItemController {
   run() {
     this.$scope.uiReady = false;
 
-    return this.itemService.read(this.storage.token, this.$stateParams.itemId).then((item) => {
+    return this.itemService.read(this.storage.auth.idToken, this.$stateParams.itemId).then((item) => {
       if (item.timeStart === null) {
         this.$scope.timeStart = {
           time: null,
@@ -85,10 +85,10 @@ export default class UpdateItemController {
       this.$scope.itemName = item.name;
       this.$scope.free = item.amount === 0 || item.amount === null;
 
-      return this.eventService.read(this.storage.token, item.eventId).then((event) => {
+      return this.eventService.read(this.storage.auth.idToken, item.eventId).then((event) => {
         this.$scope.event = event;
 
-        return this.paymentProfileService.search(this.storage.token, {
+        return this.paymentProfileService.search(this.storage.auth.idToken, {
           organizationId: event.organizationId
         }).then((searchResult) => {
           this.$scope.paymentProfiles = searchResult.entity;
@@ -192,7 +192,7 @@ export default class UpdateItemController {
         itemCopy.timeAmounts = null;
       }
 
-      this.itemService.update(this.storage.token, itemCopy).then((item) => {
+      this.itemService.update(this.storage.auth.idToken, itemCopy).then((item) => {
         this.$scope.item = item;
 
         this.uiService.notify('Updated ' + item.name);

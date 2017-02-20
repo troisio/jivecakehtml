@@ -6,8 +6,7 @@ export default class TransactionLoader {
     this.token = token;
     this.pageSize = pageSize;
 
-    this.query = {};
-    this.pages = [];
+    this.reset();
     this.loading = false;
   }
 
@@ -15,13 +14,15 @@ export default class TransactionLoader {
     const pageNumber = this.$window.Math.floor(index / this.pageSize);
     let page;
 
-    if (pageNumber < this.pages.length) {
-      page = this.pages[pageNumber][index % this.pageSize];
-    } else {
-      page = null;
+    if (index < this.count || this.count === 0) {
+      if (pageNumber < this.pages.length) {
+        page = this.pages[pageNumber][index % this.pageSize];
+      } else {
+        page = null;
 
-      if (!this.loading) {
-        this.loadPage(pageNumber);
+        if (!this.loading) {
+          this.loadPage(pageNumber);
+        }
       }
     }
 
@@ -29,15 +30,14 @@ export default class TransactionLoader {
   }
 
   getLength() {
-    return this.pages.reduce((previous, pages) => previous + pages.length, 0);
+    return this.count;
   }
 
   loadPage(page) {
     this.loading = true;
 
-    const offset = page * this.pageSize;
     const query = {
-      offset: offset,
+      offset: page * this.pageSize,
       limit: this.pageSize
     };
 
@@ -45,8 +45,9 @@ export default class TransactionLoader {
       query[key] = this.query[key];
     }
 
-    this.transactionService.getTransactionData(this.itemService, this.token, query).then((paging) => {
+    return this.transactionService.getTransactionData(this.itemService, this.token, query).then((paging) => {
       this.pages[page] = paging.entity;
+      this.count = paging.count;
     }).finally(() => {
       this.loading = false;
     });
@@ -54,5 +55,7 @@ export default class TransactionLoader {
 
   reset() {
     this.pages = [];
+    this.count = 0;
+    this.query = {};
   }
 }

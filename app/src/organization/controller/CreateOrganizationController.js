@@ -36,7 +36,7 @@ export default class CreateOrganizationController {
   }
 
   run() {
-    this.organizationService.search(this.storage.token, {}).then((paging) => {
+    this.organizationService.search(this.storage.auth.idToken, {}).then((paging) => {
       const organizations = paging.entity;
 
       organizations.sort(function(first, second) {
@@ -65,7 +65,7 @@ export default class CreateOrganizationController {
     this.rootOrganizationPromise.then(rootOrganization => {
       organization.parentId = rootOrganization.id;
 
-      return this.organizationService.create(this.storage.token, organization).then(organization => {
+      return this.organizationService.create(this.storage.auth.idToken, organization).then(organization => {
         this.$state.go('application.internal.organization.read', {}, {reload: true});
         this.$mdDialog.hide();
 

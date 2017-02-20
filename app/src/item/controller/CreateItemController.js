@@ -42,7 +42,7 @@ export default class CreateItemController {
         subject.has(this.organizationService.getWritePermission())
     ).map(permission => permission.objectId);
 
-    return this.eventService.search(this.storage.token, {
+    return this.eventService.search(this.storage.auth.idToken, {
       organizationId: organizationIds,
       order: '-timeUpdated'
     }).then((eventSearch) => {
@@ -66,7 +66,7 @@ export default class CreateItemController {
       item.maximumPerUser = null;
       item.status = this.itemService.getActiveStatus();
 
-      this.itemService.create(this.storage.token, item).then(item => {
+      this.itemService.create(this.storage.auth.idToken, item).then(item => {
         this.$state.go('application.internal.item.update', {
           itemId: item.id
         });

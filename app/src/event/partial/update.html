@@ -74,7 +74,7 @@
           <div ng-message="required">Currency is required</div>
         </div>
       </md-input-container>
-      <md-input-container class="md-block">
+      <md-input-container ng-show="false" class="md-block">
         <md-checkbox ng-model="minimumTimeBetweenTransactionTransferEnabled" aria-label="Active">Enable Pass Transfers between users</md-checkbox>
       </md-input-container>
       <md-input-container ng-show="minimumTimeBetweenTransactionTransferEnabled" class="md-block">

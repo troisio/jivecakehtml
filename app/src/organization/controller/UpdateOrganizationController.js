@@ -114,8 +114,8 @@ export default class UpdateOrganizationController {
       return permission;
     });
 
-    return this.permissionService.write(this.storage.token, this.$stateParams.organizationId, permissions).then(() => {
-      return this.organizationService.update(this.storage.token, organization).then((organization) => {
+    return this.permissionService.write(this.storage.auth.idToken, this.$stateParams.organizationId, permissions).then(() => {
+      return this.organizationService.update(this.storage.auth.idToken, organization).then((organization) => {
         loading.dialog.finally(() => {
           this.uiService.notify('Updated organization');
         });
@@ -161,26 +161,26 @@ export default class UpdateOrganizationController {
   loadUI(organizationId) {
     const date = new this.$window.Date();
 
-    return this.organizationService.read(this.storage.token, organizationId).then((organization) => {
+    return this.organizationService.read(this.storage.auth.idToken, organizationId).then((organization) => {
       this.$scope.organization = organization;
 
-      const paymentProfileFutures = this.paymentProfileService.search(this.storage.token, {
+      const paymentProfileFutures = this.paymentProfileService.search(this.storage.auth.idToken, {
         organizationId: organizationId
       });
 
-      const featureFuture = this.featureService.search(this.storage.token, {
+      const featureFuture = this.featureService.search(this.storage.auth.idToken, {
         organizationId: organizationId,
         type: this.featureService.getOrganizationEventFeature(),
         timeEndGreaterThan: date.getTime()
       });
 
-      const permission = this.permissionService.search(this.storage.token, {
+      const permission = this.permissionService.search(this.storage.auth.idToken, {
         objectId: organization.id,
         objectClass: this.organizationService.getObjectClassName()
       });
 
       return this.$q.all({
-        types: this.permissionService.getTypes(this.storage.token),
+        types: this.permissionService.getTypes(this.storage.auth.idToken),
         permissions: permission,
         feature: featureFuture,
         paymentProfile: paymentProfileFutures
@@ -194,12 +194,9 @@ export default class UpdateOrganizationController {
         if (permissions.length === 0) {
           userPromise = this.$q.resolve([]);
         } else {
+          const query = permissions.map(permission => 'user_id: "' + permission.user_id + '"').join(' OR ');
 
-          const query = permissions.map(function(permission) {
-            return 'user_id: "' + permission.user_id + '"';
-          }).join(' OR ');
-
-          userPromise = this.auth0Service.searchUsers(this.storage.token, {
+          userPromise = this.auth0Service.searchUsers(this.storage.auth.idToken, {
             search_engine: 'v2',
             q: query
           });
@@ -253,7 +250,7 @@ export default class UpdateOrganizationController {
     this.$mdDialog.show(confirm).then(() => {
       const loader = this.uiService.load();
 
-      this.featureService.delete(this.storage.token, feature.id).then(() => {
+      this.featureService.delete(this.storage.auth.idToken, feature.id).then(() => {
         loader.dialog.finally(() => {
           this.$rootScope.$broadcast('FEATURE.ORGANIZATION.WRITE');
         });
@@ -285,7 +282,7 @@ export default class UpdateOrganizationController {
     this.$mdDialog.show(confirm).then(() => {
       const loader = this.uiService.load();
 
-      this.paymentProfileService.delete(this.storage.token, paymentProfile.id).then((profile) => {
+      this.paymentProfileService.delete(this.storage.auth.idToken, paymentProfile.id).then((profile) => {
         loader.dialog.finally(() => {
           this.$rootScope.$broadcast('PAYMENT.PROFILE.DELETED', profile);
         });
@@ -303,7 +300,7 @@ export default class UpdateOrganizationController {
   }
 
   removeUserFromOrganization(user) {
-    this.permissionService.delete(this.storage.token, {
+    this.permissionService.delete(this.storage.auth.idToken, {
       user_id: user.user_id,
       objectId: this.$stateParams.organizationId,
       objectClass: this.organizationService.getObjectClassName()

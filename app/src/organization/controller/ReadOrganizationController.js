@@ -41,7 +41,7 @@ export default class ReadOrganizationController {
       query.limit = limit;
       query.offset = offset;
 
-      return this.organizationService.getOrganizationArrayWithPermissions(this.storage.token, this.storage.profile.user_id).then((data) => {
+      return this.organizationService.getOrganizationArrayWithPermissions(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then((data) => {
         if (typeof query.id !== 'undefined') {
           const ids = new this.$window.Set();
           const idArray = this.$window.Array.isArray(query.id) ? query.id : [query.id];
@@ -93,7 +93,7 @@ export default class ReadOrganizationController {
     this.$mdDialog.show(confirm).then(() => {
       this.$scope.uiReady = false;
 
-      this.organizationService.delete(this.storage.token, organizationData.organization.id).then((organization) => {
+      this.organizationService.delete(this.storage.auth.idToken, organizationData.organization.id).then((organization) => {
         this.uiService.notify('Organization deleted');
 
         const removeIndex = this.$scope.paging.data.indexOf(organizationData);

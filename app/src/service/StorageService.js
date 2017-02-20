@@ -1,9 +1,7 @@
 export default class StorageService {
-  constructor($window, JiveCakeLocalStorage, Cart, DataCount) {
+  constructor($window, JiveCakeLocalStorage) {
     this.$window = $window;
     this.JiveCakeLocalStorage = JiveCakeLocalStorage;
-    this.Cart = Cart;
-    this.DataCount = DataCount;
 
     this.localStorageKey = 'jivecakelocalstorage';
   }
@@ -31,23 +29,15 @@ export default class StorageService {
         json = null;
       }
 
+      result = new this.JiveCakeLocalStorage();
+
       if (json === null) {
-        const storage = new this.JiveCakeLocalStorage();
-        storage.timeCreated = new this.$window.Date().getTime();
+        result.timeCreated = new this.$window.Date().getTime();
         this.write(storage);
-        result = storage;
       } else {
-        const storage = new this.JiveCakeLocalStorage();
-        storage.token = json.token;
-        storage.profile = json.profile;
-        storage.timeCreated = json.timeCreated;
-
-        for (let key in json.cart.data) {
-          const datum = json.cart.data[key];
-          storage.cart.data[key] = new this.DataCount(datum.data, datum.count);
+        for (let key in result) {
+          result[key] = json[key];
         }
-
-        result = storage;
       }
     }
 
@@ -57,14 +47,11 @@ export default class StorageService {
   reset() {
     const storage = new this.JiveCakeLocalStorage();
     storage.timeCreated = new this.$window.Date().getTime();
-    storage.cart = new this.Cart();
     this.write(storage);
   }
 }
 
 StorageService.$inject = [
   '$window',
-  'JiveCakeLocalStorage',
-  'Cart',
-  'DataCount'
+  'JiveCakeLocalStorage'
 ];

@@ -36,7 +36,7 @@ export default class ReadEventController {
     this.storage = storageService.read();
     this.$scope.uiReady = false;
     this.$scope.$parent.$parent.selectedTab = 1;
-    this.$scope.token = this.storage.token;
+    this.$scope.token = this.storage.auth.idToken;
     this.$scope.apiUri = settings.jivecakeapi.uri;
     this.$scope.selected = [];
 
@@ -53,7 +53,7 @@ export default class ReadEventController {
       query.limit = limit;
       query.offset = offset;
 
-      return this.eventService.search(this.storage.token, query).then((eventSearchResult) => {
+      return this.eventService.search(this.storage.auth.idToken, query).then((eventSearchResult) => {
         const events = eventSearchResult.entity;
 
         let organizationFuture;
@@ -61,7 +61,7 @@ export default class ReadEventController {
         if (events.length === 0) {
           organizationFuture = this.$q.resolve(new this.SearchEntity());
         } else {
-          organizationFuture = this.organizationService.search(this.storage.token, {
+          organizationFuture = this.organizationService.search(this.storage.auth.idToken, {
             eventId: events.map(event => event.id)
           });
         }
@@ -115,7 +115,7 @@ export default class ReadEventController {
   }
 
   toggleStatus(eventData, $event) {
-    this.eventService.fieldUpdate(this.storage.token, eventData.event.id, {
+    this.eventService.fieldUpdate(this.storage.auth.idToken, eventData.event.id, {
       status: eventData.event.status
     }).then(function() {
     }, (response) => {
@@ -170,7 +170,7 @@ export default class ReadEventController {
     this.$mdDialog.show(confirm).then(() => {
       this.$scope.uiReady = false;
 
-      this.eventService.delete(this.storage.token, eventData.event.id).then(() => {
+      this.eventService.delete(this.storage.auth.idToken, eventData.event.id).then(() => {
         this.uiService.notify('Event deleted');
 
         const removeIndex = this.$scope.paging.data.entity.indexOf(eventData);
