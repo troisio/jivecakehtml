@@ -15,7 +15,7 @@
             </td>
             <td md-cell>
               <md-input-container>
-                <md-select ng-show="itemData.amountSelections.length > 1" ng-disabled="user === null || itemData.amountSelections.length === 1 || !groupData.parent.hasCurrencyAndPaymentProfile()" aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
+                <md-select ng-show="itemData.amountSelections.length > 1" ng-disabled="auth === null || itemData.amountSelections.length === 1 || !groupData.parent.hasCurrencyAndPaymentProfile()" aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
                   <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
                 </md-select>
               </md-input-container>
@@ -33,16 +33,16 @@
       </table>
     </md-table-container>
   </section>
-  <div ng-show="hasAnySelections && user !== null && !(groupData.parent.currency === null || groupData.parent.paymentProfileId === null)" class="checkout" ng-click="controller.checkout(groupData, itemFormData)">
+  <div ng-show="hasAnySelections && auth !== null && !(groupData.parent.currency === null || groupData.parent.paymentProfileId === null)" class="checkout" ng-click="controller.checkout(groupData, itemFormData)">
     <ng-md-icon size="50" icon="payment"></ng-md-icon>
   </div>
-  <div ng-show="user === null && groupData.itemData.length > 0" layout-padding>
+  <div ng-show="auth === null && groupData.itemData.length > 0" layout-padding>
     <h4>You must <a href="" ng-click="controller.login()">log in</a> to purchase items</h4>
   </div>
   <div ng-show="groupData.itemData.length === 0" layout-padding>
-    <p class="message">Sorry, this event does not have any items to display</p>
+    <p>Sorry, this event does not have any items to display</p>
   </div>
-  <div ng-show="groupData.parent.currency === null || groupData.parent.paymentProfileId === null" layout-padding>
+  <div ng-show="event.currency === null || event.paymentProfileId === null" layout-padding>
     <p>Sorry, this event does not have any valid payment options</p>
   </div>
 </div>

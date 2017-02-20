@@ -44,7 +44,7 @@ export default class PublicEventItemController {
     this.$scope.hasAnySelections = false;
 
     const storage = this.storageService.read();
-    this.$scope.user = storage.profile;
+    this.$scope.auth = storage.auth;
 
     this.run();
   }
@@ -59,15 +59,19 @@ export default class PublicEventItemController {
         const storage = this.storageService.read();
         const currentTime = new this.$window.Date().getTime();
 
-        this.paymentProfileService.publicSearch({
-          id: this.$scope.event.paymentProfileId
-        }).then((search) => {
-          if (search.entity.length > 0) {
-            this.$scope.paymentProfile = search.entity[0];
-          }
-        });
+        if (this.$scope.event.paymentProfileId !== null) {
+          this.paymentProfileService.publicSearch({
+            id: this.$scope.event.paymentProfileId
+          }).then((search) => {
+            if (search.entity.length > 0) {
+              this.$scope.paymentProfile = search.entity[0];
+            }
+          });
+        }
 
-        return this.itemService.getAggregatedItemData(storage.auth.idToken, {
+        const idToken = storage.auth === null ? null : storage.auth.idToken;
+
+        return this.itemService.getAggregatedItemData(idToken, {
           eventId: this.$scope.event.id
         }).then((aggregatedData) => {
           let groupData;
@@ -151,6 +155,8 @@ export default class PublicEventItemController {
           });
         });
       }
+    }, () => {
+      this.uiService.notify('Unable to retrieve data');
     }).finally(() => {
       this.$scope.uiReady = true;
     });
