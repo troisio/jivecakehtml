@@ -78,9 +78,6 @@ export default class UpdateAccountController {
 
       const future = this.auth0Service.updateUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub, body).then((user) => {
         this.$scope.$parent.$parent.user = user;
-        const storage = this.storageService.read();
-        storage.profile = user;
-        this.storageService.write(storage);
       });
 
       futures[1] = future;

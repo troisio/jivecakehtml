@@ -90,7 +90,7 @@ export default class PublicEventItemController {
 
             let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
 
-            if (storage.profile === null) {
+            if (storage.auth === null) {
               itemData.completOrPendingUserTransactions = null;
             } else {
               itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.auth.idTokenPayload.sub)
