@@ -19,6 +19,7 @@ if [ ! -d $SOURCE_DIRECTORY ]; then
     -e s#\$AUTH0CLIENTID#$AUTH0CLIENTID#g \
     -e s#\$AUTH0DOMAIN#$AUTH0DOMAIN#g \
     -e s#\$PAYPALMOCK#$PAYPALMOCK#g \
+    -e s#\$STRIPE_PK#$STRIPE_PK#g \
     $SOURCE_DIRECTORY/app/src/settings.js
   $(npm bin)/gulp production
 fi
