@@ -15,5 +15,8 @@ export default {
   },
   paypal: {
     mock: $PAYPALMOCK
+  },
+  stripe: {
+    pk: '$STRIPE_PK'
   }
 };
