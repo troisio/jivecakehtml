@@ -119,32 +119,25 @@ export default class ReadEventController {
       status: eventData.event.status
     }).then(function() {
     }, (response) => {
-      if (this.$window.Array.isArray(response.data)) {
-        const features = response.data;
+      if (eventData.event.status === this.eventService.getActiveEventStatus()) {
+        eventData.event.status = this.eventService.getInactiveEventStatus();
+      }
 
+      if (this.$window.Array.isArray(response.data)) {
         this.$mdDialog.show({
           controllerAs: 'controller',
           controller: 'InsufficientSubscriptionController',
           templateUrl: '/src/event/partial/insufficientSubscriptions.html',
           clickOutsideToClose: true,
           locals: {
-            features: features,
+            subscriptions: response.data,
             organization: eventData.organization
-          },
-          resolve: {
-            user: () => {
-              return this.$scope.$parent.ready.then(function(resolve) {
-                return resolve.user;
-              });
-            }
           }
         });
       } else {
         const message = response.status === 401 ? 'You do not have permission to update this event' : 'Unable to update event' ;
         this.uiService.notify(message);
       }
-
-      eventData.event.status = eventData.event.status === this.eventService.getInactiveEventStatus() ? this.eventService.getActiveEventStatus() : this.eventService.getInactiveEventStatus();
     });
   }
 
@@ -160,12 +153,12 @@ export default class ReadEventController {
 
   delete(eventData, $event) {
     const confirm = this.$mdDialog.confirm()
-          .title('Are you sure you want to delete this event?')
-          .ariaLabel('Delete Event')
-          .clickOutsideToClose(true)
-          .targetEvent($event)
-          .ok('DELETE')
-          .cancel('Cancel');
+      .title('Are you sure you want to delete this event?')
+      .ariaLabel('Delete Event')
+      .clickOutsideToClose(true)
+      .targetEvent($event)
+      .ok('DELETE')
+      .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
       this.$scope.uiReady = false;
@@ -197,14 +190,7 @@ export default class ReadEventController {
       controller: 'CreateEventController',
       controllerAs: 'controller',
       templateUrl: '/src/event/partial/create.html',
-      clickOutsideToClose: true,
-      resolve: {
-        user: () => {
-          return this.$scope.$parent.ready.then(function(resolve) {
-            return resolve.user;
-          });
-        }
-      }
+      clickOutsideToClose: true
     });
   }
 }

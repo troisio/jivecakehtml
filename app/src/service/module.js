@@ -1,5 +1,6 @@
 import AccessService from './AccessService';
 import ApplicationService from './ApplicationService';
+import AssetService from './AssetService';
 import Auth0Service from './Auth0Service';
 import ConnectionService from './ConnectionService';
 import EventService from './EventService';
@@ -15,6 +16,7 @@ import PaypalService from './PaypalService';
 import PermissionService from './PermissionService';
 import RelationalService from './RelationalService';
 import StorageService from './StorageService';
+import StripeService from './StripeService';
 import SubscriptionService from './SubscriptionService';
 import ToolsService from './ToolsService';
 import UIService from './UIService';
@@ -23,6 +25,7 @@ import UserService from './UserService';
 export default angular.module('jivecakeservice', [])
   .service('AccessService', AccessService)
   .service('ApplicationService', ApplicationService)
+  .service('AssetService', AssetService)
   .service('Auth0Service', Auth0Service)
   .service('ConnectionService', ConnectionService)
   .service('EventService', EventService)
@@ -38,6 +41,7 @@ export default angular.module('jivecakeservice', [])
   .service('PermissionService', PermissionService)
   .service('RelationalService', RelationalService)
   .service('StorageService', StorageService)
+  .service('StripeService', StripeService)
   .service('SubscriptionService', SubscriptionService)
   .service('ToolsService', ToolsService)
   .service('UIService', UIService)

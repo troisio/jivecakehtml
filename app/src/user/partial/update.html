@@ -1,4 +1,15 @@
 <div layout-padding ng-show="uiReady">
+  <style>
+  .image-cropper {
+      overflow: hidden;
+      border-radius: 25%;
+      display: inline-block;
+  }
+
+  .image-cropper img {
+    width: 60px;
+  }
+  </style>
   <div>
     <form ng-submit="!loading && controller.submit(user)">
       <div layout layout-sm="column">
@@ -15,10 +26,15 @@
         <label>Email</label>
         <input ng-model="user.email" type="email" ng-disabled="isIdentityProviderAccount" required maxlength="255">
       </md-input-container>
-      <label ng-show="false">Profile picture</label>
-      <md-input-container ng-show="false" flex class="md-block">
-        <input type="file" aria-label="A picture of you" name="photo" accept="image/*;capture=camera">
-      </md-input-container>
+      <div>
+        <div ng-if="entities.length > 0" class="image-cropper">
+          <img ng-src="{{entities[0].data.link}}">
+        </div>
+        <label ng-show="entities.length === 0">Selfie</label>
+        <md-input-container flex class="md-block">
+          <input type="file" aria-label="A picture of you" name="photo" accept="image/*;capture=camera">
+        </md-input-container>
+      </div>
       <div layout layout-sm="column">
         <md-input-container flex layout="row">
           <md-button type="submit" class="md-raised md-primary">Update</md-button>

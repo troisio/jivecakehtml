@@ -1,7 +1,6 @@
 <md-dialog flex="80" layout-padding>
   <h4>Sorry you don't have enough subscriptions</h4>
-  <p ng-show="features.length === 0">{{organization.name}} does not have any subscriptions</p>
-  <p ng-show="features.length === 1">{{organization.name}} has 1 subscription</p>
-  <p ng-show="features.length > 1">{{organization.name}} only has {{features.length}} subscriptions</p>
-  <p>You can add more event subscriptions by <a href="" ng-click="controller.updateOrganization(organization)">updating</a> your organization</p>
+  <p ng-show="subscriptions.length === 1">{{organization.name}} only has 1 subscription</p>
+  <p ng-show="subscriptions.length > 1">{{organization.name}} only has {{subscriptions.length}} subscriptions</p>
+  <p>Add a <a href="" ng-click="controller.subscribe(organization)">subscription</a>, first month is on us</p>
 </md-dialog>

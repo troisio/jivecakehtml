@@ -74,47 +74,27 @@
     <section>
       <div layout-padding layout="row">
         <div>
-          <h4>Features</h4>
+          <h4>Subscriptions</h4>
         </div>
-        <span flex></span>
         <div>
-          <md-menu md-position-mode="target-right target">
-            <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
-            <ng-md-icon icon="more_vert"></ng-md-icon>
-            </md-button>
-            <md-menu-content width="2">
-              <md-menu-item>
-                <md-button ng-click="controller.createEventSubscription()">
-                  <span md-menu-align-target>add subscription</span>
-                </md-button>
-              </md-menu-item>
-              <md-menu-item ng-show="hasApplicationWrite">
-                <md-button ng-click="controller.createOrganizationFeature(organization)">
-                  <span md-menu-align-target>add feature</span>
-                </md-button>
-              </md-menu-item>
-            </md-menu-content>
-          </md-menu>
+          <a href="" ng-click="controller.subscribe(organization)">add new</a>
         </div>
       </div>
       <div>
         <md-table-container>
-          <table ng-model="controller.selectedFeature" md-table md-row-select multiple>
+          <table ng-model="selectedSubscriptions" md-table md-row-select multiple>
             <tbody md-body>
-              <tr md-row md-auto-select ng-repeat="feature in controller.features track by feature.id">
+              <tr md-row md-auto-select ng-repeat="subscription in subscriptions track by subscription.id">
                 <td md-cell>
-                  <h5>{{feature.type | featureTypeFilter}}</h5>
+                  <h4>Created {{subscription.created * 1000 | date:'MMMM dd'}} ({{subscription.status}})</h4>
                 </td>
-                <td md-cell>
-                  <h5>{{feature.timeStart | date:'d MMM yyyy'}} - {{feature.timeEnd | date:'d MMM yyyy'}} </h5>
-                </td>
-                <td ng-show="hasApplicationWrite" ng-click="controller.deleteOrganizationFeature($event, feature)" md-cell>
+                <td ng-show="hasApplicationWrite" ng-click="controller.unsubscribe(subscription)" md-cell>
                   <ng-md-icon icon="delete"></ng-md-icon>
                 </td>
               </tr>
-              <tr  ng-show="controller.features.length === 0" md-row layout-padding>
-                <td md-cell>
-                  <span class="md-subheader">No data found</span>
+              <tr ng-show="subscriptions.length === 0" md-row layout-padding>
+                <td colspan="2" md-cell>
+                  <span class="md-subheader">No subscriptions found</span>
                 </td>
               </tr>
             </tbody>
@@ -127,20 +107,8 @@
         <div>
           <h4>Payment Profiles</h4>
         </div>
-        <span flex></span>
         <div>
-          <md-menu md-position-mode="target-right target">
-            <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
-            <ng-md-icon icon="more_vert"></ng-md-icon>
-            </md-button>
-            <md-menu-content width="2">
-              <md-menu-item>
-                <md-button ng-click="controller.createPaymentProfile(organization)">
-                  <span md-menu-align-target>add payment profile</span>
-                </md-button>
-              </md-menu-item>
-            </md-menu-content>
-          </md-menu>
+          <a href="" ng-click="controller.createPaymentProfile(organization)">add new</a>
         </div>
       </div>
       <div>

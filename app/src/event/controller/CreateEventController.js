@@ -7,8 +7,7 @@ export default class CreateEventController {
     storageService,
     organizationService,
     uiService,
-    Event,
-    user
+    Event
   ) {
     this.$rootScope = $rootScope;
     this.$scope = $scope;
@@ -17,7 +16,6 @@ export default class CreateEventController {
     this.organizationService = organizationService;
     this.uiService = uiService;
     this.Event = Event;
-    this.user = user;
 
     this.$scope.loading = false;
     this.$scope.uiReady = false;
@@ -69,6 +67,5 @@ CreateEventController.$inject = [
   'StorageService',
   'OrganizationService',
   'UIService',
-  'Event',
-  'user'
+  'Event'
 ];

@@ -3,6 +3,8 @@ export default class Transaction {
     this.id = null;
     this.parentTransactionId = null;
     this.itemId = null;
+    this.eventId = null;
+    this.organizationId = null;
     this.user_id = null;
     this.linkedId = null;
     this.linkedObjectClass = null;

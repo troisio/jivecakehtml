@@ -13,9 +13,9 @@ export default class UpdateOrganizationController {
     applicationService,
     organizationService,
     permissionService,
-    featureService,
     uiService,
     relationalService,
+    stripeService,
     Permission,
     SearchEntity
   ) {
@@ -26,22 +26,23 @@ export default class UpdateOrganizationController {
     this.$mdDialog = $mdDialog;
     this.$mdToast = $mdToast;
     this.$stateParams = $stateParams;
+    this.storageService = storageService;
     this.auth0Service = auth0Service;
     this.paymentProfileService = paymentProfileService;
     this.applicationService = applicationService;
     this.organizationService = organizationService;
     this.permissionService = permissionService;
-    this.featureService = featureService;
     this.uiService = uiService;
     this.relationalService = relationalService;
+    this.stripeService = stripeService;
     this.Permission = Permission;
     this.SearchEntity = SearchEntity;
 
-    this.features = [];
+    this.$scope.selectedSubscriptions = [];
+    this.$scope.subscriptions = [];
     this.paymentProfiles = [];
     this.selected = [];
     this.selectedPaymentProfile = [];
-    this.selectedFeature = [];
     this.storage = storageService.read();
 
     this.$scope.uiReady = false;
@@ -72,7 +73,6 @@ export default class UpdateOrganizationController {
     [
       'ORGANIZATION.PERMISSION.WRITE',
       'SUBSCRIPTION.CREATED',
-      'FEATURE.ORGANIZATION.WRITE',
       'PAYMENT.PROFILE.CREATED',
       'PAYMENT.PROFILE.DELETED'
     ].forEach((event) => {
@@ -168,11 +168,7 @@ export default class UpdateOrganizationController {
         organizationId: organizationId
       });
 
-      const featureFuture = this.featureService.search(this.storage.auth.idToken, {
-        organizationId: organizationId,
-        type: this.featureService.getOrganizationEventFeature(),
-        timeEndGreaterThan: date.getTime()
-      });
+      const subscriptionFuture = this.stripeService.getSubscriptions(this.storage.auth.idToken, organizationId);
 
       const permission = this.permissionService.search(this.storage.auth.idToken, {
         objectId: organization.id,
@@ -182,14 +178,14 @@ export default class UpdateOrganizationController {
       return this.$q.all({
         types: this.permissionService.getTypes(this.storage.auth.idToken),
         permissions: permission,
-        feature: featureFuture,
+        subscription: subscriptionFuture,
         paymentProfile: paymentProfileFutures
       }).then((resolve) => {
         let userPromise;
         const permissions = resolve.permissions.entity;
         this.$scope.organizationPermissionTypes = resolve.types.Organization;
         this.paymentProfiles = resolve.paymentProfile.entity;
-        this.features = resolve.feature.entity;
+        this.$scope.subscriptions = resolve.subscription;
 
         if (permissions.length === 0) {
           userPromise = this.$q.resolve([]);
@@ -227,36 +223,36 @@ export default class UpdateOrganizationController {
     });
   }
 
-  createOrganizationFeature(organization) {
-    this.$mdDialog.show({
-      controller: 'CreateOrganizationFeatureController',
-      templateUrl: '/src/organization/partial/createOrganizationFeature.html',
-      controllerAs: 'controller',
-      clickOutsideToClose: true,
-      locals: {
-        organization: organization
-      }
+  subscribe(organization) {
+    this.stripeService.showStripeMonthlySubscription().then((token) => {
+      const storage = this.storageService.read();
+
+      this.stripeService.subscribe(storage.auth.idToken, organization.id, {
+        email: token.email,
+        source: token.id
+      }).then((response) => {
+        return this.stripeService.getSubscriptions(storage.auth.idToken, organization.id).then((subscriptions) => {
+          this.$scope.subscriptions = subscriptions;
+        }).finally(() => {
+            this.uiService.notify('Sucessfully added subscription');
+        });
+      }, () => {
+        this.uiService.notify('Unable to subcribe');
+      });
     });
   }
 
-  deleteOrganizationFeature($event, feature) {
-    const confirm = this.$mdDialog.confirm()
-          .title('Are you sure you want to delete this feature?')
-          .ariaLabel('Delete Feature')
-          .targetEvent($event)
-          .ok('DELETE')
-          .cancel('Cancel');
+  unsubscribe(subscription) {
+    const storage = this.storageService.read();
 
-    this.$mdDialog.show(confirm).then(() => {
-      const loader = this.uiService.load();
-
-      this.featureService.delete(this.storage.auth.idToken, feature.id).then(() => {
-        loader.dialog.finally(() => {
-          this.$rootScope.$broadcast('FEATURE.ORGANIZATION.WRITE');
-        });
+    this.stripeService.cancelSubscription(storage.auth.idToken, subscription.id).then(() => {
+      return this.stripeService.getSubscriptions(storage.auth.idToken, this.$stateParams.organizationId).then((subscriptions) => {
+        this.$scope.subscriptions = subscriptions;
       }).finally(() => {
-        loader.close.resolve();
+        this.uiService.notify('Subscription cancelled');
       });
+    }, () => {
+      this.uiService.notify('Unable to cancel subscription');
     });
   }
 
@@ -273,11 +269,11 @@ export default class UpdateOrganizationController {
 
   deletePaymentProfile($event, paymentProfile) {
     const confirm = this.$mdDialog.confirm()
-          .title('Are you sure you want to delete this payment profile?')
-          .ariaLabel('Delete Payment Profile')
-          .targetEvent($event)
-          .ok('DELETE')
-          .cancel('Cancel');
+      .title('Are you sure you want to delete this payment profile?')
+      .ariaLabel('Delete Payment Profile')
+      .targetEvent($event)
+      .ok('DELETE')
+      .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
       const loader = this.uiService.load();
@@ -309,21 +305,6 @@ export default class UpdateOrganizationController {
       this.$scope.users.splice(removeIndex, 1);
     });
   }
-
-  createEventSubscription() {
-    this.$scope.$parent.ready.then((resolve) => {
-      this.$mdDialog.show({
-        controller: 'CreateSubscriptionController',
-        templateUrl: '/src/organization/partial/createSubscription.html',
-        controllerAs: 'controller',
-        clickOutsideToClose: true,
-        locals: {
-          organization: this.$scope.organization,
-          user: resolve.user
-        }
-      });
-    });
-  }
 }
 
 UpdateOrganizationController.$inject = [
@@ -340,9 +321,9 @@ UpdateOrganizationController.$inject = [
   'ApplicationService',
   'OrganizationService',
   'PermissionService',
-  'FeatureService',
   'UIService',
   'RelationalService',
+  'StripeService',
   'Permission',
   'SearchEntity'
 ];

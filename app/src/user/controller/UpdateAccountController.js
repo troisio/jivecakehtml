@@ -1,50 +1,62 @@
 export default class UpdateAccountController {
-  constructor($window, $q, $scope, auth0Service, storageService, userService, uiService) {
+  constructor($window, $q, $scope, auth0Service, storageService, userService, uiService, assetService) {
     this.$window = $window;
     this.$q = $q;
     this.$scope = $scope;
     this.auth0Service = auth0Service;
-    this.uiService = uiService;
     this.storageService = storageService;
     this.userService = userService;
+    this.uiService = uiService;
+    this.assetService = assetService;
 
-    this.storage = this.storageService.read();
-    this.user = null;
-
+    this.$scope.uiReady = false;
     $scope.$parent.showTabs = false;
-    $scope.storage = this.storage;
 
     this.run();
   }
 
   run() {
-    this.$scope.uiReady = false;
+    this.$scope.$parent.ready.then(() => {
+      const storage = this.storageService.read();
 
-    this.auth0Service.getUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then((user) => {
-      this.user = user;
-      this.$scope.isIdentityProviderAccount = user.user_id.startsWith('facebook') || user.user_id.startsWith('google');
+      const assetFuture = this.assetService.getUserImages(storage.auth.idToken, {
+        entityId: storage.auth.idTokenPayload.sub,
+        limit: 1,
+        order: '-timeCreated'
+      }).then((entities) => {
+        this.$scope.entities = entities;
+      });
 
-      this.$scope.user = {
-        email: user.email
-      };
+      const userFuture = this.auth0Service.getUser(storage.auth.idToken, storage.auth.idTokenPayload.sub).then((user) => {
+        this.user = user;
+        this.$scope.isIdentityProviderAccount = user.user_id.startsWith('facebook') || user.user_id.startsWith('google');
 
-      if (this.$scope.isIdentityProviderAccount) {
-        this.$scope.user.given_name = user.given_name;
-        this.$scope.user.family_name = user.family_name;
-      } else {
-        if ('user_metadata' in user) {
-          this.$scope.user.given_name = user.user_metadata.given_name;
-          this.$scope.user.family_name = user.user_metadata.family_name;
+        this.$scope.user = {
+          email: user.email
+        };
+
+        if (this.$scope.isIdentityProviderAccount) {
+          this.$scope.user.given_name = user.given_name;
+          this.$scope.user.family_name = user.family_name;
+        } else {
+          if ('user_metadata' in user) {
+            this.$scope.user.given_name = user.user_metadata.given_name;
+            this.$scope.user.family_name = user.user_metadata.family_name;
+          }
         }
-      }
-    }, () => {
-      this.uiService.notify('Unable to get user information');
-    }).finally(() => {
-      this.$scope.uiReady = true;
+      });
+
+      this.$q.all([assetFuture, userFuture]).then(() => {
+      }, () => {
+        this.uiService.notify('Unable to get user information');
+      }).finally(() => {
+        this.$scope.uiReady = true;
+      });
     });
   }
 
   submit(user) {
+    const storage = this.storageService.read();
     const fileElement = document.querySelector('[name=photo]');
 
     const filePromise = this.$q.defer();
@@ -56,7 +68,7 @@ export default class UpdateAccountController {
 
       fileReader.onloadend = (event) => {
         const data = new this.$window.Uint8Array(event.target.result);
-        const future = this.userService.uploadSelfie(this.storage.auth.idToken, this.user.user_id, data, file.type);
+        const future = this.userService.uploadSelfie(storage.auth.idToken, this.user.user_id, data, file.type);
 
         filePromise.resolve(future);
       };
@@ -76,7 +88,7 @@ export default class UpdateAccountController {
         }
       };
 
-      const future = this.auth0Service.updateUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub, body).then((user) => {
+      const future = this.auth0Service.updateUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, body).then((user) => {
         this.$scope.$parent.$parent.user = user;
       });
 
@@ -87,6 +99,7 @@ export default class UpdateAccountController {
 
     this.$q.all(futures).then((responses) => {
       this.uiService.notify('Successfully updated');
+      this.run();
     }, (response) => {
       let message;
 
@@ -106,4 +119,4 @@ export default class UpdateAccountController {
   }
 }
 
-UpdateAccountController.$inject = ['$window', '$q', '$scope', 'Auth0Service', 'StorageService', 'UserService', 'UIService'];
+UpdateAccountController.$inject = ['$window', '$q', '$scope', 'Auth0Service', 'StorageService', 'UserService', 'UIService', 'AssetService'];

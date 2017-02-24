@@ -4,10 +4,10 @@
       <tbody md-body>
         <tr md-row md-auto-select ng-repeat="eventData in paging.data.entity track by eventData.event.id">
           <td md-cell>
-            <a ui-sref="application.public.event.item({id: eventData.event.id})" ng-show="eventData.event.status === 1">{{eventData.event.name}}</a>
-            <p ng-show="eventData.event.status !== 1">{{eventData.event.name}}</p>
-          </td>
-          <td md-cell>
+            <div>
+              <a ui-sref="application.public.event.item({id: eventData.event.id})" ng-show="eventData.event.status === 1">{{eventData.event.name}}</a>
+              <p ng-show="eventData.event.status !== 1">{{eventData.event.name}}</p>
+            </div>
             <a ui-sref="application.internal.organization.read({id: eventData.organization.id})">{{eventData.organization.name}}</a>
           </td>
           <td md-cell>
@@ -49,7 +49,7 @@
           </td>
         </tr>
         <tr md-row ng-show="paging.data.entity.length === 0">
-          <td md-cell colspan="4">
+          <td md-cell colspan="3">
             <span class="md-subheader">No data found</span>
           </td>
         </tr>
