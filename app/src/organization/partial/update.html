@@ -14,23 +14,13 @@
       </div>
     </section>
     <section layout-padding>
-      <div layout="row">
+      <div layout="row" layout-padding>
         <div>
           <h4>Organization Users</h4>
         </div>
-        <span flex></span>
-        <md-menu md-position-mode="target-right target">
-          <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
-          <ng-md-icon icon="more_vert"></ng-md-icon>
-          </md-button>
-          <md-menu-content width="2">
-            <md-menu-item>
-              <md-button ng-click="controller.addUserPermission()">
-                <span md-menu-align-target>add user</span>
-              </md-button>
-            </md-menu-item>
-          </md-menu-content>
-        </md-menu>
+        <div>
+          <a href="" ng-click="controller.addUserPermission()">add new</a>
+        </div>
       </div>
       <div>
         <md-table-container>
@@ -52,8 +42,10 @@
                   layout-padding
                   ng-show="userPermissionModel[user.user_id].include !== 3"
                   ng-model="userPermissionModel[user.user_id].permission[permission]"
-                  ng-disabled="userPermissionModel[user.user_id].include === 0 || currentUser.user_id === user.user_id"
-                  >{{permission}}</md-checkbox>
+                  ng-disabled="userPermissionModel[user.user_id].include === 0 || currentUser.user_id === user.user_id">
+                    <span ng-show="permission === 0">read</span>
+                    <span ng-show="permission === 1">write</span>
+                  </md-checkbox>
                 </td>
                 <td md-cell>
                   <md-button aria-label="Delete user from organization" ng-click="controller.removeUserFromOrganization(user)" ng-show="currentUser.user_id !== user.user_id">

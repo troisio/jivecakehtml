@@ -6,7 +6,6 @@ export default class ReadOrganizationController {
     $mdToast,
     $mdDialog,
     $state,
-    permissionService,
     storageService,
     organizationService,
     applicationService,
@@ -20,7 +19,6 @@ export default class ReadOrganizationController {
     this.$mdToast = $mdToast;
     this.$mdDialog = $mdDialog;
     this.$state = $state;
-    this.permissionService = permissionService;
     this.organizationService = organizationService;
     this.applicationService = applicationService;
     this.relationalService = relationalService;
@@ -83,12 +81,12 @@ export default class ReadOrganizationController {
 
   delete(organizationData, $event) {
     const confirm = this.$mdDialog.confirm()
-          .title('Are you sure you want to delete this organization?')
-          .ariaLabel('Delete Organization')
-          .clickOutsideToClose(true)
-          .targetEvent($event)
-          .ok('DELETE')
-          .cancel('Cancel');
+      .title('Are you sure you want to delete this organization?')
+      .ariaLabel('Delete Organization')
+      .clickOutsideToClose(true)
+      .targetEvent($event)
+      .ok('DELETE')
+      .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
       this.$scope.uiReady = false;
@@ -123,7 +121,6 @@ ReadOrganizationController.$inject = [
   '$mdToast',
   '$mdDialog',
   '$state',
-  'PermissionService',
   'StorageService',
   'OrganizationService',
   'ApplicationService',

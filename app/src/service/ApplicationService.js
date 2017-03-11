@@ -21,11 +21,11 @@ export default class ApplicationService {
   }
 
   getWritePermission() {
-    return 'WRITE';
+    return 0;
   }
 
   getReadPermission() {
-    return 'READ';
+    return 1;
   }
 }
 

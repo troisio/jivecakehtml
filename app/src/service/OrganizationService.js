@@ -141,11 +141,11 @@ export default class OrganizationService {
   }
 
   getReadPermission() {
-    return 'READ';
+    return 0;
   }
 
   getWritePermission() {
-    return 'WRITE';
+    return 1;
   }
 
   delete(token, id) {

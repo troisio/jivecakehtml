@@ -7,18 +7,14 @@ export default class PermissionService {
     this.toolsService = toolsService;
 
     this.settings = settings;
+    this.permissionTypes = [
+      {'class': 'Application', permissions: [0, 1]},
+      {'class': 'Organization', permissions: [0, 1]}
+    ];
   }
 
-  getTypes(token) {
-    const url = [this.settings.jivecakeapi.uri, 'permission', 'type'].join('/');
-
-    return this.$http.get(url, {
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).then(function(response){
-      return response.data;
-    });
+  getTypes() {
+    return this.permissionTypes;
   }
 
   search(token, params) {

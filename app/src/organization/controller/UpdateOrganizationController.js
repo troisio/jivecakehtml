@@ -46,6 +46,7 @@ export default class UpdateOrganizationController {
     this.storage = storageService.read();
 
     this.$scope.uiReady = false;
+    this.$scope.organizationPermissionTypes = [];
 
     this.run();
   }
@@ -53,7 +54,6 @@ export default class UpdateOrganizationController {
   run() {
     this.$scope.uiReady = false;
     this.$scope.loading = false;
-    this.$scope.organizationPermissionTypes = null;
 
     this.$scope.$parent.ready.then((resolve) => {
       const applicationWritePermissions = resolve.permission.entity.filter((permission) => {
@@ -176,14 +176,16 @@ export default class UpdateOrganizationController {
       });
 
       return this.$q.all({
-        types: this.permissionService.getTypes(this.storage.auth.idToken),
         permissions: permission,
         subscription: subscriptionFuture,
         paymentProfile: paymentProfileFutures
       }).then((resolve) => {
         let userPromise;
         const permissions = resolve.permissions.entity;
-        this.$scope.organizationPermissionTypes = resolve.types.Organization;
+        const permissionTypes = this.permissionService.getTypes();
+
+        this.$scope.organizationPermissionTypes = permissionTypes.find(type => type.class === 'Organization').permissions;
+
         this.paymentProfiles = resolve.paymentProfile.entity;
         this.$scope.subscriptions = resolve.subscription;
 

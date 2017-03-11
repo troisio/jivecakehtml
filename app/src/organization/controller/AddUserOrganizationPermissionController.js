@@ -32,20 +32,18 @@ export default class AddUserOrganizationPermissionController {
 
   run() {
     this.$scope.close = this.$mdDialog.hide;
-    this.$scope.uiReady = false;
+    this.$scope.uiReady = true;
     this.$scope.loading = false;
     this.$scope.user_id = null;
     this.$scope.include = 1;
     this.$scope.permissions = {};
 
-    this.permissionService.getTypes(this.storage.auth.idToken).then((types) => {
-      this.$scope.types = types.Organization;
-      types.Organization.forEach((permission) => {
-        this.$scope.permissions[permission] = false;
-      });
-    }).finally(() => {
-      this.$scope.uiReady = true;
+    const organizationType = this.permissionService.getTypes().find(type => type.class === 'Organization');
+    organizationType.permissions.forEach((permission) => {
+      this.$scope.permissions[permission] = false;
     });
+
+    this.$scope.types = organizationType.permissions;
 
     this.$scope.query = (search) => {
        const terms = search.split(new this.$window.RegExp('\\s+', 'g')).join(' ');

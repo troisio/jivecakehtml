@@ -27,7 +27,10 @@
       </div>
       <div layout="row">
         <div ng-repeat="permission in types" layout="column" layout-padding>
-          <md-checkbox ng-model="permissions[permission]" ng-disabled="include === 0">{{permission}}</md-checkbox>
+          <md-checkbox ng-model="permissions[permission]" ng-disabled="include === 0">
+            <span ng-show="permission === 0">read</span>
+            <span ng-show="permission === 1">write</span>
+          </md-checkbox>
         </div>
       </div>
       <div layout-sm="column">
