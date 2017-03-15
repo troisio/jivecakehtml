@@ -17,7 +17,6 @@ import PermissionService from './PermissionService';
 import RelationalService from './RelationalService';
 import StorageService from './StorageService';
 import StripeService from './StripeService';
-import SubscriptionService from './SubscriptionService';
 import ToolsService from './ToolsService';
 import UIService from './UIService';
 import UserService from './UserService';
@@ -42,7 +41,6 @@ export default angular.module('jivecakeservice', [])
   .service('RelationalService', RelationalService)
   .service('StorageService', StorageService)
   .service('StripeService', StripeService)
-  .service('SubscriptionService', SubscriptionService)
   .service('ToolsService', ToolsService)
   .service('UIService', UIService)
   .service('UserService', UserService);

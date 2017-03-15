@@ -18,10 +18,16 @@
           </td>
           <td md-cell>
             <p ng-show="[0, 4].indexOf(transactionData.transaction.status) > -1">
-              <strong ng-show="transactionData.transaction.amount > 0" class="payment-complete">+</strong>
-              <strong ng-show="transactionData.transaction.amount < 0" class="payment-bad">-</strong>
-              <span ng-show="transactionData.transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.transaction.currency === 'EUR'">&#128;</span><span>{{transactionData.transaction.amount / transactionData.transaction.quantity | absoluteValue | number: 2}}</span>
-              <span ng-show="transactionData.transaction.quantity > 1">({{transactionData.transaction.quantity}})</span>
+              <div ng-show="transactionData.transaction.amount === 0">
+                <span class="payment-free">free</span>
+                <span ng-show="transactionData.transaction.quantity > 1">({{transactionData.transaction.quantity}})</span>
+              </div>
+              <div ng-show="transactionData.transaction.amount !== 0">
+                <strong ng-show="transactionData.transaction.amount > 0" class="payment-complete">+</strong>
+                <strong ng-show="transactionData.transaction.amount < 0" class="payment-bad">-</strong>
+                <span ng-show="transactionData.transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.transaction.currency === 'EUR'">&#128;</span><span>{{transactionData.transaction.amount / transactionData.transaction.quantity | absoluteValue | number: 2}}</span>
+                <span ng-show="transactionData.transaction.quantity > 1">({{transactionData.transaction.quantity}})</span>
+              </div>
             </p>
             <span ng-show="transactionData.transaction.status === 1 || transactionData.transaction.status === 6 || transactionData.transaction.status === 7" class="payment-pending">pending</span>
             <span ng-show="transactionData.transaction.status === 2" class="payment-bad">invalid payment</span>

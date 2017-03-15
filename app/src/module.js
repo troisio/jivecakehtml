@@ -40,7 +40,6 @@ import UpdateItemController from './item/controller/UpdateItemController';
 import AddUserOrganizationPermissionController from './organization/controller/AddUserOrganizationPermissionController';
 import CreateOrganizationController from './organization/controller/CreateOrganizationController';
 import CreateOrganizationFeatureController from './organization/controller/CreateOrganizationFeatureController';
-import CreateSubscriptionController from './organization/controller/CreateSubscriptionController';
 import OrganizationController from './organization/controller/OrganizationController';
 import ReadOrganizationController from './organization/controller/ReadOrganizationController';
 import UpdateOrganizationController from './organization/controller/UpdateOrganizationController';
@@ -164,7 +163,6 @@ angular.module('jivecakeweb', [
 .controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
 .controller('CreateOrganizationController', CreateOrganizationController)
 .controller('CreateOrganizationFeatureController', CreateOrganizationFeatureController)
-.controller('CreateSubscriptionController', CreateSubscriptionController)
 .controller('OrganizationController', OrganizationController)
 .controller('ReadOrganizationController', ReadOrganizationController)
 .controller('UpdateOrganizationController', UpdateOrganizationController)

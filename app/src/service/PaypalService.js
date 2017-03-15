@@ -21,7 +21,6 @@ export default class PaypalService {
   }
 
   submitIpn(token, ipn, type) {
-    const url = [this.settings.jivecakeapi.uri, 'paypal', 'ipn', type].join('/');
     const parts = [];
 
     for(let key in ipn) {
@@ -38,6 +37,7 @@ export default class PaypalService {
     }
 
     const data = parts.join('&');
+    const url = [this.settings.jivecakeapi.uri, 'paypal', 'ipn', type].join('/');
 
     return this.$http({
       method: 'POST',
@@ -53,65 +53,19 @@ export default class PaypalService {
   createPaymentDetails(token) {
     const url = [this.settings.jivecakeapi.uri, 'paypal', 'detail'].join('/');
 
+    const headers = {};
+
+    if (typeof token !== 'undefined') {
+      headers.Authorization = 'Bearer ' + token;
+    }
+
     return this.$http({
       method: 'POST',
       url: url,
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
+      headers: headers
     }).then(function(response) {
       return response.data;
     });
-  }
-
-  getSubscriptionPaymentIpn(override) {
-    const result = {
-      charset: "windows-1252",
-      payer_email: "payer@test.com",
-      receiver_email: "test@test.com",
-      receiver_id: "J6LQ63LX6CYF8",
-      payer_status: "verified",
-      address_country_code: "US",
-      item_number: "jivecakesubscriptiondailytest",
-      address_state: "FL",
-      transaction_subject: "JiveCake Test Daily Billing",
-      address_name: "JiveCake",
-      residence_country: "US",
-      address_status: "confirmed",
-      btn_id: "113215020",
-      txn_id: "1GK360366M840293X",
-      payment_gross: "1.00",
-      protection_eligibility: "Eligible",
-      verify_sign: "AVMnB4GuhH0hVL2g-AdOMvDUcA9zAUg7kdpqptp8Gk6j4BYE8RAVBX54",
-      first_name: "Luis",
-      payment_date: "19:52:50 Apr 14, 2016 PDT",
-      business: "busines@test.com",
-      address_country: "United States",
-      custom: "5710574ba7b11b001f12fb19",
-      payment_status: "Completed",
-      last_name: "Banegas",
-      item_name: "JiveCake Test Daily Billing",
-      notify_version: "3.8",
-      mc_currency: "USD",
-      address_city: "City",
-      payment_type: "instant",
-      txn_type: "subscr_payment",
-      payer_business_name: "JiveCake",
-      address_street: "123 Fake Street",
-      subscr_id: "I-AGK5XHASMVX8",
-      payment_fee: "0.33",
-      payer_id: "J62KGRNQYR3VU",
-      address_zip: "32907",
-      mc_fee: "0.33",
-      mc_gross: "1.00",
-      ipn_track_id: "df33e24c1970d"
-    };
-
-    for (let key in override) {
-      result[key] = override[key];
-    }
-
-    return result;
   }
 
   getCartIpn(itemQuantities, time, currency, txn_id, payment_status, pending_reason, custom) {

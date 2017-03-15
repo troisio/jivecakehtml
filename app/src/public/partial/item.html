@@ -8,20 +8,25 @@
               <a href="" ng-click="controller.viewItem(itemData.item)">{{itemData.item.name}}</a>
             </td>
             <td md-cell>
-              <div ng-show="itemData.amount !== null" class="amount" layout-align="column">
+              <div ng-show="itemData.amount !== 0" class="amount" layout-align="column">
                 <span ng-show="groupData.parent.currency === 'USD'">&#36;</span><span ng-show="groupData.parent.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
               </div>
-              <span ng-show="itemData.amount === null">free</span>
+              <span ng-show="itemData.amount === 0">free</span>
             </td>
             <td md-cell>
-              <md-input-container>
-                <md-select ng-show="itemData.amountSelections.length > 1" ng-disabled="auth === null || itemData.amountSelections.length === 1 || !groupData.parent.hasCurrencyAndPaymentProfile()" aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
+              <!--
+              We're using ng-if here since if the login href is clicked, a dropdown from the (hidden) md-select is shown
+              Bug in angular material
+              -->
+              <md-input-container ng-if="!controller.itemIsBlocked(groupData, itemData, auth)">
+                <md-select aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
                   <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
                 </md-select>
               </md-input-container>
+              <a href="" ng-click="controller.login()" ng-show="itemData.item.requiresAccountForRegistration() && auth === null">requires login</a>
             </td>
             <td md-cell>
-              <ng-md-icon ng-show="itemData.remainingTotalAvailibleTransactions !== null && itemData.remainingTotalAvailibleTransactions &lt; 1 || ((itemData.remaingUserTransactions !== null && itemData.remaingUserTransactions &lt; 1))" icon="block"></ng-md-icon>
+              <ng-md-icon ng-show="controller.itemIsBlocked(groupData, itemData)" icon="block"></ng-md-icon>
             </td>
           </tr>
           <tr ng-show="data.length === 0" md-row>
@@ -33,11 +38,8 @@
       </table>
     </md-table-container>
   </section>
-  <div ng-show="hasAnySelections && auth !== null && !(groupData.parent.currency === null || groupData.parent.paymentProfileId === null)" class="checkout" ng-click="controller.checkout(groupData, itemFormData)">
-    <ng-md-icon size="50" icon="payment"></ng-md-icon>
-  </div>
-  <div ng-show="auth === null && groupData.itemData.length > 0" layout-padding>
-    <h4>You must <a href="" ng-click="controller.login()">log in</a> to purchase items</h4>
+  <div ng-show="groupData.parent.hasCurrencyAndPaymentProfile() && hasAnySelections" class="checkout">
+    <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
   </div>
   <div ng-show="groupData.itemData.length === 0" layout-padding>
     <p>Sorry, this event does not have any items to display</p>

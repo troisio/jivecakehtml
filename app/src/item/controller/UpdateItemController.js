@@ -6,13 +6,9 @@ export default class UpdateItemController {
     $rootScope,
     $scope,
     $state,
-    $mdDialog,
-    $mdToast,
-    $stateParams,
     storageService,
     eventService,
     paymentProfileService,
-    organizationService,
     itemService,
     uiService,
     toolsService
@@ -23,19 +19,14 @@ export default class UpdateItemController {
     this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$state = $state;
-    this.$mdDialog = $mdDialog;
-    this.$mdToast = $mdToast;
-    this.$stateParams = $stateParams;
     this.eventService = eventService;
     this.paymentProfileService = paymentProfileService;
-    this.organizationService = organizationService;
     this.itemService = itemService;
     this.uiService = uiService;
 
     this.$scope.selected = [];
     this.$scope.time = {};
     this.$scope.paymentProfiles = [];
-    this.parentOrganizationId = null;
     this.storage = storageService.read();
     this.$scope.timeSelections = this.uiService.getTimeSelections();
     this.$scope.currentDate = new this.$window.Date();
@@ -48,7 +39,7 @@ export default class UpdateItemController {
   run() {
     this.$scope.uiReady = false;
 
-    return this.itemService.read(this.storage.auth.idToken, this.$stateParams.itemId).then((item) => {
+    return this.itemService.read(this.storage.auth.idToken, this.$state.params.itemId).then((item) => {
       if (item.timeStart === null) {
         this.$scope.timeStart = {
           time: null,
@@ -83,7 +74,7 @@ export default class UpdateItemController {
 
       this.$scope.enableScheduledPriceModifications = item.timeAmounts !== null;
       this.$scope.itemName = item.name;
-      this.$scope.free = item.amount === 0 || item.amount === null;
+      this.$scope.free = item.amount === 0;
 
       return this.eventService.read(this.storage.auth.idToken, item.eventId).then((event) => {
         this.$scope.event = event;
@@ -208,13 +199,6 @@ export default class UpdateItemController {
       });
     }
   }
-
-  showInformation() {
-    this.$mdDialog.show({
-      templateUrl: '/src/event/partial/updateEventInformation.html',
-      clickOutsideToClose: true
-    });
-  }
 }
 
 UpdateItemController.$inject = [
@@ -224,13 +208,9 @@ UpdateItemController.$inject = [
   '$rootScope',
   '$scope',
   '$state',
-  '$mdDialog',
-  '$mdToast',
-  '$stateParams',
   'StorageService',
   'EventService',
   'PaymentProfileService',
-  'OrganizationService',
   'ItemService',
   'UIService',
   'ToolsService'

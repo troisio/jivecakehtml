@@ -21,8 +21,8 @@ export default class UIService {
         minute: minutes % 60
       };
 
-       data.label = (data.hour < 10 ? '0' + data.hour : data.hour) + ':' + (data.minute < 10 ? '0' + data.minute : data.minute);
-       result.push(data);
+      data.label = (data.hour < 10 ? '0' + data.hour : data.hour) + ':' + (data.minute < 10 ? '0' + data.minute : data.minute);
+      result.push(data);
     }
 
     return result;
@@ -32,8 +32,8 @@ export default class UIService {
     const close = this.$q.defer();
     const dialog = this.$mdDialog.show({
       onComplete: () => {
-        close.promise.finally(() => {
-          this.$mdDialog.hide(dialog, null);
+        close.promise.then(() => {
+          this.$mdDialog.hide();
         });
       },
       template: '<md-dialog layout-align="center center" aria-label="Loading"><md-input-container flex><md-progress-circular md-mode="indeterminate"></md-progress-circular></md-input-container>',

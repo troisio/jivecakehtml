@@ -2,6 +2,7 @@ export default class Item {
    constructor() {
      this.id = null;
      this.eventId = null;
+     this.organizationId = null;
      this.name = null;
      this.description = null;
      this.totalAvailible = null;
@@ -46,11 +47,7 @@ export default class Item {
      return result;
    }
 
-   hasAmount() {
-     return this.amount !== null;
-   }
-
-   hasTotalAvailible() {
-     return this.totalAvailible !== null;
+   requiresAccountForRegistration() {
+     return this.maximumPerUser !== null || this.amount === 0;
    }
  }

@@ -157,7 +157,7 @@ export default [
     })
     .state('application.public', {
       abstract : true,
-      templateUrl: '/src/public/partial/index.html',
+      template: '<ui-view></ui-view>',
       controller: 'PublicController'
     })
     .state('application.public.event', {

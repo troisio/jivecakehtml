@@ -53,7 +53,7 @@
       <label>Currency</label>
       <p ng-show="event.currency === 'USD'">US Dollars</p>
       <p ng-show="event.currency === 'EUR'">Euro</p>
-      <md-select ng-show="event.currency === null" ng-model="transaction.currency" aria-label="Currency">
+      <md-select ng-show="event.currency === null" ng-model="transaction.currency" required aria-label="Currency">
         <md-option value=""></md-option>
         <md-option value="USD">US Dollars</md-option>
         <md-option value="EUR">Euro</md-option>

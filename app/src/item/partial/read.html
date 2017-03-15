@@ -26,7 +26,7 @@
                     <span md-menu-align-target>update</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-item ng-show="hasApplicationWrite && itemData.item.amount !== null">
+                <md-menu-item ng-show="hasApplicationWrite && itemData.item.amount !== 0">
                   <md-button ng-click="controller.createPaypalTransaction(itemData.item)">
                     <span md-menu-align-target>create paypal transaction</span>
                   </md-button>

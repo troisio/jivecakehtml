@@ -63,6 +63,7 @@ export default class CreateItemController {
       this.$scope.loading = true;
       item.eventId = event.id;
 
+      item.amount = 0;
       item.maximumPerUser = null;
       item.status = this.itemService.getActiveStatus();
 

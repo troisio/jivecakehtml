@@ -209,13 +209,6 @@ export default class UpdateEventController {
       });
     }
   }
-
-  showInformation() {
-    this.$mdDialog.show({
-      templateUrl: '/src/event/partial/updateEventInformation.html',
-      clickOutsideToClose: true
-    });
-  }
 }
 
 UpdateEventController.$inject = [
