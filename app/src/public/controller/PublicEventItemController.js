@@ -87,8 +87,9 @@ export default class PublicEventItemController {
           groupData.itemData.forEach((itemData) => {
             this.$scope.itemFormData[itemData.item.id] = {amount: 0};
 
-            const completOrPendingFilter = (transaction) => transaction.status === this.transactionService.getPaymentCompleteStatus() || transaction.status === this.transactionService.getPaymentPendingStatus();
-            const completeOrPendingTransactions = itemData.transactions.filter(completOrPendingFilter);
+            const countingStatuses = this.transactionService.getUsedForCountingStatuses();
+            const completeOrPendingFilter = (transaction) => countingStatuses.indexOf(transaction.status) > -1;
+            const completeOrPendingTransactions = itemData.transactions.filter(completeOrPendingFilter);
 
             let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
 
@@ -96,7 +97,7 @@ export default class PublicEventItemController {
               itemData.completOrPendingUserTransactions = null;
             } else {
               itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.auth.idTokenPayload.sub)
-                .filter(completOrPendingFilter);
+                .filter(completeOrPendingFilter);
 
               if (itemData.item.maximumPerUser !== null) {
                 const total  = itemData.completOrPendingUserTransactions.reduce((previous, next) => previous + next.quantity, 0);
