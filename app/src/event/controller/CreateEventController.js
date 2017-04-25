@@ -7,7 +7,8 @@ export default class CreateEventController {
     storageService,
     organizationService,
     uiService,
-    Event
+    Event,
+    permissions
   ) {
     this.$rootScope = $rootScope;
     this.$scope = $scope;
@@ -16,6 +17,7 @@ export default class CreateEventController {
     this.organizationService = organizationService;
     this.uiService = uiService;
     this.Event = Event;
+    this.permissions = permissions;
 
     this.$scope.loading = false;
     this.$scope.uiReady = false;
@@ -29,8 +31,9 @@ export default class CreateEventController {
     this.$scope.event = new this.Event();
     this.$scope.event.minimumTimeBetweenTransactionTransfer = -1;
 
-    this.organizationService.getOrganizationArrayWithPermissions(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then(data => {
-      const organizations = data.filter(datum => datum.permissions.has(this.organizationService.getWritePermission()))
+    this.organizationService.getOrganizationsByUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then((organizations) => {
+      const data = this.organizationService.getOrganizationsWithPermissions(organizations, this.permissions);
+      organizations = data.filter(datum => datum.permissions.has(this.organizationService.getWritePermission()))
         .map(datum => datum.organization);
 
       if (organizations.length > 0) {
@@ -67,5 +70,6 @@ CreateEventController.$inject = [
   'StorageService',
   'OrganizationService',
   'UIService',
-  'Event'
+  'Event',
+  'permissions'
 ];

@@ -39,7 +39,6 @@ import UpdateItemController from './item/controller/UpdateItemController';
 
 import AddUserOrganizationPermissionController from './organization/controller/AddUserOrganizationPermissionController';
 import CreateOrganizationController from './organization/controller/CreateOrganizationController';
-import CreateOrganizationFeatureController from './organization/controller/CreateOrganizationFeatureController';
 import OrganizationController from './organization/controller/OrganizationController';
 import ReadOrganizationController from './organization/controller/ReadOrganizationController';
 import UpdateOrganizationController from './organization/controller/UpdateOrganizationController';
@@ -117,20 +116,28 @@ angular.module('jivecakeweb', [
         user_id: auth.idTokenPayload.sub,
         objectClass: organizationService.getObjectClassName()
       }).then(function(search) {
-        const routerParameters = angular.fromJson(auth.state);
-
-        if (routerParameters.name === 'application.public.home') {
-          if (search.entity.length > 0) {
-            $state.go('application.internal.organization.read', {}, {reload: true});
-          } else {
-            $state.go('application.internal.myTransaction', {
-              user_id: auth.idTokenPayload.sub
-            }, {
-              reload: true
-            });
-          }
+        if (typeof auth.state === 'undefined') {
+          $state.go('application.internal.myTransaction', {
+            user_id: auth.idTokenPayload.sub
+          }, {
+            reload: true
+          });
         } else {
-          $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+          const routerParameters = angular.fromJson(auth.state);
+
+          if (routerParameters.name === 'application.public.home') {
+            if (search.entity.length > 0) {
+              $state.go('application.internal.organization.read', {}, {reload: true});
+            } else {
+              $state.go('application.internal.myTransaction', {
+                user_id: auth.idTokenPayload.sub
+              }, {
+                reload: true
+              });
+            }
+          } else {
+            $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+          }
         }
       });
     }, function() {
@@ -162,7 +169,6 @@ angular.module('jivecakeweb', [
 
 .controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
 .controller('CreateOrganizationController', CreateOrganizationController)
-.controller('CreateOrganizationFeatureController', CreateOrganizationFeatureController)
 .controller('OrganizationController', OrganizationController)
 .controller('ReadOrganizationController', ReadOrganizationController)
 .controller('UpdateOrganizationController', UpdateOrganizationController)

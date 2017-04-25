@@ -4,14 +4,12 @@ import AssetService from './AssetService';
 import Auth0Service from './Auth0Service';
 import ConnectionService from './ConnectionService';
 import EventService from './EventService';
-import FeatureService from './FeatureService';
 import ItemService from './ItemService';
 import TransactionService from './TransactionService';
 import NotificationService from './NotificationService';
 import OrganizationService from './OrganizationService';
 import Paging from './Paging';
 import PaymentProfileService from './PaymentProfileService';
-import PaymentService from './PaymentService';
 import PaypalService from './PaypalService';
 import PermissionService from './PermissionService';
 import RelationalService from './RelationalService';
@@ -28,14 +26,12 @@ export default angular.module('jivecakeservice', [])
   .service('Auth0Service', Auth0Service)
   .service('ConnectionService', ConnectionService)
   .service('EventService', EventService)
-  .service('FeatureService', FeatureService)
   .service('ItemService', ItemService)
   .service('TransactionService', TransactionService)
   .service('NotificationService', NotificationService)
   .service('OrganizationService', OrganizationService)
   .constant('Paging', Paging)
   .service('PaymentProfileService', PaymentProfileService)
-  .service('PaymentService', PaymentService)
   .service('PaypalService', PaypalService)
   .service('PermissionService', PermissionService)
   .service('RelationalService', RelationalService)

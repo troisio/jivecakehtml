@@ -59,15 +59,12 @@ export default class ReadEventController {
         let organizationFuture;
 
         if (events.length === 0) {
-          organizationFuture = this.$q.resolve(new this.SearchEntity());
+          organizationFuture = this.$q.resolve([]);
         } else {
-          organizationFuture = this.organizationService.search(this.storage.auth.idToken, {
-            eventId: events.map(event => event.id)
-          });
+          organizationFuture = this.organizationService.getOrganizationsByUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub);
         }
 
-        return organizationFuture.then((organizationSearchResult) => {
-          const organizations = organizationSearchResult.entity;
+        return organizationFuture.then((organizations) => {
           const data = {
             count: eventSearchResult.count
           };
@@ -186,11 +183,16 @@ export default class ReadEventController {
   }
 
   createEvent() {
-    this.$mdDialog.show({
-      controller: 'CreateEventController',
-      controllerAs: 'controller',
-      templateUrl: '/src/event/partial/create.html',
-      clickOutsideToClose: true
+    this.$scope.$parent.ready.then((resolve) => {
+      this.$mdDialog.show({
+        controller: 'CreateEventController',
+        controllerAs: 'controller',
+        templateUrl: '/src/event/partial/create.html',
+        clickOutsideToClose: true,
+        locals: {
+          permissions: resolve.permission.entity
+        }
+      });
     });
   }
 }

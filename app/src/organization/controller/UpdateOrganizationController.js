@@ -5,7 +5,6 @@ export default class UpdateOrganizationController {
     $rootScope,
     $scope,
     $mdDialog,
-    $mdToast,
     $stateParams,
     storageService,
     auth0Service,
@@ -16,15 +15,13 @@ export default class UpdateOrganizationController {
     uiService,
     relationalService,
     stripeService,
-    Permission,
-    SearchEntity
+    Permission
   ) {
     this.$window = $window;
     this.$q = $q;
     this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
-    this.$mdToast = $mdToast;
     this.$stateParams = $stateParams;
     this.storageService = storageService;
     this.auth0Service = auth0Service;
@@ -36,7 +33,6 @@ export default class UpdateOrganizationController {
     this.relationalService = relationalService;
     this.stripeService = stripeService;
     this.Permission = Permission;
-    this.SearchEntity = SearchEntity;
 
     this.$scope.selectedSubscriptions = [];
     this.$scope.subscriptions = [];
@@ -305,6 +301,8 @@ export default class UpdateOrganizationController {
     }).then(() => {
       const removeIndex = this.$scope.users.indexOf(user);
       this.$scope.users.splice(removeIndex, 1);
+    }, () => {
+      this.uiService.notify('Unable to remove user from organization');
     });
   }
 }
@@ -315,7 +313,6 @@ UpdateOrganizationController.$inject = [
   '$rootScope',
   '$scope',
   '$mdDialog',
-  '$mdToast',
   '$stateParams',
   'StorageService',
   'Auth0Service',
@@ -326,6 +323,5 @@ UpdateOrganizationController.$inject = [
   'UIService',
   'RelationalService',
   'StripeService',
-  'Permission',
-  'SearchEntity'
+  'Permission'
 ];

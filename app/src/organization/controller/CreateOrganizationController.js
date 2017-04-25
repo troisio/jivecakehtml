@@ -4,7 +4,6 @@ export default class CreateOrganizationController {
     $scope,
     $state,
     $mdDialog,
-    $mdToast,
     storageService,
     organizationService,
     uiService,
@@ -14,7 +13,6 @@ export default class CreateOrganizationController {
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
-    this.$mdToast = $mdToast;
     this.organizationService = organizationService;
     this.uiService = uiService;
     this.Organization = Organization;
@@ -85,7 +83,6 @@ CreateOrganizationController.$inject = [
   '$scope',
   '$state',
   '$mdDialog',
-  '$mdToast',
   'StorageService',
   'OrganizationService',
   'UIService',

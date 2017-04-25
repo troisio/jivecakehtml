@@ -115,15 +115,10 @@ export default [
       controller: 'OrganizationController'
     })
     .state('application.internal.organization.read', {
-      url: '/organization?page&pageSize&id&order',
+      url: '/organization',
       templateUrl: '/src/organization/partial/read.html',
       controller: 'ReadOrganizationController',
-      controllerAs: 'controller',
-      params: {
-        page: '0',
-        pageSize: '10',
-        order: '-name'
-      }
+      controllerAs: 'controller'
     })
     .state('application.internal.organization.update', {
       url: '/organization/{organizationId}/update',
