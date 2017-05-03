@@ -15,6 +15,12 @@ export default class Item {
      this.timeEnd = null;
      this.timeUpdated = null;
      this.timeCreated = null;
+     this.country = null;
+     this.state = null;
+     this.postalCode = null;
+     this.city = null;
+     this.addressLine1 = null;
+     this.addressLine2 = null;
    }
 
    getDerivedAmountFromCounts(count) {

@@ -9,6 +9,7 @@ export default class PublicEventItemController {
     $timeout,
     $scope,
     itemService,
+    eventService,
     transactionService,
     paymentProfileService,
     accessService,
@@ -26,6 +27,7 @@ export default class PublicEventItemController {
     this.$timeout = $timeout;
     this.$scope = $scope;
     this.itemService = itemService;
+    this.eventService = eventService;
     this.transactionService = transactionService;
     this.paymentProfileService = paymentProfileService;
     this.accessService = accessService;
@@ -71,19 +73,7 @@ export default class PublicEventItemController {
 
         const idToken = storage.auth === null ? null : storage.auth.idToken;
 
-        return this.itemService.getAggregatedItemData(idToken, {
-          eventId: this.$scope.event.id
-        }).then((aggregatedData) => {
-          let groupData;
-
-          if (aggregatedData.length > 0) {
-            groupData = aggregatedData[0];
-          } else {
-            groupData = {
-              itemData: []
-            };
-          }
-
+        return this.eventService.getAggregatedEventData(this.$scope.event.id, idToken).then((groupData) => {
           groupData.itemData.forEach((itemData) => {
             this.$scope.itemFormData[itemData.item.id] = {amount: 0};
 
@@ -169,7 +159,7 @@ export default class PublicEventItemController {
     const soldOut = itemData.remainingTotalAvailibleTransactions !== null && itemData.remainingTotalAvailibleTransactions < 1;
     const soldOutForUser = itemData.remaingUserTransactions !== null && itemData.remaingUserTransactions < 1;
     const requiresAccount = itemData.item.requiresAccountForRegistration();
-    const hasCurrencyAndPaymentProfile = group.parent.hasCurrencyAndPaymentProfile();
+    const hasCurrencyAndPaymentProfile = group.event.hasCurrencyAndPaymentProfile();
 
     return soldOut || soldOutForUser || (requiresAccount && auth === null) || !hasCurrencyAndPaymentProfile;
   }
@@ -220,7 +210,7 @@ export default class PublicEventItemController {
               future = this.paypalService.getCartIpn(
                 itemQuantities,
                 timestamp,
-                group.parent.currency,
+                group.event.currency,
                 timestamp,
                 'Completed',
                 '',
@@ -253,7 +243,7 @@ export default class PublicEventItemController {
               <input type="hidden" name="cmd" value="_cart">
               <input type="hidden" name="upload" value="1">
               <input type="hidden" name="business" value="${business}">
-              <input type="hidden" name="currency_code" value="${group.parent.currency}">
+              <input type="hidden" name="currency_code" value="${group.event.currency}">
               <input type="hidden" name="notify_url" value="${notifyUrl}">
               <input type="hidden" name="custom" value="${detail.custom}">
               <input type="hidden" name="return" value="${returnUrl}">
@@ -301,7 +291,10 @@ export default class PublicEventItemController {
         }
       }).finally(() => {
         this.run();
-        close.resolve();
+
+        if (this.settings.paypal.mock) {
+          close.resolve();
+        }
       });
     } else {
       this.uiService.notify('No item selection made');
@@ -338,6 +331,7 @@ PublicEventItemController.$inject = [
   '$timeout',
   '$scope',
   'ItemService',
+  'EventService',
   'TransactionService',
   'PaymentProfileService',
   'AccessService',

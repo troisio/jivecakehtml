@@ -1,5 +1,5 @@
 export default class OrganizationService {
-  constructor($window, $http, Organization, settings, eventService, permissionService, toolsService, SubscriptionPaymentDetail) {
+  constructor($window, $http, Organization, settings, eventService, permissionService, toolsService) {
     this.$window = $window;
     this.$http = $http;
     this.Organization = Organization;
@@ -98,10 +98,11 @@ export default class OrganizationService {
     });
   }
 
-  getOrganizationsByUser(token, user_id) {
+  getOrganizationsByUser(token, user_id, params) {
     const url = [this.settings.jivecakeapi.uri, 'user', user_id, 'organization'].join('/');
 
     return this.$http.get(url, {
+      params: params,
       headers: {
         Authorization: 'Bearer ' + token
       }

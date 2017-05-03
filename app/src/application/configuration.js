@@ -76,8 +76,7 @@ export default [
       controllerAs: 'controller',
       params: {
         page: '0',
-        pageSize: '10',
-        order: '-timeUpdated'
+        pageSize: '10'
       }
     })
     .state('application.internal.event.update', {
@@ -99,8 +98,7 @@ export default [
       controllerAs: 'controller',
       params: {
         page: '0',
-        pageSize: '10',
-        order: '-timeUpdated'
+        pageSize: '10'
       }
     })
     .state('application.internal.item.update', {

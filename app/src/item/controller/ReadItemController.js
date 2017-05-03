@@ -49,6 +49,7 @@ export default class ReadItemController {
 
       query.limit = limit;
       query.offset = offset;
+      query.order = '-lastActivity';
 
       return this.itemService.search(this.storage.auth.idToken, query).then((itemSearchResult) => {
         const items = itemSearchResult.entity;

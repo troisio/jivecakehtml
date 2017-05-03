@@ -1,5 +1,5 @@
 <div class="public-item-page" ng-show="uiReady">
-  <section ng-show="groupData.parent.currency !== null && groupData.parent.paymentProfileId !== null">
+  <section ng-show="groupData.event.currency !== null && groupData.event.paymentProfileId !== null">
     <md-table-container>
       <table ng-model="selected" md-table multiple>
         <tbody md-body>
@@ -9,7 +9,7 @@
             </td>
             <td md-cell>
               <div ng-show="itemData.amount !== 0" class="amount" layout-align="column">
-                <span ng-show="groupData.parent.currency === 'USD'">&#36;</span><span ng-show="groupData.parent.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
+                <span ng-show="groupData.event.currency === 'USD'">&#36;</span><span ng-show="groupData.event.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
               </div>
               <span ng-show="itemData.amount === 0">free</span>
             </td>
@@ -29,16 +29,11 @@
               <ng-md-icon ng-show="controller.itemIsBlocked(groupData, itemData)" icon="block"></ng-md-icon>
             </td>
           </tr>
-          <tr ng-show="data.length === 0" md-row>
-            <td md-cell colspan="4">
-              <span>No items found</span>
-            </td>
-          </tr>
         </tbody>
       </table>
     </md-table-container>
   </section>
-  <div ng-show="groupData.parent.hasCurrencyAndPaymentProfile() && hasAnySelections" class="checkout">
+  <div ng-show="groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections" class="checkout">
     <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
   </div>
   <div ng-show="groupData.itemData.length === 0" layout-padding>

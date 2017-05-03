@@ -1,9 +1,31 @@
 export default class EventService {
-  constructor($http, settings, toolsService, Event) {
+  constructor($http, settings, toolsService, Event, Item) {
     this.$http = $http;
     this.settings = settings;
     this.toolsService = toolsService;
     this.Event = Event;
+    this.Item = Item;
+  }
+
+  getAggregatedEventData(id, token) {
+    const url = [this.settings.jivecakeapi.uri, 'event', id, 'aggregated'].join('/');
+    const options = {};
+
+    if (token !== null) {
+      options.headers = {
+        Authorization: 'Bearer ' + token
+      };
+    }
+
+    return this.$http.get(url, options).then((response) => {
+
+      response.data.event = this.toolsService.toObject(response.data.event, this.Event);
+      response.data.itemData.forEach((itemDatum) => {
+        itemDatum.item = this.toolsService.toObject(itemDatum.item, this.Item);
+      });
+
+      return response.data;
+    });
   }
 
   read(token, id) {
@@ -13,9 +35,7 @@ export default class EventService {
       headers: {
         Authorization : 'Bearer ' + token
       }
-    }).then(response => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toObject(response.data));
   }
 
   publicSearch(params) {
@@ -105,4 +125,4 @@ export default class EventService {
   }
 }
 
-EventService.$inject = ['$http', 'settings', 'ToolsService', 'Event'];
+EventService.$inject = ['$http', 'settings', 'ToolsService', 'Event', 'Item'];

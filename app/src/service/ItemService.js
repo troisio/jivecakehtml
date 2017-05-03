@@ -1,5 +1,5 @@
 export default class ItemService {
-  constructor($window, $q, $http, transactionService, settings, toolsService, relationalService, Organization, Event, Item) {
+  constructor($window, $q, $http, transactionService, settings, toolsService, relationalService, Organization, Item) {
     this.$window = $window;
     this.$q = $q;
     this.$http = $http;
@@ -8,7 +8,6 @@ export default class ItemService {
     this.toolsService = toolsService;
     this.relationalService = relationalService;
     this.Organization = Organization;
-    this.Event = Event;
     this.Item = Item;
 
     this.settings = this.settings;
@@ -21,7 +20,7 @@ export default class ItemService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => this.toObject(response.data));
+    }).then(response => this.toolsService.toObject(response.data, this.Item));
   }
 
   update(token, item) {
@@ -43,9 +42,7 @@ export default class ItemService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then((response) => this.toObject(response.data));
   }
 
   publicSearch(params) {
@@ -136,30 +133,6 @@ export default class ItemService {
     return future;
   }
 
-  getAggregatedItemData(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'item', 'aggregated'].join('/');
-    const options = {
-      params: params
-    };
-
-    if (token !== null) {
-      options.headers = {
-        Authorization: 'Bearer ' + token
-      };
-    }
-
-    return this.$http.get(url, options).then((response) => {
-      response.data.forEach((group) => {
-        group.parent = this.toolsService.toObject(group.parent, this.Event);
-        group.itemData.forEach((itemDatum) => {
-          itemDatum.item = this.toolsService.toObject(itemDatum.item, this.Item);
-        });
-      });
-
-      return response.data;
-    });
-  }
-
   delete(token, id) {
     const url = [this.settings.jivecakeapi.uri, 'item', id].join('/');
     return this.$http.delete(url, {
@@ -178,4 +151,4 @@ export default class ItemService {
   }
 }
 
-ItemService.$inject = ['$window', '$q', '$http', 'TransactionService', 'settings', 'ToolsService', 'RelationalService', 'Organization', 'Event', 'Item'];
+ItemService.$inject = ['$window', '$q', '$http', 'TransactionService', 'settings', 'ToolsService', 'RelationalService', 'Organization', 'Item'];

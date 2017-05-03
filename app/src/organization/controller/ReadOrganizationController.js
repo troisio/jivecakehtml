@@ -24,7 +24,10 @@ export default class ReadOrganizationController {
     this.$scope.$parent.ready.then(resolve => {
       return this.organizationService.getOrganizationsByUser(
         this.storage.auth.idToken,
-        this.storage.auth.idTokenPayload.sub
+        this.storage.auth.idTokenPayload.sub,
+        {
+          order: '-lastActivity'
+        }
       ).then((organizations) => {
         this.$scope.data = this.organizationService.getOrganizationsWithPermissions(organizations, resolve.permission.entity);
       });

@@ -52,6 +52,7 @@ export default class ReadEventController {
 
       query.limit = limit;
       query.offset = offset;
+      query.order = '-lastActivity';
 
       return this.eventService.search(this.storage.auth.idToken, query).then((eventSearchResult) => {
         const events = eventSearchResult.entity;

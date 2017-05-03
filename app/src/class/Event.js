@@ -10,8 +10,9 @@ export default class Event {
     this.currency = null;
     this.timeStart = null;
     this.timeEnd = null;
-    this.timeCreated = 0;
-    this.timeUpdated = 0;
+    this.timeCreated = null;
+    this.timeUpdated = null;
+    this.lastActivity = null;
   }
 
   hasCurrencyAndPaymentProfile() {
