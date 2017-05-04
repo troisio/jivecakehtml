@@ -57,137 +57,152 @@ import TransferPassController from './transaction/controller/TransferPassControl
 
 import UpdateAccountController from './user/controller/UpdateAccountController';
 
-angular.module('jivecakeweb', [
-  jiveCakeClassModule.name,
-  jiveCakeServiceModule.name,
-  'ngMessages',
-  'ngMaterial',
-  'ngMdIcons',
-  'ngSanitize',
-  'ui.router',
-  'auth0.lock',
-  'angular-jwt',
-  'md.data.table',
-  'hc.marked',
-  'monospaced.qrcode'
-])
-.filter('featureTypeFilter', featureTypeFilter)
-.service('HTTPInterceptor', HTTPInterceptor)
-.filter('absoluteValue', absoluteValue)
-.filter('userIdentificationFilter', userIdentificationFilter)
-.filter('transactionCSSClass', transactionCSSClass)
-.filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
-.constant('settings', settings)
-.config(configuration)
-.run([
-  'lock',
-  'angular',
-  '$window',
-  '$location',
-  '$state',
-  '$mdDialog',
-  'OrganizationService',
-  'PermissionService',
-  'UIService',
-  'StorageService',
-  'Auth0Service',
-  'JiveCakeLocalStorage',
-  function(
-    lock,
-    angular,
-    $window,
-    $location,
-    $state,
-    $mdDialog,
-    organizationService,
-    permissionService,
-    uiService,
-    storageService,
-    auth0Service,
-    JiveCakeLocalStorage
-  ) {
-    lock.on('authenticated', function(auth) {
-      const storage = new JiveCakeLocalStorage();
-      storage.timeCreated = new $window.Date().getTime();
-      storage.auth = auth;
-      storageService.write(storage);
+/*bootstrap lovefield*/
 
-      permissionService.search(auth.idToken, {
-        user_id: auth.idTokenPayload.sub,
-        objectClass: organizationService.getObjectClassName()
-      }).then(function(search) {
-        if (typeof auth.state === 'undefined') {
-          $state.go('application.internal.myTransaction', {
-            user_id: auth.idTokenPayload.sub
-          }, {
-            reload: true
-          });
-        } else {
-          const routerParameters = angular.fromJson(auth.state);
+const builder = lf.schema.create('jivecake', 1);
+builder.createTable('Permission')
+  .addColumn('id', lf.Type.STRING)
+  .addColumn('user_id', lf.Type.STRING)
+  .addColumn('objectId', lf.Type.STRING)
+  .addColumn('include', lf.Type.INTEGER)
+  .addColumn('objectClass', lf.Type.STRING)
+  .addColumn('permissions', lf.Type.ARRAY_BUFFER)
+  .addColumn('timeCreated', lf.Type.INTEGER)
+  .addPrimaryKey(['id']);
 
-          if (routerParameters.name === 'application.public.home') {
-            if (search.entity.length > 0) {
-              $state.go('application.internal.organization.read', {}, {reload: true});
-            } else {
-              $state.go('application.internal.myTransaction', {
-                user_id: auth.idTokenPayload.sub
-              }, {
-                reload: true
-              });
-            }
+builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
+  angular.module('jivecakeweb', [
+    jiveCakeClassModule.name,
+    jiveCakeServiceModule.name,
+    'ngMessages',
+    'ngMaterial',
+    'ngMdIcons',
+    'ngSanitize',
+    'ui.router',
+    'auth0.lock',
+    'angular-jwt',
+    'md.data.table',
+    'monospaced.qrcode'
+  ])
+  .filter('featureTypeFilter', featureTypeFilter)
+  .service('HTTPInterceptor', HTTPInterceptor)
+  .filter('absoluteValue', absoluteValue)
+  .filter('userIdentificationFilter', userIdentificationFilter)
+  .filter('transactionCSSClass', transactionCSSClass)
+  .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
+  .constant('settings', settings)
+  .constant('db', db)
+  .config(configuration)
+  .run([
+    'lock',
+    'angular',
+    '$window',
+    '$location',
+    '$state',
+    '$mdDialog',
+    'OrganizationService',
+    'PermissionService',
+    'UIService',
+    'StorageService',
+    'Auth0Service',
+    'JiveCakeLocalStorage',
+    function(
+      lock,
+      angular,
+      $window,
+      $location,
+      $state,
+      $mdDialog,
+      organizationService,
+      permissionService,
+      uiService,
+      storageService,
+      auth0Service,
+      JiveCakeLocalStorage
+    ) {
+      lock.on('authenticated', function(auth) {
+        const storage = new JiveCakeLocalStorage();
+        storage.timeCreated = new $window.Date().getTime();
+        storage.auth = auth;
+        storageService.write(storage);
+
+        permissionService.search(auth.idToken, {
+          user_id: auth.idTokenPayload.sub,
+          objectClass: organizationService.getObjectClassName()
+        }).then(function(search) {
+          if (typeof auth.state === 'undefined') {
+            $state.go('application.internal.myTransaction', {
+              user_id: auth.idTokenPayload.sub
+            }, {
+              reload: true
+            });
           } else {
-            $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+            const routerParameters = angular.fromJson(auth.state);
+
+            if (routerParameters.name === 'application.public.home') {
+              if (search.entity.length > 0) {
+                $state.go('application.internal.organization.read', {}, {reload: true});
+              } else {
+                $state.go('application.internal.myTransaction', {
+                  user_id: auth.idTokenPayload.sub
+                }, {
+                  reload: true
+                });
+              }
+            } else {
+              $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+            }
           }
-        }
+        });
+      }, function() {
+        uiService.notify('Unable to login');
       });
-    }, function() {
-      uiService.notify('Unable to login');
-    });
-  }
-])
-.controller('ApplicationController', ApplicationController)
-.controller('HomeController', HomeController)
-.controller('InternalApplicationController', InternalApplicationController)
+    }
+  ])
+  .controller('ApplicationController', ApplicationController)
+  .controller('HomeController', HomeController)
+  .controller('InternalApplicationController', InternalApplicationController)
 
-.controller('ConfirmationController', ConfirmationController)
+  .controller('ConfirmationController', ConfirmationController)
 
-.controller('OAuthRedirectController', OAuthRedirectController)
-.controller('EmailVerifiedController', EmailVerifiedController)
-.controller('SessionWarningController', SessionWarningController)
+  .controller('OAuthRedirectController', OAuthRedirectController)
+  .controller('EmailVerifiedController', EmailVerifiedController)
+  .controller('SessionWarningController', SessionWarningController)
 
-.controller('CreateEventController', CreateEventController)
-.controller('CreateOrganizationAndEventController', CreateOrganizationAndEventController)
-.controller('EventController', EventController)
-.controller('InsufficientSubscriptionController', InsufficientSubscriptionController)
-.controller('ReadEventController', ReadEventController)
-.controller('UpdateEventController', UpdateEventController)
+  .controller('CreateEventController', CreateEventController)
+  .controller('CreateOrganizationAndEventController', CreateOrganizationAndEventController)
+  .controller('EventController', EventController)
+  .controller('InsufficientSubscriptionController', InsufficientSubscriptionController)
+  .controller('ReadEventController', ReadEventController)
+  .controller('UpdateEventController', UpdateEventController)
 
-.controller('CreateItemController', CreateItemController)
-.controller('ItemController', ItemController)
-.controller('ReadItemController', ReadItemController)
-.controller('UpdateItemController', UpdateItemController)
+  .controller('CreateItemController', CreateItemController)
+  .controller('ItemController', ItemController)
+  .controller('ReadItemController', ReadItemController)
+  .controller('UpdateItemController', UpdateItemController)
 
-.controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
-.controller('CreateOrganizationController', CreateOrganizationController)
-.controller('OrganizationController', OrganizationController)
-.controller('ReadOrganizationController', ReadOrganizationController)
-.controller('UpdateOrganizationController', UpdateOrganizationController)
+  .controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
+  .controller('CreateOrganizationController', CreateOrganizationController)
+  .controller('OrganizationController', OrganizationController)
+  .controller('ReadOrganizationController', ReadOrganizationController)
+  .controller('UpdateOrganizationController', UpdateOrganizationController)
 
-.controller('CreatePaymentProfileController', CreatePaymentProfileController)
+  .controller('CreatePaymentProfileController', CreatePaymentProfileController)
 
-.controller('PublicController', PublicController)
-.controller('PublicEventController', PublicEventController)
-.controller('PublicEventItemController', PublicEventItemController)
-.controller('MyTransactionController', MyTransactionController)
+  .controller('PublicController', PublicController)
+  .controller('PublicEventController', PublicEventController)
+  .controller('PublicEventItemController', PublicEventItemController)
+  .controller('MyTransactionController', MyTransactionController)
 
-.controller('CreateTransactionController', CreateTransactionController)
-.controller('TransactionController', TransactionController)
-.controller('ReadTransactionController', ReadTransactionController)
-.controller('TransferPassController', TransferPassController)
+  .controller('CreateTransactionController', CreateTransactionController)
+  .controller('TransactionController', TransactionController)
+  .controller('ReadTransactionController', ReadTransactionController)
+  .controller('TransferPassController', TransferPassController)
 
-.controller('UpdateAccountController', UpdateAccountController)
-.constant('angular', angular);
+  .controller('UpdateAccountController', UpdateAccountController)
+  .constant('angular', angular);
 
-angular.element(document).ready(() => {
-  angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});
+  angular.element(document).ready(() => {
+    angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});
+  });
 });

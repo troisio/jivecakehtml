@@ -1,6 +1,5 @@
 export default class CreateItemController {
   constructor(
-    $q,
     $rootScope,
     $scope,
     $state,
@@ -10,11 +9,8 @@ export default class CreateItemController {
     itemService,
     storageService,
     uiService,
-    Organization,
-    Event,
     permissions
   ) {
-    this.$q = $q;
     this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$state = $state;
@@ -23,8 +19,6 @@ export default class CreateItemController {
     this.eventService = eventService;
     this.itemService = itemService;
     this.uiService = uiService;
-    this.Organization = Organization;
-    this.Event = Event;
     this.permissions = permissions;
 
     this.storage = storageService.read();
@@ -38,13 +32,13 @@ export default class CreateItemController {
     this.$scope.uiReady = false;
 
     const organizationIds = this.permissions.filter(subject =>
-        subject.objectClass === this.organizationService.getObjectClassName() &&
-        subject.has(this.organizationService.getWritePermission())
+      subject.objectClass === this.organizationService.getObjectClassName() &&
+      subject.has(this.organizationService.getWritePermission())
     ).map(permission => permission.objectId);
 
     return this.eventService.search(this.storage.auth.idToken, {
       organizationId: organizationIds,
-      order: '-timeUpdated'
+      order: '-lastActivity'
     }).then((eventSearch) => {
       this.$scope.events = eventSearch.entity;
     }, () => {
@@ -56,9 +50,6 @@ export default class CreateItemController {
   }
 
   submit(item, event) {
-    /*
-      Export this if statement logic to view, need to see if form is valid
-    */
     if (event !== null) {
       this.$scope.loading = true;
       item.eventId = event.id;
@@ -74,7 +65,7 @@ export default class CreateItemController {
 
         this.$mdDialog.cancel();
         this.uiService.notify('Item created');
-        this.$rootScope.$broadcast('ITEM.CREATED', item);
+        this.$rootScope.$broadcast('item.created', item);
       }, () => {
         this.uiService.notify('Unable to create item');
       }).finally(() => {
@@ -85,7 +76,6 @@ export default class CreateItemController {
 }
 
 CreateItemController.$inject = [
-  '$q',
   '$rootScope',
   '$scope',
   '$state',
@@ -95,7 +85,5 @@ CreateItemController.$inject = [
   'ItemService',
   'StorageService',
   'UIService',
-  'Organization',
-  'Event',
   'permissions'
 ];

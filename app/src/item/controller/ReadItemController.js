@@ -14,11 +14,9 @@ export default class ReadItemController {
     storageService,
     settings,
     uiService,
-    toolsService,
     paypalService,
     relationalService,
-    SearchEntity,
-    Paging
+    SearchEntity
   ) {
     this.$window = $window;
     this.$q = $q;
@@ -32,93 +30,15 @@ export default class ReadItemController {
     this.permissionService = permissionService;
     this.organizationService = organizationService;
     this.uiService = uiService;
-    this.toolsService = toolsService;
     this.paypalService = paypalService;
     this.relationalService = relationalService;
     this.SearchEntity = SearchEntity;
-    this.Paging = Paging;
 
     this.storage = storageService.read();
-    this.pagingService = new this.Paging((data) => {
-      return this.$q.resolve(data.count);
-    }, (limit, offset) => {
-      const query = this.toolsService.stateParamsToQuery(this.$state.params);
-
-      delete query.page;
-      delete query.pageSize;
-
-      query.limit = limit;
-      query.offset = offset;
-      query.order = '-lastActivity';
-
-      return this.itemService.search(this.storage.auth.idToken, query).then((itemSearchResult) => {
-        const items = itemSearchResult.entity;
-        const eventIds = items.map(item => item.eventId);
-        const itemIds = items.map(item => item.id);
-        const eventFuture = eventIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : this.eventService.search(this.storage.auth.idToken, {id: eventIds});
-
-        let transactionFuture;
-
-        if (itemIds.length > 0) {
-          transactionFuture = this.transactionService.search(this.storage.auth.idToken, {
-            itemId: itemIds,
-            leaf: true,
-            status: this.transactionService.getUsedForCountingStatuses()
-          });
-        } else {
-          transactionFuture = this.$q.resolve(new this.SearchEntity());
-        }
-
-        return this.$q.all([
-          transactionFuture,
-          eventFuture
-        ]).then((resolve) => {
-          const transactionSearchResult = resolve[0];
-          const eventSearchResult = resolve[1];
-          const itemsWithEvent = this.relationalService.oneToOneJoin(
-            items,
-            'eventId',
-            eventSearchResult.entity,
-            'id'
-          );
-          const itemWithTransactions = this.relationalService.leftJoin(
-            items,
-            'id',
-            transactionSearchResult.entity,
-            'itemId'
-          );
-
-          const data = items.map(function(item, index) {
-            const transactions = itemWithTransactions[index].foreign;
-            const transactionCount = transactions.reduce((previous, next) => previous + next.quantity, 0);
-
-            return {
-              item: item,
-              transactions: transactions,
-              transactionCount: transactionCount,
-              event: itemsWithEvent[index].foreign
-            };
-          });
-
-          return {
-            entity: data,
-            count: itemSearchResult.count
-          };
-        });
-      });
-    });
 
     this.$scope.apiUrl = settings.jivecakeapi.uri;
     this.$scope.uiReady = false;
     this.$scope.selected = [];
-    this.$scope.query = {
-      limit: this.$window.parseInt(this.$state.params.pageSize),
-      page: this.$window.parseInt(this.$state.params.page) + 1
-    };
-
-    this.$scope.paginate = () => {
-      this.loadPage(this.$scope.query.page - 1, this.$scope.query.limit);
-    };
 
     this.run();
   }
@@ -133,35 +53,90 @@ export default class ReadItemController {
         permission.objectClass === this.applicationService.getObjectClassName() &&
         permission.has(this.applicationService.getReadPermission())
       );
+      const organizationIds = resolve.permission.entity
+        .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
+        .map(permission => permission.objectId);
+      const query = {
+        order: '-lastActivity'
+      };
 
-      const organizationWritePermissions = permissions.filter((permission) =>
-        permission.objectClass === this.organizationService.getObjectClassName() &&
-        permission.has(this.organizationService.getWritePermission())
-      );
+      let hasFilter = false;
 
-      this.$scope.hasOrganizationWrite = organizationWritePermissions.length > 0;
-      this.$scope.hasApplicationWrite = applicationWritePermissions.length > 0;
-    });
-
-    ['ITEM.DELETED', 'ITEM.CREATED', 'ITEM.UPDATED'].forEach((event) => {
-      this.$scope.$on(event, () => {
-        this.loadPage(0, 5);
+      ['eventId', 'id'].forEach((filter) => {
+        if (typeof this.$state.params[filter] !== 'undefined') {
+          query[filter] = this.$state.params[filter];
+          hasFilter = true;
+        }
       });
-    });
 
-    this.loadPage(
-      this.$window.parseInt(this.$state.params.page),
-      this.$window.parseInt(this.$state.params.pageSize)
-    );
-  }
+      if (!hasFilter) {
+        query.organizationId = organizationIds;
+      }
 
-  loadPage(page, pageSize) {
-    this.$scope.uiReady = false;
+      const onFailure = () => {
+        this.uiService.notify('Unable to retrieve items');
+      };
 
-    this.pagingService.getPaging(page, pageSize).then((paging) => {
-      this.$scope.paging = paging;
+      this.$scope.hasApplicationWrite = applicationWritePermissions.length > 0;
+
+      return this.getData(query).then((data) => {
+        this.$scope.data = data;
+      }, onFailure);
     }).finally(() => {
       this.$scope.uiReady = true;
+    });
+  }
+
+  getData(query) {
+    return this.itemService.search(this.storage.auth.idToken, query).then((itemSearchResult) => {
+      const items = itemSearchResult.entity;
+      const eventIds = items.map(item => item.eventId);
+      const itemIds = items.map(item => item.id);
+      const eventFuture = eventIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : this.eventService.search(this.storage.auth.idToken, {id: eventIds});
+
+      let transactionFuture;
+
+      if (itemIds.length > 0) {
+        transactionFuture = this.transactionService.search(this.storage.auth.idToken, {
+          itemId: itemIds,
+          leaf: true,
+          status: this.transactionService.getUsedForCountingStatuses()
+        });
+      } else {
+        transactionFuture = this.$q.resolve(new this.SearchEntity());
+      }
+
+      return this.$q.all([
+        transactionFuture,
+        eventFuture
+      ]).then((resolve) => {
+        const transactionSearchResult = resolve[0];
+        const eventSearchResult = resolve[1];
+        const itemsWithEvent = this.relationalService.oneToOneJoin(
+          items,
+          'eventId',
+          eventSearchResult.entity,
+          'id'
+        );
+        const itemWithTransactions = this.relationalService.leftJoin(
+          items,
+          'id',
+          transactionSearchResult.entity,
+          'itemId'
+        );
+
+        return items.map(function(item, index) {
+          const transactions = itemWithTransactions[index].foreign;
+          const transactionCount = transactions.reduce((previous, next) => previous + next.quantity, 0);
+
+          return {
+            item: item,
+            transactions: transactions,
+            transactionCount: transactionCount,
+            event: itemsWithEvent[index].foreign
+          };
+        });
+      });
     });
   }
 
@@ -226,11 +201,10 @@ export default class ReadItemController {
       this.itemService.delete(this.storage.auth.idToken, itemData.item.id).then(() => {
         this.uiService.notify('Item deleted');
 
-        const removeIndex = this.$scope.paging.data.entity.indexOf(itemData.item);
-        this.$scope.paging.data.entity.splice(removeIndex, 1);
+        const removeIndex = this.$scope.data.indexOf(itemData);
+        this.$scope.data.splice(removeIndex, 1);
       }, (response) => {
         let message;
-
         if (typeof response.data === 'object' && response.data.error === 'transaction') {
           message = 'Can not delete. Item has transactions';
         } else {
@@ -258,9 +232,7 @@ ReadItemController.$inject = [
   'StorageService',
   'settings',
   'UIService',
-  'ToolsService',
   'PaypalService',
   'RelationalService',
-  'SearchEntity',
-  'Paging'
+  'SearchEntity'
 ];

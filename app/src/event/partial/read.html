@@ -2,7 +2,7 @@
   <md-table-container>
     <table ng-model="selected" md-table md-row-select multiple>
       <tbody md-body>
-        <tr md-row md-auto-select ng-repeat="eventData in paging.data.entity track by eventData.event.id">
+        <tr md-row md-auto-select ng-repeat="eventData in data track by eventData.event.id">
           <td md-cell>
             <div>
               <a ui-sref="application.public.event.item({id: eventData.event.id})" ng-show="eventData.event.status === 1">{{eventData.event.name}}</a>
@@ -48,7 +48,7 @@
             </md-button>
           </td>
         </tr>
-        <tr md-row ng-show="paging.data.entity.length === 0">
+        <tr md-row ng-show="data.length === 0">
           <td md-cell colspan="3">
             <span class="md-subheader">No data found</span>
           </td>
@@ -56,12 +56,10 @@
       </tbody>
     </table>
   </md-table-container>
-  <md-table-pagination md-limit="query.limit" md-limit-options="[10, 20, 50]" md-page="query.page" md-total="{{paging.total}}" md-on-paginate="paginate" md-page-select>
-  </md-table-pagination>
+</div>
+<div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
+  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
 </div>
 <md-button class="md-fab md-fab-bottom-right md-ink-ripple" aria-label="Add" ng-click="controller.createEvent()">
   <ng-md-icon size="35" icon="add"></ng-md-icon>
 </md-button>
-<div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
-  <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-</div>

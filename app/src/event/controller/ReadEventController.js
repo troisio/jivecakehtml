@@ -4,7 +4,6 @@ export default class ReadEventController {
     $scope,
     $q,
     $state,
-    $stateParams,
     $mdDialog,
     organizationService,
     eventService,
@@ -13,15 +12,12 @@ export default class ReadEventController {
     storageService,
     toolsService,
     settings,
-    uiService,
-    Paging,
-    SearchEntity
+    uiService
   ) {
     this.$window = $window;
     this.$scope = $scope;
     this.$q = $q;
     this.$state = $state;
-    this.$stateParams = $stateParams;
     this.$mdDialog = $mdDialog;
     this.organizationService = organizationService;
     this.eventService = eventService;
@@ -30,84 +26,75 @@ export default class ReadEventController {
     this.toolsService = toolsService;
     this.settings = settings;
     this.uiService = uiService;
-    this.Paging = Paging;
-    this.SearchEntity = SearchEntity;
 
     this.storage = storageService.read();
-    this.$scope.uiReady = false;
     this.$scope.$parent.$parent.selectedTab = 1;
     this.$scope.token = this.storage.auth.idToken;
     this.$scope.apiUri = settings.jivecakeapi.uri;
     this.$scope.selected = [];
-
+    this.$scope.data = [];
     this.$scope.uiReady = false;
-
-    this.pagingService = new this.Paging((data) => {
-      return this.$q.resolve(data.count);
-    }, (limit, offset) => {
-      const query = this.toolsService.stateParamsToQuery($stateParams);
-
-      delete query.page;
-      delete query.pageSize;
-
-      query.limit = limit;
-      query.offset = offset;
-      query.order = '-lastActivity';
-
-      return this.eventService.search(this.storage.auth.idToken, query).then((eventSearchResult) => {
-        const events = eventSearchResult.entity;
-
-        let organizationFuture;
-
-        if (events.length === 0) {
-          organizationFuture = this.$q.resolve([]);
-        } else {
-          organizationFuture = this.organizationService.getOrganizationsByUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub);
-        }
-
-        return organizationFuture.then((organizations) => {
-          const data = {
-            count: eventSearchResult.count
-          };
-
-          data.entity = this.relationalService.oneToOneJoin(events, 'organizationId', organizations, 'id').map(function(joinedEntity) {
-            return {
-              event: joinedEntity.entity,
-              organization: joinedEntity.foreign
-            };
-          });
-
-          return data;
-        });
-      });
-    });
-
-    this.$scope.query = {
-      limit: this.$window.parseInt(this.$stateParams.pageSize),
-      page: this.$window.parseInt(this.$stateParams.page) + 1
-    };
-
-    this.$scope.paginate = () => {
-      this.loadPage(this.$scope.query.page - 1, this.$scope.query.limit);
-    };
-
     this.run();
   }
 
   run() {
     this.$scope.$parent.ready.then((resolve) => {
-      const page = this.$window.parseInt(this.$stateParams.page);
-      const pageSize = this.$window.parseInt(this.$stateParams.pageSize);
+      const organizationIds = resolve.permission.entity
+        .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
+        .map(permission => permission.objectId);
+      const query = {
+        order: '-lastActivity'
+      };
+      const failure = () => {
+        this.uiService.notify('Unable to retrieve data');
+      };
 
-      this.loadPage(page, pageSize).then(function() {
-      }, () => {
-        this.uiService.notify('Unable to search events');
+      let hasFilter = false;
+
+      ['organizationId', 'id'].forEach((filter) => {
+        if (typeof this.$state.params[filter] !== 'undefined') {
+          query[filter] = this.$state.params[filter];
+          hasFilter = true;
+        }
       });
 
-      ['EVENT.CREATED', 'EVENT.UPDATED'].forEach((event) => {
-        this.$scope.$on(event, () => {
-          this.loadPage(page, pageSize);
+      if (!hasFilter) {
+        query.organizationId = organizationIds;
+      }
+
+      return this.getEventData(query).then((searchResult) => {
+        this.$scope.data = searchResult.entity;
+      }, failure);
+    }).finally(() => {
+      this.$scope.uiReady = true;
+    });
+  }
+
+  getEventData(query) {
+    return this.eventService.search(this.storage.auth.idToken, query).then((eventSearchResult) => {
+      const events = eventSearchResult.entity;
+
+      let organizationFuture;
+
+      if (events.length === 0) {
+        organizationFuture = this.$q.resolve([]);
+      } else {
+        organizationFuture = this.organizationService.getOrganizationsByUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub);
+      }
+
+      return organizationFuture.then((organizations) => {
+        const data = {
+          count: eventSearchResult.count
+        };
+
+        data.entity = this.relationalService.oneToOneJoin(events, 'organizationId', organizations, 'id').map(function(joinedEntity) {
+          return {
+            event: joinedEntity.entity,
+            organization: joinedEntity.foreign
+          };
         });
+
+        return data;
       });
     });
   }
@@ -139,16 +126,6 @@ export default class ReadEventController {
     });
   }
 
-  loadPage(page, pageSize) {
-    this.$scope.uiReady = false;
-
-    return this.pagingService.getPaging(page, pageSize).then((paging) => {
-      this.$scope.paging = paging;
-    }).finally(() => {
-      this.$scope.uiReady = true;
-    });
-  }
-
   delete(eventData, $event) {
     const confirm = this.$mdDialog.confirm()
       .title('Are you sure you want to delete this event?')
@@ -164,8 +141,8 @@ export default class ReadEventController {
       this.eventService.delete(this.storage.auth.idToken, eventData.event.id).then(() => {
         this.uiService.notify('Event deleted');
 
-        const removeIndex = this.$scope.paging.data.entity.indexOf(eventData);
-        this.$scope.paging.data.entity.splice(removeIndex, 1);
+        const removeIndex = this.$scope.data.indexOf(eventData);
+        this.$scope.data.splice(removeIndex, 1);
       }, (response) => {
         const message = response.status === 401 ? 'You do not have permission to delete this event' : 'Unable to delete event';
         this.uiService.notify(message);
@@ -173,14 +150,6 @@ export default class ReadEventController {
         this.$scope.uiReady = true;
       });
     });
-  }
-
-  goToPublicPage(event) {
-    if (event.status === this.eventService.getActiveEventStatus()) {
-      this.$state.go('application.public.event.item', {id: event.id});
-    } else {
-      this.uiService.notify('Event must be active');
-    }
   }
 
   createEvent() {
@@ -203,7 +172,6 @@ ReadEventController.$inject = [
   '$scope',
   '$q',
   '$state',
-  '$stateParams',
   '$mdDialog',
   'OrganizationService',
   'EventService',
@@ -212,7 +180,5 @@ ReadEventController.$inject = [
   'StorageService',
   'ToolsService',
   'settings',
-  'UIService',
-  'Paging',
-  'SearchEntity'
+  'UIService'
 ];

@@ -58,8 +58,6 @@ export default class PaymentProfileService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(function(response) {
-      return response.data;
     });
   }
 

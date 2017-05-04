@@ -16,7 +16,7 @@
           ng-required="true"
           md-selected-item="event"
           md-search-text="eventSearchText"
-          md-items="event in events | filter: eventSearchText"
+          md-items="event in events | filter: eventSearchText | limitTo: 2"
           md-item-text="event.name"
           md-min-length="0"
           placeholder="search for associated event">
@@ -25,7 +25,7 @@
           </md-item-template>
           <md-not-found>No events found</md-not-found>
         </md-autocomplete>
-        <md-input-container layout="column">
+        <md-input-container>
           <md-button type="submit" class="md-raised md-primary">Create</md-button>
         </md-input-container>
       </form>

@@ -139,7 +139,7 @@ export default class ItemService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => this.toObject(response.data));
+    });
   }
 
   getActiveStatus() {

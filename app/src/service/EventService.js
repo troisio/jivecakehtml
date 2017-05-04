@@ -107,8 +107,6 @@ export default class EventService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
     });
   }
 

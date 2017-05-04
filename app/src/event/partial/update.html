@@ -88,13 +88,13 @@
       </md-input-container>
       <div layout layout-sm="row">
         <md-input-container class="md-block">
-          <md-button ng-click="controller.run()" class="md-raised">Reset</md-button>
-        </md-input-container>
-        <md-input-container class="md-block">
           <md-button ui-sref="application.internal.event.read({organizationId: organizationIds})" class="md-raised">Cancel</md-button>
         </md-input-container>
         <md-input-container class="md-block">
           <md-button type="submit" class="md-raised md-primary">Update</md-button>
+        </md-input-container>
+        <md-input-container ng-show="loading">
+          <md-progress-circular md-mode="indeterminate"></md-progress-circular>
         </md-input-container>
       </div>
     </form>

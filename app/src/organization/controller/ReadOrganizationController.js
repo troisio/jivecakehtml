@@ -29,7 +29,10 @@ export default class ReadOrganizationController {
           order: '-lastActivity'
         }
       ).then((organizations) => {
-        this.$scope.data = this.organizationService.getOrganizationsWithPermissions(organizations, resolve.permission.entity);
+        this.$scope.data = this.organizationService.getOrganizationsWithPermissions(
+          organizations,
+          resolve.permission.entity
+        );
       });
     }).finally(() => {
       this.$scope.uiReady = true;
@@ -48,7 +51,7 @@ export default class ReadOrganizationController {
     this.$mdDialog.show(confirm).then(() => {
       this.$scope.uiReady = false;
 
-      this.organizationService.delete(this.storage.auth.idToken, organizationData.organization.id).then((organization) => {
+      this.organizationService.delete(this.storage.auth.idToken, organizationData.organization.id).then(() => {
         this.uiService.notify('Organization deleted');
 
         const removeIndex = this.$scope.data.indexOf(organizationData);

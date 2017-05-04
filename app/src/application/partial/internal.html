@@ -1,9 +1,9 @@
 <div layout="column">
   <md-tabs ng-show="showTabs" md-selected="selectedTab">
     <md-tab ui-sref="application.internal.organization.read" label="Organizations"></md-tab>
-    <md-tab ui-sref="application.internal.event.read({organizationId: organizationIds})" label="Events"></md-tab>
-    <md-tab ui-sref="application.internal.item.read({organizationId: organizationIds})" label="Items"></md-tab>
-    <md-tab ui-sref="application.internal.transaction.read({organizationId: organizationIds})" label="Transactions"></md-tab>
+    <md-tab ui-sref="application.internal.event.read" label="Events"></md-tab>
+    <md-tab ui-sref="application.internal.item.read" label="Items"></md-tab>
+    <md-tab ui-sref="application.internal.transaction.read" label="Transactions"></md-tab>
   </md-tabs>
 </div>
 <ui-view flex layout="column">

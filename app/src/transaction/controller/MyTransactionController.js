@@ -33,15 +33,13 @@ export default class MyTransactionController {
       (data) => this.$q.resolve(data.count),
       (limit, offset) => {
         const query = this.toolsService.stateParamsToQuery(this.$state.params);
+        this.toolsService.maintainKeys(query, ['user_id', 'limit', 'offset', 'order']);
 
         query.status = transactionService.getUsedForCountingStatuses();
         query.limit = 100;
         query.leaf = true;
         query.order = '-timeCreated';
-
         query.user_id = this.$state.params.user_id;
-
-        this.toolsService.maintainKeys(query, ['user_id', 'limit', 'offset', 'order']);
 
         return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, query);
       }

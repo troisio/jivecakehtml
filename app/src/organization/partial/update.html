@@ -48,7 +48,7 @@
                   </md-checkbox>
                 </td>
                 <td md-cell>
-                  <md-button aria-label="Delete user from organization" ng-click="controller.removeUserFromOrganization(user)" ng-show="currentUser.user_id !== user.user_id">
+                  <md-button aria-label="Delete user from organization" ng-click="controller.removeUserFromOrganization(user)" ng-show="auth.idTokenPayload.sub !== user.user_id">
                     <ng-md-icon icon="delete"></ng-md-icon>
                   </md-button>
                 </td>

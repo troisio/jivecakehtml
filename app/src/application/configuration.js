@@ -70,14 +70,10 @@ export default [
       controller: 'EventController'
     })
     .state('application.internal.event.read', {
-      url : '?organizationId&eventId&page&pageSize&order&id',
+      url : '?organizationId&id',
       templateUrl: '/src/event/partial/read.html',
       controller: 'ReadEventController',
-      controllerAs: 'controller',
-      params: {
-        page: '0',
-        pageSize: '10'
-      }
+      controllerAs: 'controller'
     })
     .state('application.internal.event.update', {
       url : '/{eventId}/update',
@@ -92,14 +88,10 @@ export default [
       controller: 'ItemController'
     })
     .state('application.internal.item.read', {
-      url: '?organizationId&eventId&id&page&pageSize&order',
+      url : '?eventId&id',
       templateUrl: '/src/item/partial/read.html',
       controller: 'ReadItemController',
-      controllerAs: 'controller',
-      params: {
-        page: '0',
-        pageSize: '10'
-      }
+      controllerAs: 'controller'
     })
     .state('application.internal.item.update', {
       url: '/{itemId}/update',

@@ -21,39 +21,12 @@ export default class CreateOrganizationController {
 
     this.$scope.close = this.$mdDialog.hide;
     this.$scope.loading = false;
-    this.$scope.uiReady = false;
     this.$scope.organization = new this.Organization();
 
     this.rootOrganizationPromise = this.organizationService.publicSearch({
       parentId: null
     }).then(function(searchResult) {
       return searchResult.entity[0];
-    });
-
-    this.run();
-  }
-
-  run() {
-    this.organizationService.search(this.storage.auth.idToken, {}).then((paging) => {
-      const organizations = paging.entity;
-
-      organizations.sort(function(first, second) {
-        let result;
-
-        if (first.parentId === null) {
-          result = -1;
-        } else if (second.parentId === null) {
-          result = 1;
-        } else {
-          result = 0;
-        }
-
-        return result;
-      });
-
-      this.$scope.organizations = organizations;
-    }).finally(() => {
-      this.$scope.uiReady = true;
     });
   }
 

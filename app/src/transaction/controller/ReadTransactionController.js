@@ -92,7 +92,7 @@ export default class ReadTransactionController {
     }
 
     this.$mdDialog.show(confirm).then(() => {
-      this.transactionService.delete(this.storage.auth.idToken, transaction.id).then((profile) => {
+      this.transactionService.delete(this.storage.auth.idToken, transaction.id).then(() => {
         this.reload();
         this.uiService.notify('Transaction deleted');
       }, (response) => {
@@ -132,13 +132,19 @@ export default class ReadTransactionController {
       order: '-timeCreated',
       leaf: 'true'
     };
-    const stateParams = this.toolsService.stateParamsToQuery(this.$state.params);
+
+    if (typeof this.$state.params.eventId !== 'undefined') {
+      query.eventId = this.$state.params.eventId;
+    }
+
+    if (typeof this.$state.params.itemId !== 'undefined') {
+      query.itemId = this.$state.params.itemId;
+    }
 
     if (this.$scope.searchText.length > 0) {
       query.text = this.$scope.searchText;
     }
 
-    this.$window.Object.assign(query, stateParams);
     return query;
   }
 }

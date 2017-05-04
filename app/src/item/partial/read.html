@@ -2,7 +2,7 @@
   <md-table-container>
     <table ng-model="selected" md-table md-row-select multiple>
       <tbody md-body>
-        <tr md-row md-auto-select ng-repeat="itemData in paging.data.entity track by itemData.item.id">
+        <tr md-row md-auto-select ng-repeat="itemData in data track by itemData.item.id">
           <td md-cell class="name">
             <p>{{itemData.item.name}}</p>
             <a ui-sref="application.internal.event.read({id: itemData.event.id})">{{itemData.event.name}}</a>
@@ -48,7 +48,7 @@
             </md-button>
           </td>
         </tr>
-        <tr md-row ng-show="paging.data.entity.length === 0">
+        <tr md-row ng-show="data.length === 0">
           <td md-cell colspan="3">
             <span class="md-subheader">No data found</span>
           </td>
@@ -56,8 +56,6 @@
       </tbody>
     </table>
   </md-table-container>
-  <md-table-pagination md-limit="query.limit" md-limit-options="[10, 20, 50]" md-page="query.page" md-total="{{paging.data.count}}" md-on-paginate="paginate" md-page-select>
-  </md-table-pagination>
 </div>
 <div ng-show="!uiReady" layout-margin layout="row" layout-align="center">
   <md-progress-circular md-mode="indeterminate"></md-progress-circular>

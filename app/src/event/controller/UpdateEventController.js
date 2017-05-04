@@ -30,6 +30,8 @@ export default class UpdateEventController {
     this.$scope.currentDate = new this.$window.Date();
     this.$scope.paymentProfiles = null;
 
+    this.$scope.loading = false;
+
     this.$scope.hours = this.$window.Array.from(new this.$window.Array(24), (_, index) => index);
     this.$scope.minutes = this.$window.Array.from(new this.$window.Array(60), (_, index) => index);
 
@@ -137,6 +139,7 @@ export default class UpdateEventController {
   }
 
   submit(event, timeStart, timeEnd, minimumTimeBetweenTransactionTransferEnabled) {
+    this.$scope.loading = true;
     const eventCopy = this.angular.copy(event);
 
     if (!minimumTimeBetweenTransactionTransferEnabled) {
@@ -185,6 +188,7 @@ export default class UpdateEventController {
 
     if (eventCopy.timeEnd !== null && eventCopy.timeStart !== null && eventCopy.timeStart > eventCopy.timeEnd) {
       this.uiService.notify('Start Date / Time must be before End Date / Time');
+      this.$scope.loading = false;
     } else {
       this.eventService.update(this.storage.auth.idToken, eventCopy).then((event) => {
         this.$scope.event = event;

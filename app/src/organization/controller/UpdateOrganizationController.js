@@ -40,7 +40,7 @@ export default class UpdateOrganizationController {
     this.selected = [];
     this.selectedPaymentProfile = [];
     this.storage = storageService.read();
-
+    this.$scope.auth = this.storage.auth;
     this.$scope.uiReady = false;
     this.$scope.organizationPermissionTypes = [];
 
@@ -58,7 +58,6 @@ export default class UpdateOrganizationController {
       });
 
       this.$scope.hasApplicationWrite = applicationWritePermissions.length > 0;
-      this.$scope.currentUser = resolve.user;
       return this.loadUI(this.$stateParams.organizationId);
     }, () => {
       this.uiService.notify('Unable to find organization');
@@ -276,9 +275,9 @@ export default class UpdateOrganizationController {
     this.$mdDialog.show(confirm).then(() => {
       const loader = this.uiService.load();
 
-      this.paymentProfileService.delete(this.storage.auth.idToken, paymentProfile.id).then((profile) => {
+      this.paymentProfileService.delete(this.storage.auth.idToken, paymentProfile.id).then(() => {
         loader.dialog.finally(() => {
-          this.$rootScope.$broadcast('PAYMENT.PROFILE.DELETED', profile);
+          this.$rootScope.$broadcast('PAYMENT.PROFILE.DELETED');
         });
       }, (response) => {
         const hasItems = this.$window.Array.isArray(response.data);

@@ -28,8 +28,6 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
     });
   }
 
@@ -64,7 +62,7 @@ export default class OrganizationService {
       params : params
     }).then((response) => {
       return {
-        entity: this.toObjects(response.data.entity),
+        entity: response.data.entity.map(this.toObject, this),
         count: response.data.count
       };
     });
@@ -80,7 +78,7 @@ export default class OrganizationService {
       }
     }).then((response) => {
       return {
-        entity: this.toObjects(response.data.entity),
+        entity: response.data.entity.map(this.toObject, this),
         count: response.data.count
       };
     });
@@ -156,10 +154,6 @@ export default class OrganizationService {
 
   toObject(subject) {
     return this.toolsService.toObject(subject, this.Organization);
-  }
-
-  toObjects(subject) {
-    return subject.map(this.toObject, this);
   }
 }
 

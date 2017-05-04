@@ -84,7 +84,7 @@ export default class TransactionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => this.toObject(response.data));
+    });
   }
 
   revoke(token, transactionId) {

@@ -2,12 +2,10 @@ export default class ApplicationController {
   constructor(
     angular,
     $window,
-    $rootScope,
     $scope,
     $q,
     $mdDialog,
     $state,
-    $stateParams,
     $mdSidenav,
     accessService,
     applicationService,
@@ -17,16 +15,15 @@ export default class ApplicationController {
     uiService,
     connectionService,
     storageService,
+    db,
     settings
   ) {
     this.angular = angular;
     this.$window = $window;
-    this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$q = $q;
     this.$mdDialog = $mdDialog;
     this.$state = $state;
-    this.$stateParams = $stateParams;
     this.$mdSidenav = $mdSidenav;
     this.accessService = accessService;
     this.applicationService = applicationService;
@@ -36,6 +33,7 @@ export default class ApplicationController {
     this.uiService = uiService;
     this.connectionService = connectionService;
     this.storageService = storageService;
+    this.db = db;
     this.settings = settings;
 
     this.storage = storageService.read();
@@ -57,7 +55,7 @@ export default class ApplicationController {
     this.$scope.ready = ready;
 
     ready.then(resolve => {
-      this.loadScopePermissions(this.$scope, resolve.permission.entity);
+      this.loadScopePermissions(resolve.permission.entity);
 
       return this.auth0Service.getUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then((profile) => {
         this.$scope.user = profile;
@@ -101,14 +99,29 @@ export default class ApplicationController {
     this.connectionService.closeEventSources();
     this.connectionService.deleteEventSources();
 
-    const connectionFuture = this.connectionService.getEventSource(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then(source => {
-      source.addEventListener('transaction.created', (response) => {
-        const transaction = this.angular.fromJson(response.data);
-        this.$rootScope.$broadcast('downstream.transaction.created', transaction);
+    const connectionFuture = this.connectionService.getEventSource(
+      this.storage.auth.idToken,
+      this.storage.auth.idTokenPayload.sub
+    ).then(source => {
+      const onPermissionDownstream = (permissions) => {
+        this.permissionService.search(this.storage.auth.idToken, {
+          user_id: this.storage.auth.idTokenPayload.sub
+        }).then((searchResult) => {
+          const permissions = searchResult.entity;
+          const table = this.db.getSchema().table('Permission');
+
+          this.db.delete().from(table).exec();
+          const rows = searchResult.entity.map(table.createRow, table);
+          this.db.insert().into(table).values(rows).exec();
+        });
+      };
+
+      source.addEventListener('permission.delete', (sse) => {
+        onPermissionDownstream(JSON.parse(sse.data));
       });
 
-      source.addEventListener('agent.logout', () => {
-        this.accessService.logout();
+      source.addEventListener('permission.write', (sse) => {
+        onPermissionDownstream(JSON.parse(sse.data));
       });
 
       return source;
@@ -124,7 +137,7 @@ export default class ApplicationController {
     });
   }
 
-  loadScopePermissions($scope, permissions) {
+  loadScopePermissions(permissions) {
     const organizationPermissions = permissions.filter((permission) => {
       return permission.objectClass === this.organizationService.getObjectClassName();
     });
@@ -134,8 +147,8 @@ export default class ApplicationController {
              permission.has(this.applicationService.getReadPermission());
     });
 
-    $scope.hasOrganizations = organizationPermissions.length > 0;
-    $scope.hasApplicationRead = applicationReadPermissions.length > 0;
+    this.$scope.hasOrganizations = organizationPermissions.length > 0;
+    this.$scope.hasApplicationRead = applicationReadPermissions.length > 0;
   }
 
   createEvent() {
@@ -159,12 +172,10 @@ export default class ApplicationController {
 ApplicationController.$inject = [
   'angular',
   '$window',
-  '$rootScope',
   '$scope',
   '$q',
   '$mdDialog',
   '$state',
-  '$stateParams',
   '$mdSidenav',
   'AccessService',
   'ApplicationService',
@@ -174,5 +185,6 @@ ApplicationController.$inject = [
   'UIService',
   'ConnectionService',
   'StorageService',
+  'db',
   'settings'
 ];

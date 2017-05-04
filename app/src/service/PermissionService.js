@@ -27,7 +27,7 @@ export default class PermissionService {
       }
     }).then((response) => {
       return {
-        entity: this.toObjects(response.data.entity),
+        entity: response.data.entity.map(this.toObject, this),
         count: response.data.count
       };
     });
@@ -40,9 +40,7 @@ export default class PermissionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((data) => {
-      return this.toObject(data.data);
-    });
+    }).then((response) => response.data.map(this.toObject, this));
   }
 
   delete(token, params) {
@@ -53,8 +51,6 @@ export default class PermissionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(function(response) {
-      return response.data;
     });
   }
 
@@ -72,10 +68,6 @@ export default class PermissionService {
 
   toObject(subject) {
     return this.toolsService.toObject(subject, this.Permission);
-  }
-
-  toObjects(subject) {
-    return subject.map(this.toObject, this);
   }
 }
 
