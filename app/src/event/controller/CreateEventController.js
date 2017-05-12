@@ -3,25 +3,29 @@ export default class CreateEventController {
     $rootScope,
     $scope,
     $mdDialog,
+    $state,
     eventService,
+    permissionService,
     storageService,
     organizationService,
     uiService,
     Event,
-    permissions
+    Permission,
+    db
   ) {
     this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
+    this.$state = $state;
     this.eventService = eventService;
+    this.permissionService = permissionService;
     this.organizationService = organizationService;
     this.uiService = uiService;
     this.Event = Event;
-    this.permissions = permissions;
+    this.Permission = Permission;
+    this.db = db;
 
     this.$scope.loading = false;
-    this.$scope.uiReady = false;
-
     this.storage = storageService.read();
 
     this.run();
@@ -31,19 +35,25 @@ export default class CreateEventController {
     this.$scope.event = new this.Event();
     this.$scope.event.minimumTimeBetweenTransactionTransfer = -1;
 
-    this.organizationService.getOrganizationsByUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then((organizations) => {
-      const data = this.organizationService.getOrganizationsWithPermissions(organizations, this.permissions);
-      organizations = data.filter(datum => datum.permissions.has(this.organizationService.getWritePermission()))
-        .map(datum => datum.organization);
+    const organizationTable = this.db.getSchema().table('Organization');
+    const permissionTable = this.db.getSchema().table('Permission');
 
-      if (organizations.length > 0) {
-        this.$scope.event.organizationId = organizations[0].id;
-      }
+    this.db.select()
+      .from(organizationTable)
+      .innerJoin(permissionTable, permissionTable.objectId.eq(organizationTable.id))
+      .where(permissionTable.user_id.eq(this.storage.auth.idTokenPayload.sub))
+      .orderBy(organizationTable.lastActivity, lf.Order.DESC)
+      .exec()
+      .then(rows => {
+        const hasPermission = new this.Permission().has;
+        const data = rows.filter(row => hasPermission.call(row.Permission, this.permissionService.WRITE));
 
-      this.$scope.organizations = organizations;
-    }).finally(() => {
-      this.$scope.uiReady = true;
-    });
+        if (data.length > 0) {
+          this.$scope.event.organizationId = data[0].Organization.id;
+        }
+
+        this.$scope.data = data;
+      });
   }
 
   createEvent(event) {
@@ -51,8 +61,8 @@ export default class CreateEventController {
 
     return this.eventService.create(this.storage.auth.idToken, event.organizationId, event).then((event) => {
       this.uiService.notify('Event created');
-      this.$rootScope.$broadcast('EVENT.CREATED', event);
       this.$mdDialog.hide();
+      this.$state.go('application.internal.event.update', {eventId: event.id});
     }, (response) => {
       const message = response.status === 409 ? 'Sorry, that name has already been taken' : 'Unable to create event';
       this.uiService.notify(message);
@@ -66,10 +76,13 @@ CreateEventController.$inject = [
   '$rootScope',
   '$scope',
   '$mdDialog',
+  '$state',
   'EventService',
+  'PermissionService',
   'StorageService',
   'OrganizationService',
   'UIService',
   'Event',
-  'permissions'
+  'Permission',
+  'db'
 ];

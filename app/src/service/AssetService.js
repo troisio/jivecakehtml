@@ -1,6 +1,5 @@
 export default class AssetService {
-  constructor($window, $http, settings) {
-    this.$window = $window;
+  constructor($http, settings) {
     this.$http = $http;
     this.settings = settings;
   }
@@ -13,7 +12,7 @@ export default class AssetService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => response.data);
+    }).then(response => response.data);
   }
 
   getUserType() {
@@ -37,7 +36,7 @@ export default class AssetService {
       }
     }).then((response) => {
       response.data.forEach((asset) => {
-        asset.data = this.$window.JSON.parse(this.$window.atob(asset.data));
+        asset.data = JSON.parse(atob(asset.data));
       });
 
       return response.data;
@@ -45,4 +44,4 @@ export default class AssetService {
   }
 }
 
-AssetService.$inject = ['$window', '$http', 'settings'];
+AssetService.$inject = ['$http', 'settings'];

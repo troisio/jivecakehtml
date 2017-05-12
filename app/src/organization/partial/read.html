@@ -1,9 +1,9 @@
 <md-table-container ng-show="uiReady">
   <table ng-model="selected" md-table md-row-select multiple>
     <tbody md-body>
-      <tr md-row md-auto-select ng-repeat="datum in data track by datum.organization.id">
+      <tr md-row md-auto-select ng-repeat="organizationData in data track by organizationData.Organization.id">
         <td md-cell>
-          <span>{{datum.organization.name}}</span>
+          <span>{{organizationData.Organization.name}}</span>
         </td>
         <td md-cell>
           <md-menu md-position-mode="target-right target">
@@ -11,19 +11,19 @@
               <ng-md-icon icon="more_vert"></ng-md-icon>
             </md-button>
             <md-menu-content width="2">
-              <md-menu-item ng-show="datum.permissions.has(controller.organizationService.getWritePermission())">
-                <md-button ui-sref="application.internal.organization.update({organizationId: datum.organization.id})">
+              <md-menu-item ng-show="hasPermission(organizationData.Permission, permissionService.READ)">
+                <md-button ui-sref="application.internal.organization.update({organizationId: organizationData.Organization.id})">
                   <span md-menu-align-target>update</span>
                 </md-button>
               </md-menu-item>
-              <md-menu-item ng-show="datum.permissions.has(controller.organizationService.getWritePermission()) && datum.organization.parentId !== null">
-                <md-button ng-click="controller.delete(datum, $event)">
+              <md-menu-item ng-show="hasPermission(organizationData.Permission, permissionService.WRITE) && organizationData.Organization.parentId !== null">
+                <md-button ng-click="controller.delete(organizationData, $event)">
                   <span md-menu-align-target>delete</span>
                 </md-button>
               </md-menu-item>
             </md-menu-content>
           </md-menu>
-          <md-button ui-sref="application.internal.event.read({organizationId: datum.organization.id})" aria-label="View Events" class="md-icon-button">
+          <md-button ui-sref="application.internal.event.read({organizationId: organizationData.Organization.id})" aria-label="View Events" class="md-icon-button">
             <ng-md-icon icon="arrow_forward"></ng-md-icon>
           </md-button>
         </td>

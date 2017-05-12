@@ -1,6 +1,5 @@
 export default class UpdateOrganizationController {
   constructor(
-    $window,
     $q,
     $rootScope,
     $scope,
@@ -17,7 +16,6 @@ export default class UpdateOrganizationController {
     stripeService,
     Permission
   ) {
-    this.$window = $window;
     this.$q = $q;
     this.$rootScope = $rootScope;
     this.$scope = $scope;
@@ -90,7 +88,7 @@ export default class UpdateOrganizationController {
   submit(organization, userPermissions) {
     const loading = this.uiService.load();
 
-    const permissions = this.$window.Object.keys(userPermissions).map((user_id) => {
+    const permissions = Object.keys(userPermissions).map((user_id) => {
       const userPermission = userPermissions[user_id];
 
       const permission = new this.Permission();
@@ -98,7 +96,7 @@ export default class UpdateOrganizationController {
       permission.objectClass = this.organizationService.getObjectClassName();
       permission.objectId = this.$stateParams.organizationId;
       permission.include = userPermission.include;
-      permission.permissions = this.$window.Object.keys(userPermission.permission).reduce(function(previous, current) {
+      permission.permissions = Object.keys(userPermission.permission).reduce(function(previous, current) {
         if (userPermission.permission[current] === true) {
           previous.push(current);
         }
@@ -127,14 +125,14 @@ export default class UpdateOrganizationController {
   getUserPermissionModel(users, permissions, userPermissions) {
     const userPermissionsMap = this.relationalService.groupBy(userPermissions, false, subject => subject.user_id);
 
-    return this.$window.Object.keys(userPermissionsMap).reduce((previous, user_id) => {
+    return Object.keys(userPermissionsMap).reduce((previous, user_id) => {
       const permission = userPermissionsMap[user_id][0];
       let set;
 
       if (permission.include === 0) {
         set = null;
       } else {
-        set = new this.$window.Set();
+        set = new Set();
 
         permission.permissions.forEach(set.add, set);
       }
@@ -154,7 +152,7 @@ export default class UpdateOrganizationController {
   }
 
   loadUI(organizationId) {
-    const date = new this.$window.Date();
+    const date = new Date();
 
     return this.organizationService.read(this.storage.auth.idToken, organizationId).then((organization) => {
       this.$scope.organization = organization;
@@ -280,7 +278,7 @@ export default class UpdateOrganizationController {
           this.$rootScope.$broadcast('PAYMENT.PROFILE.DELETED');
         });
       }, (response) => {
-        const hasItems = this.$window.Array.isArray(response.data);
+        const hasItems = Array.isArray(response.data);
         const text = hasItems ? 'Unable to delete, Payment Profile is associated with an Event' : 'Unable to delete Payment Profile';
 
         loader.dialog.finally(() => {
@@ -307,7 +305,6 @@ export default class UpdateOrganizationController {
 }
 
 UpdateOrganizationController.$inject = [
-  '$window',
   '$q',
   '$rootScope',
   '$scope',

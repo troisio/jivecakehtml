@@ -1,62 +1,60 @@
-<div ng-show="uiReady">
-  <md-table-container>
-    <table ng-model="selected" md-table md-row-select multiple>
-      <tbody md-body>
-        <tr md-row md-auto-select ng-repeat="eventData in data track by eventData.event.id">
-          <td md-cell>
-            <div>
-              <a ui-sref="application.public.event.item({id: eventData.event.id})" ng-show="eventData.event.status === 1">{{eventData.event.name}}</a>
-              <p ng-show="eventData.event.status !== 1">{{eventData.event.name}}</p>
-            </div>
-            <a ui-sref="application.internal.organization.read({id: eventData.organization.id})">{{eventData.organization.name}}</a>
-          </td>
-          <td md-cell>
-            <md-input-container class="md-block">
-              <md-checkbox ng-true-value="1" ng-false-value="0" ng-change="controller.toggleStatus(eventData, $event)" ng-model="eventData.event.status" aria-label="Active">active</md-checkbox>
-            </md-input-container>
-          </td>
-          <td md-cell>
-            <md-menu md-position-mode="target-right target">
-              <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
-              <ng-md-icon icon="more_vert"></ng-md-icon>
-              </md-button>
-              <md-menu-content width="2">
-                <md-menu-item>
-                  <md-button ui-sref="application.internal.transaction.read({eventId: eventData.event.id})">
-                    <span md-menu-align-target>view transactions</span>
-                  </md-button>
-                </md-menu-item>
-                <md-menu-item>
-                  <md-button ui-sref="application.internal.event.update({eventId: eventData.event.id})">
-                    <span md-menu-align-target>update event</span>
-                  </md-button>
-                </md-menu-item>
-                <md-menu-item>
-                  <md-button ng-href="{{apiUri + '/transaction/excel?eventId=' + eventData.event.id + '&Authorization=Bearer ' + token}}">
-                    <span md-menu-align-target>download transactions</span>
-                  </md-button>
-                </md-menu-item>
-                <md-menu-item>
-                  <md-button ng-click="controller.delete(eventData, $event)">
-                    <span md-menu-align-target>delete</span>
-                  </md-button>
-                </md-menu-item>
-              </md-menu-content>
-            </md-menu>
-            <md-button ui-sref="application.internal.item.read({eventId: eventData.event.id})" aria-label="View Items" class="md-icon-button">
-              <ng-md-icon icon="arrow_forward"></ng-md-icon>
+<md-table-container ng-show="uiReady">
+  <table ng-model="selected" md-table md-row-select multiple>
+    <tbody md-body>
+      <tr md-row md-auto-select ng-repeat="eventData in data track by eventData.Event.id">
+        <td md-cell>
+          <div>
+            <a ui-sref="application.public.event.item({id: eventData.Event.id})" ng-show="eventData.Event.status === 1">{{eventData.Event.name}}</a>
+            <p ng-show="eventData.Event.status !== 1">{{eventData.Event.name}}</p>
+          </div>
+          <a ui-sref="application.internal.organization.read({id: eventData.Organization.id})">{{eventData.Organization.name}}</a>
+        </td>
+        <td md-cell>
+          <md-input-container class="md-block">
+            <md-checkbox ng-true-value="1" ng-false-value="0" ng-change="controller.toggleStatus(eventData, $event)" ng-model="eventData.Event.status" aria-label="Active">active</md-checkbox>
+          </md-input-container>
+        </td>
+        <td md-cell>
+          <md-menu md-position-mode="target-right target">
+            <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
             </md-button>
-          </td>
-        </tr>
-        <tr md-row ng-show="data.length === 0">
-          <td md-cell colspan="3">
-            <span class="md-subheader">No data found</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </md-table-container>
-</div>
+            <md-menu-content width="2">
+              <md-menu-item>
+                <md-button ui-sref="application.internal.transaction.read({eventId: eventData.Event.id})">
+                  <span md-menu-align-target>view transactions</span>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item ng-show="hasPermission(eventData.Permission, permissionService.WRITE)">
+                <md-button ui-sref="application.internal.event.update({eventId: eventData.Event.id})">
+                  <span md-menu-align-target>update event</span>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item>
+                <md-button ng-href="{{apiUri + '/transaction/excel?eventId=' + eventData.Event.id + '&Authorization=Bearer ' + token}}">
+                  <span md-menu-align-target>download transactions</span>
+                </md-button>
+              </md-menu-item>
+              <md-menu-item ng-show="hasPermission(eventData.Permission, permissionService.WRITE)">
+                <md-button ng-click="controller.delete(eventData, $event)">
+                  <span md-menu-align-target>delete</span>
+                </md-button>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu>
+          <md-button ui-sref="application.internal.item.read({eventId: eventData.Event.id})" aria-label="View Items" class="md-icon-button">
+            <ng-md-icon icon="arrow_forward"></ng-md-icon>
+          </md-button>
+        </td>
+      </tr>
+      <tr md-row ng-show="data.length === 0">
+        <td md-cell colspan="3">
+          <span class="md-subheader">No events found</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</md-table-container>
 <div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
   <md-progress-circular md-mode="indeterminate"></md-progress-circular>
 </div>

@@ -6,10 +6,17 @@ export default class PermissionService {
     this.settings = settings;
     this.toolsService = toolsService;
 
+    this.ALL = 0;
+    this.INCLUDE = 1;
+    this.EXCLUDE = 2;
+
+    this.READ = 0;
+    this.WRITE = 1;
+
     this.settings = settings;
     this.permissionTypes = [
-      {'class': 'Application', permissions: [0, 1]},
-      {'class': 'Organization', permissions: [0, 1]}
+      {'class': 'Application', permissions: [this.READ, this.WRITE]},
+      {'class': 'Organization', permissions: [this.READ, this.WRITE]}
     ];
   }
 
@@ -27,7 +34,9 @@ export default class PermissionService {
       }
     }).then((response) => {
       return {
-        entity: response.data.entity.map(this.toObject, this),
+        entity: response.data.entity.map((permission) => {
+          return this.toolsService.toObject(permission, this.Permission);
+        }),
         count: response.data.count
       };
     });
@@ -40,7 +49,9 @@ export default class PermissionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => response.data.map(this.toObject, this));
+    }).then((response) => response.data.map((permission) => {
+      return this.toolsService.toObject(permission, this.Permission);
+    }));
   }
 
   delete(token, params) {
@@ -52,22 +63,6 @@ export default class PermissionService {
         Authorization: 'Bearer ' + token
       }
     });
-  }
-
-  getIncludeAllPermissionType() {
-    return 0;
-  }
-
-  getIncludePermissionType() {
-    return 1;
-  }
-
-  getExcludePermissionType() {
-    return 2;
-  }
-
-  toObject(subject) {
-    return this.toolsService.toObject(subject, this.Permission);
   }
 }
 

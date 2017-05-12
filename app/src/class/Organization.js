@@ -3,10 +3,10 @@ export default class Organization {
     this.id = null;
     this.parentId = null;
     this.children = null;
-    this.currency = null;
     this.name = null;
     this.email = null;
     this.timeUpdated = 0;
     this.timeCreated = 0;
+    this.lastActivity = 0;
   }
 }

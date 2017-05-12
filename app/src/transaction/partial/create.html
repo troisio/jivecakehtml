@@ -4,7 +4,7 @@
   </div>
 </md-toolbar>
 <div layout-padding class="md-inline-form">
-  <form ng-submit="!loading && controller.submit(transaction, item, selectedUser, event)">
+  <form name="form" ng-submit="!loading && controller.submit(transaction, item, selectedUser, event)">
     <md-autocomplete
     ng-show="!(transaction.given_name || transaction.middleName || transaction.family_name)"
     autocomplete="off"
@@ -53,11 +53,13 @@
       <label>Currency</label>
       <p ng-show="event.currency === 'USD'">US Dollars</p>
       <p ng-show="event.currency === 'EUR'">Euro</p>
-      <md-select ng-show="event.currency === null" ng-model="transaction.currency" required aria-label="Currency">
-        <md-option value=""></md-option>
+      <md-select ng-show="event.currency === null" name="paymentProfile" ng-model="transaction.currency" required aria-label="Currency">
         <md-option value="USD">US Dollars</md-option>
         <md-option value="EUR">Euro</md-option>
       </md-select>
+      <div class="errors" ng-messages="form.paymentProfile.$error">
+        <div ng-message="required">required</div>
+      </div>
     </md-input-container>
     <div>
       <md-input-container>

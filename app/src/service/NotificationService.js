@@ -1,7 +1,5 @@
 export default class NotificationService {
-  constructor(angular, $window, $http, settings) {
-    this.angular = angular;
-    this.$window = $window;
+  constructor($http, settings) {
     this.$http = $http;
     this.settings = settings;
   }
@@ -11,7 +9,7 @@ export default class NotificationService {
     const copy = {
       id: chunk.id,
       name: chunk.name,
-      data: this.$window.JSON.stringify(chunk.data),
+      data: JSON.stringify(chunk.data),
       comment: chunk.comment
     };
 
@@ -24,4 +22,4 @@ export default class NotificationService {
   }
 }
 
-NotificationService.$inject = ['angular', '$window', '$http', 'settings'];
+NotificationService.$inject = ['$http', 'settings'];

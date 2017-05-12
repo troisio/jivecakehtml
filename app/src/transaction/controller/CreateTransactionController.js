@@ -52,6 +52,9 @@ export default class CreateTransactionController {
   }
 
   setDefaults() {
+    this.$scope.form.$setUntouched();
+    this.$scope.form.$setPristine();
+
     this.$scope.selected = '';
     this.$scope.text = '';
 
@@ -100,7 +103,7 @@ export default class CreateTransactionController {
     }
   }
 
-  submit(transaction, item, selectedUser, event) {
+  submit(transaction, item, selectedUser, event, form) {
     this.$scope.loading = true;
     const transactionCopy = this.angular.copy(transaction);
 
@@ -123,7 +126,7 @@ export default class CreateTransactionController {
         this.uiService.notify('Transaction created');
         return this.setDefaults();
       }, response => {
-        let message = 'Unable to create transaction for ' + item.name;
+        let message = 'Unable to create transaction';
 
         if (response.status === 400 && 'data' in response) {
           if (response.data.error === 'totalAvailible') {

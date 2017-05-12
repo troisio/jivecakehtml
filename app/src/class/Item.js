@@ -15,6 +15,7 @@ export default class Item {
      this.timeEnd = null;
      this.timeUpdated = null;
      this.timeCreated = null;
+     this.lastActivity = null;
    }
 
    getDerivedAmountFromCounts(count) {

@@ -2,35 +2,29 @@
   <div layout-padding>
     <div layout="row" layout-align="space-between center">
       <h2>Create Item</h2>
-      <div ng-show="loading || !uiReady">
-        <md-progress-circular flex md-diameter="40" md-mode="indeterminate"></md-progress-circular>
-      </div>
     </div>
-    <div ng-show="uiReady && events.length > 0" class="md-inline-form">
-      <form ng-submit="!loading && controller.submit(item, event)">
+    <div class="md-inline-form">
+      <form ng-submit="!loading && controller.submit(item)">
         <md-input-container class="md-block">
           <label>Name</label>
           <input ng-model="item.name" autocomplete="off" required>
         </md-input-container>
-        <md-autocomplete
-          ng-required="true"
-          md-selected-item="event"
-          md-search-text="eventSearchText"
-          md-items="event in events | filter: eventSearchText | limitTo: 2"
-          md-item-text="event.name"
-          md-min-length="0"
-          placeholder="search for associated event">
-          <md-item-template>
-            <span md-highlight-text="eventSearchText" md-highlight-flags="^i">{{event.name}}</span>
-          </md-item-template>
-          <md-not-found>No events found</md-not-found>
-        </md-autocomplete>
-        <md-input-container>
-          <md-button type="submit" class="md-raised md-primary">Create</md-button>
+        <md-input-container class="md-block">
+          <md-select placeholder="choose an event" required="true" ng-model="item.eventId">
+            <md-option ng-repeat="eventData in data track by eventData.Event.id" ng-value="eventData.Event.id">{{eventData.Event.name}}</md-option>
+          </md-select>
         </md-input-container>
+        <div layout-sm="column">
+          <md-input-container>
+            <md-button type="submit" class="md-raised md-primary">Create</md-button>
+          </md-input-container>
+          <md-input-container ng-show="loading">
+            <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+          </md-input-container>
+        </div>
       </form>
     </div>
-    <div ng-show="events.length === 0">
+    <div ng-show="data.length === 0">
       <h4>Please create an event before creating items</h4>
     </div>
   </div>

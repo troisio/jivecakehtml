@@ -7,7 +7,6 @@ export default class ConnectionService {
     this.auth0Service = auth0Service;
     this.settings = settings;
 
-    this.clientConnectionFields = Object.keys(new ClientConnection());
     this.eventSources = {};
   }
 
@@ -36,8 +35,7 @@ export default class ConnectionService {
         this.eventSources[user.user_id] = source;
       }
 
-      const result = this.eventSources[user.user_id];
-      return result;
+      return this.eventSources[user.user_id];
     });
   }
 
@@ -62,9 +60,7 @@ export default class ConnectionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(function(response) {
-      return response.data;
-    });
+    }).then(response => response.data);
   }
 
   search(token, params) {
@@ -76,16 +72,8 @@ export default class ConnectionService {
         Authorization: 'Bearer ' + token
       }
     }).then((response) => {
-      return this.toObjects(response.data);
+      return response.data.map(connection => this.toolsService.toObject(subject, this.ClientConnection));
     });
-  }
-
-  toObject(subject) {
-    return this.toolsService.toObject(subject, ClientConnection);
-  }
-
-  toObjects(subject) {
-    return subject.map(this.toObject, this);
   }
 }
 

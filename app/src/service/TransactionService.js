@@ -8,7 +8,26 @@ export default class TransactionService {
     this.relationalService = relationalService;
     this.SearchEntity = SearchEntity;
 
+    this.PAYMENT_EQUAL = 0;
+    this.PAYMENT_LESS_THAN = 1;
+    this.PAYMENT_GREATER_THAN = 2;
+    this.PAYMENT_UNKNOWN = 3;
+
+    this.SETTLED = 0;
+    this.PENDING = 1;
+    this.USER_REVOKED = 2;
+    this.REFUNDED = 3;
+    this.UNKNOWN = 3;
+
     this.settings = settings;
+
+    this.countingFilter = (transaction) => (
+      transaction.paymentStatus == this.PAYMENT_EQUAL ||
+      transaction.paymentStatus == this.PAYMENT_GREATER_THAN
+    ) && (
+      transaction.status == this.SETTLED ||
+      transaction.status == this.PENDING
+    );
   }
 
   create(token, itemId, body) {
@@ -18,9 +37,7 @@ export default class TransactionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Transaction));
   }
 
   search(token, params) {
@@ -41,14 +58,38 @@ export default class TransactionService {
 
   searchUsers(token, params) {
     const url = [this.settings.jivecakeapi.uri, 'transaction', 'user'].join('/');
+    const futures = [];
 
-    return this.$http.get(url, {
+    const options = {
       params: params,
       headers: {
         Authorization : 'Bearer ' + token
       }
-    }).then(function(response) {
-      return response.data;
+    };
+
+    if (Array.isArray(params.id)) {
+      const segmentLength = 75;
+      const ids = params.id;
+
+      for (let index = 0; index < params.id.length / segmentLength; index++) {
+        const start = index * segmentLength;
+        const optionsCopy = Object.assign({}, options);
+        optionsCopy.id = ids.slice(start, start + segmentLength);
+
+        futures.push(
+          this.$http.get(url, optionsCopy).then(response => response.data)
+        );
+      }
+    } else {
+      futures.push(
+        this.$http.get(url, options).then(response => response.data)
+      );
+    }
+
+    return this.$q.all(futures).then(entities => {
+      const result = [];
+      entities.forEach(users => result.push.apply(result, users));
+      return result;
     });
   }
 
@@ -59,9 +100,7 @@ export default class TransactionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then((response) => this.toolsService.toObject(response.data, this.Transaction));
   }
 
   publicSearch(params) {
@@ -84,7 +123,7 @@ export default class TransactionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Transaction));
   }
 
   revoke(token, transactionId) {
@@ -94,7 +133,7 @@ export default class TransactionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => this.toObject(response.data));
+    }).then(response => this.toolsService.toObject(response.data, this.Transaction));
   }
 
   purchase(token, id, body) {
@@ -104,7 +143,7 @@ export default class TransactionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => this.toObject(response.data));
+    }).then(response => this.toolsService.toObject(response.data, this.Transaction));
   }
 
   transfer(token, id, user_id) {
@@ -114,13 +153,18 @@ export default class TransactionService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => response.data.map(this.toObject, this));
+    }).then(response => response.data.map(transaction => this.toolsService.toObject(transaction, this.Transaction)));
   }
 
   getTransactionData(itemService, token, query) {
     return this.search(token, query).then((searchResult) => {
-      const transactionIds = searchResult.entity.map(transaction => transaction.id);
-      const itemIds = searchResult.entity.map(transaction => transaction.itemId);
+      const transactionIdsSet = new Set();
+      searchResult.entity.map(transaction => transactionIdsSet.add(transaction.id));
+      const transactionIds = Array.from(transactionIdsSet);
+
+      const itemIdsSet = new Set();
+      searchResult.entity.forEach(transaction => itemIdsSet.add(transaction.itemId));
+      const itemIds = Array.from(itemIdsSet);
 
       const usersFuture = transactionIds.length === 0 ? this.$q.resolve([]) : this.searchUsers(token, {
         id: transactionIds
@@ -140,7 +184,7 @@ export default class TransactionService {
         const itemMap = this.relationalService.groupBy(items, true, item => item.id);
         const userMap = this.relationalService.groupBy(users, true, user => user.user_id);
 
-        const transactionData = transactions.map(function(transaction) {
+        const transactionData = transactions.map(transaction => {
           const result = {
             transaction: transaction,
             user: null,
@@ -164,50 +208,6 @@ export default class TransactionService {
         };
       });
     });
-  }
-
-  getPaymentCompleteStatus() {
-    return 0;
-  }
-
-  getPaymentPendingStatus() {
-    return 1;
-  }
-
-  getInvalidPaymentStatus() {
-    return 2;
-  }
-
-  getMalformedDataStatus() {
-    return 3;
-  }
-
-  getRefundedStatus() {
-    return 4;
-  }
-
-  getRevokedStatus() {
-    return 5;
-  }
-
-  getPendingWithValidPayment() {
-      return 6;
-  }
-
-  getPendingWithInvalidPayment() {
-      return 7;
-  }
-
-  getTransferredStatus() {
-    return 8;
-  }
-
-  getUsedForCountingStatuses() {
-    return [
-      this.getPaymentCompleteStatus(),
-      this.getPaymentPendingStatus(),
-      this.getPendingWithValidPayment()
-    ];
   }
 
   toObject(subject) {

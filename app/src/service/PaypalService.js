@@ -7,19 +7,6 @@ export default class PaypalService {
     this.transactionService = transactionService;
   }
 
-  searchIpn(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'paypal', 'ipn'].join('/');
-
-    return this.$http.get(url, {
-      params: params,
-      headers: {
-        Authorization: token
-      }
-    }).then(function(response) {
-      return response.data;
-    });
-  }
-
   submitIpn(token, ipn, type) {
     const parts = [];
 
@@ -150,104 +137,8 @@ export default class PaypalService {
     });
   }
 
-  getTrialSubscriptionIpn() {
-    return {
-      txn_id: null,
-      parent_txn_id: null,
-      payer_email: 'payper@pay.com',
-      receiver_email: 'user@website.com',
-      business: 'user@website.com',
-      item_number: null,
-      mc_gross: null,
-      mc_gross1: null,
-      protection_eligibility: null,
-      payer_id: "4FK8LGP9AUH22",
-      query_track_id: null,
-      payment_date: null,
-      payment_status: null,
-      pending_reason: null,
-      reason_code: null,
-      charset: "windows-1252",
-      first_name: "firstname",
-      address_name: "",
-      address_street: "123 Fake Street",
-      address_city: "city",
-      address_state: "FL",
-      address_zip: "02112",
-      address_country: "United States",
-      address_country_code: "US",
-      address_status: "confirmed",
-      mc_fee: null,
-      mc_handling: null,
-      mc_handling1: null,
-      mc_shipping: null,
-      mc_shipping1: null,
-      invoice: null,
-      tax: null,
-      notify_version: "3.8",
-      custom: null,
-      payer_status: "verified",
-      payer_business_name: null,
-      quantity: null,
-      verify_sign: null,
-      payment_type: null,
-      btn_id: "128724092",
-      last_name: "Chau",
-      payment_fee: null,
-      shipping_discount: null,
-      insurance_amount: null,
-      receiver_id: null,
-      txn_type: "subscr_signup",
-      item_name: "Test",
-      item_name1: null,
-      quantity1: null,
-      item_number1: null,
-      discount: null,
-      mc_currency: "USD",
-      residence_country: "US",
-      handling_amount: null,
-      shipping_method: null,
-      transaction_subject: null,
-      payment_gross: null,
-      shipping: null,
-      ipn_track_id: "",
-      test_ipn: null,
-      for_auction: null,
-      receipt_id: null,
-      settle_amount: null,
-      settle_currency: null,
-      exchange_rate: null,
-      subscr_date: "07:02:12 Jan 11, 2017 PST",
-      amount1: "0.00",
-      amount2: null,
-      amount3: "30.00",
-      period1: "1 M",
-      period2: null,
-      period3: "1 M",
-      recurring: "1",
-      mc_amount1: "0.00",
-      mc_amount2: null,
-      mc_amount3: "0.01",
-      reattempt: "1",
-      subscr_id: "",
-      timeCreated: null
-    };
-  }
-
   getVerified() {
     return 'VERIFIED';
-  }
-
-  getSupportedPaymentCodes() {
-    return ['USD', 'EUR'];
-  }
-
-  getMonthlyEvent1HostedButtonId() {
-    return '7BVYJDC7CTPYG';
-  }
-
-  getMonthlyEvent30HostedButtonId() {
-    return 'MJYREQW5VGGVU';
   }
 }
 

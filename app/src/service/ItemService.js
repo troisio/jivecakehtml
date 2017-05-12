@@ -1,5 +1,5 @@
 export default class ItemService {
-  constructor($window, $q, $http, transactionService, settings, toolsService, relationalService, Organization, Item) {
+  constructor($window, $q, $http, transactionService, settings, toolsService, relationalService, Item) {
     this.$window = $window;
     this.$q = $q;
     this.$http = $http;
@@ -7,7 +7,6 @@ export default class ItemService {
     this.settings = settings;
     this.toolsService = toolsService;
     this.relationalService = relationalService;
-    this.Organization = Organization;
     this.Item = Item;
 
     this.settings = this.settings;
@@ -30,9 +29,7 @@ export default class ItemService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Item));
   }
 
   read(token, id) {
@@ -42,7 +39,7 @@ export default class ItemService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => this.toObject(response.data));
+    }).then(response => this.toolsService.toObject(response.data, this.Item));
   }
 
   publicSearch(params) {
@@ -80,11 +77,12 @@ export default class ItemService {
     if (items.length === 0) {
       future = this.$q.resolve([]);
     } else {
-      const time = new this.$window.Date().getTime();
+      const time = new Date().getTime();
 
       future = transactionService.publicSearch({
         itemId: items.map(item => item.id),
-        status: transactionService.getUsedForCountingStatuses(),
+        status: [transactionService.SETTLED, transactionService.PENDING],
+        paymentStatus: [transactionService.PAYMENT_EQUAL, transactionService.PAYMENT_GREATER_THAN],
         leaf: true
       }).then(searchResult => {
         const transactionMap = this.relationalService.groupBy(
@@ -117,15 +115,14 @@ export default class ItemService {
     let future;
 
     if (item.timeAmounts !== null) {
-      future = this.$q.resolve(item.getDerivedAmountFromTime(new this.$window.Date().getTime()));
+      future = this.$q.resolve(item.getDerivedAmountFromTime(new Date().getTime()));
     } else if (item.countAmounts !== null) {
       future = transactionService.publicSearch({
         itemId: item.id,
-        status: transactionService.getUsedForCountingStatuses(),
+        status: [transactionService.SETTLED, transactionService.PENDING],
+        paymentStatus: [transactionService.PAYMENT_EQUAL, transactionService.PAYMENT_GREATER_THAN],
         leaf: true
-      }).then(function(searchResult) {
-        return item.getDerivedAmountFromCounts(searchResult.entity.length);
-      });
+      }).then(searchResult => item.getDerivedAmountFromCounts(searchResult.entity.length));
     } else {
       future = this.$q.resolve(item.amount);
     }
@@ -139,11 +136,15 @@ export default class ItemService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Item));
   }
 
   getActiveStatus() {
     return 0;
+  }
+
+  getInactiveStatus() {
+    return 1;
   }
 
   toObject(subject) {
@@ -151,4 +152,4 @@ export default class ItemService {
   }
 }
 
-ItemService.$inject = ['$window', '$q', '$http', 'TransactionService', 'settings', 'ToolsService', 'RelationalService', 'Organization', 'Item'];
+ItemService.$inject = ['$window', '$q', '$http', 'TransactionService', 'settings', 'ToolsService', 'RelationalService', 'Item'];

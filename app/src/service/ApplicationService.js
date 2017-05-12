@@ -7,11 +7,6 @@ export default class ApplicationService {
     this.application.id = '55865027c1fcce003aa0aa43';
   }
 
-  echo() {
-    const url = [this.settings.jivecakeapi.uri, 'tool', 'echo'].join('/');
-    return this.$http.get(url);
-  }
-
   getApplication() {
     return this.application;
   }

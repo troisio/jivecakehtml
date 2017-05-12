@@ -1,15 +1,20 @@
 export default class ReadOrganizationController {
   constructor(
     $scope,
+    $state,
     $mdDialog,
     storageService,
     organizationService,
-    uiService
+    uiService,
+    Permission,
+    db
   ) {
     this.$scope = $scope;
+    this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.organizationService = organizationService;
     this.uiService = uiService;
+    this.db = db;
 
     this.storage = storageService.read();
 
@@ -17,23 +22,39 @@ export default class ReadOrganizationController {
     this.$scope.$parent.$parent.selectedTab = 0;
     this.$scope.uiReady = false;
 
+    ['organization.create', 'organization.update', 'organization.delete'].forEach((name) => {
+      $scope.$on(name, () => {
+        this.run();
+      });
+    });
+
     this.run();
   }
 
   run() {
     this.$scope.$parent.ready.then(resolve => {
-      return this.organizationService.getOrganizationsByUser(
-        this.storage.auth.idToken,
-        this.storage.auth.idTokenPayload.sub,
-        {
-          order: '-lastActivity'
-        }
-      ).then((organizations) => {
-        this.$scope.data = this.organizationService.getOrganizationsWithPermissions(
-          organizations,
-          resolve.permission.entity
-        );
-      });
+      const organizationTable = this.db.getSchema().table('Organization');
+      const permissionTable = this.db.getSchema().table('Permission');
+
+      return this.db.select()
+        .from(organizationTable)
+        .innerJoin(permissionTable, permissionTable.objectId.eq(organizationTable.id))
+        .orderBy(organizationTable.lastActivity, lf.Order.DESC)
+        .limit(50)
+        .exec()
+        .then(rows => {
+          const data = angular.copy(rows);
+
+          const organization = data.find(datum => datum.Organization.id === this.$state.params.highlight);
+          const index = data.indexOf(organization);
+
+          if (index > -1) {
+            data.splice(index, 1);
+            data.unshift(organization);
+          }
+
+          this.$scope.data = data;
+        });
     }).finally(() => {
       this.$scope.uiReady = true;
     });
@@ -51,11 +72,8 @@ export default class ReadOrganizationController {
     this.$mdDialog.show(confirm).then(() => {
       this.$scope.uiReady = false;
 
-      this.organizationService.delete(this.storage.auth.idToken, organizationData.organization.id).then(() => {
+      this.organizationService.delete(this.storage.auth.idToken, organizationData.Organization.id).then(() => {
         this.uiService.notify('Organization deleted');
-
-        const removeIndex = this.$scope.data.indexOf(organizationData);
-        this.$scope.data.splice(removeIndex, 1);
       }, () => {
         this.uiService.notify('Unable to delete organization');
       }).finally(() => {
@@ -76,8 +94,11 @@ export default class ReadOrganizationController {
 
 ReadOrganizationController.$inject = [
   '$scope',
+  '$state',
   '$mdDialog',
   'StorageService',
   'OrganizationService',
-  'UIService'
+  'UIService',
+  'Permission',
+  'db'
 ];

@@ -3,6 +3,7 @@ import ApplicationService from './ApplicationService';
 import AssetService from './AssetService';
 import Auth0Service from './Auth0Service';
 import ConnectionService from './ConnectionService';
+import DownstreamService from './DownstreamService';
 import EventService from './EventService';
 import ItemService from './ItemService';
 import TransactionService from './TransactionService';
@@ -25,6 +26,7 @@ export default angular.module('jivecakeservice', [])
   .service('AssetService', AssetService)
   .service('Auth0Service', Auth0Service)
   .service('ConnectionService', ConnectionService)
+  .service('DownstreamService', DownstreamService)
   .service('EventService', EventService)
   .service('ItemService', ItemService)
   .service('TransactionService', TransactionService)

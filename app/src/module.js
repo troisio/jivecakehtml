@@ -3,6 +3,7 @@ import './polyfill/find';
 import './polyfill/from';
 
 import settings from './settings';
+import builder from './database';
 
 import featureTypeFilter from './angularcomponents/featureTypeFilter';
 import HTTPInterceptor from './angularcomponents/HTTPInterceptor';
@@ -57,19 +58,6 @@ import TransferPassController from './transaction/controller/TransferPassControl
 
 import UpdateAccountController from './user/controller/UpdateAccountController';
 
-/*bootstrap lovefield*/
-
-const builder = lf.schema.create('jivecake', 1);
-builder.createTable('Permission')
-  .addColumn('id', lf.Type.STRING)
-  .addColumn('user_id', lf.Type.STRING)
-  .addColumn('objectId', lf.Type.STRING)
-  .addColumn('include', lf.Type.INTEGER)
-  .addColumn('objectClass', lf.Type.STRING)
-  .addColumn('permissions', lf.Type.ARRAY_BUFFER)
-  .addColumn('timeCreated', lf.Type.INTEGER)
-  .addPrimaryKey(['id']);
-
 builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   angular.module('jivecakeweb', [
     jiveCakeClassModule.name,
@@ -96,62 +84,93 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   .run([
     'lock',
     'angular',
-    '$window',
     '$location',
     '$state',
+    '$q',
     '$mdDialog',
     'OrganizationService',
     'PermissionService',
+    'TransactionService',
     'UIService',
     'StorageService',
     'Auth0Service',
     'JiveCakeLocalStorage',
+    'SearchEntity',
     function(
       lock,
       angular,
-      $window,
       $location,
       $state,
+      $q,
       $mdDialog,
       organizationService,
       permissionService,
+      transactionService,
       uiService,
       storageService,
       auth0Service,
-      JiveCakeLocalStorage
+      JiveCakeLocalStorage,
+      SearchEntity
     ) {
       lock.on('authenticated', function(auth) {
-        const storage = new JiveCakeLocalStorage();
-        storage.timeCreated = new $window.Date().getTime();
-        storage.auth = auth;
-        storageService.write(storage);
+        lock.getUserInfo(auth.accessToken, function(error, profile) {
+          if (typeof err === 'undefined') {
+            const storage = new JiveCakeLocalStorage();
+            storage.timeCreated = new Date().getTime();
+            storage.auth = auth;
+            storage.profile = profile;
+            storageService.write(storage);
 
-        permissionService.search(auth.idToken, {
-          user_id: auth.idTokenPayload.sub,
-          objectClass: organizationService.getObjectClassName()
-        }).then(function(search) {
-          if (typeof auth.state === 'undefined') {
-            $state.go('application.internal.myTransaction', {
-              user_id: auth.idTokenPayload.sub
-            }, {
-              reload: true
+            permissionService.search(auth.idToken, {
+              user_id: auth.idTokenPayload.sub,
+              objectClass: 'Organization'
+            }).then(function(permissionResult) {
+              const permissions = permissionResult.entity;
+              const organizationIds = permissions.map(permission => permission.objectId);
+
+              const transactionFuture = organizationIds.length === 0 ? $q.resolve(new SearchEntity()) :
+                transactionService.search(auth.idToken, {
+                  limit: 1,
+                  organizationId: organizationIds,
+                  order: '-lastActivity'
+                });
+
+              transactionFuture.then(transactionSearch => {
+                const transactions = transactionSearch.entity;
+
+                if (typeof auth.state === 'undefined') {
+                  if (transactions.length > 0) {
+                    $state.go('application.internal.transaction.read', {}, {reload: true});
+                  } else if (permissions.length > 0) {
+                    $state.go('application.internal.organization.read', {}, {reload: true});
+                  } else {
+                    $state.go('application.internal.myTransaction', {
+                      user_id: auth.idTokenPayload.sub
+                    }, {
+                      reload: true
+                    });
+                  }
+                } else {
+                  const routerParameters = angular.fromJson(auth.state);
+
+                  if (routerParameters.name === 'application.public.home') {
+                    if (permissions.length > 0) {
+                      $state.go('application.internal.organization.read', {}, {reload: true});
+                    } else {
+                      $state.go('application.internal.myTransaction', {
+                        user_id: auth.idTokenPayload.sub
+                      }, {
+                        reload: true
+                      });
+                    }
+                  } else {
+                    $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+                  }
+                }
+              });
             });
           } else {
-            const routerParameters = angular.fromJson(auth.state);
-
-            if (routerParameters.name === 'application.public.home') {
-              if (search.entity.length > 0) {
-                $state.go('application.internal.organization.read', {}, {reload: true});
-              } else {
-                $state.go('application.internal.myTransaction', {
-                  user_id: auth.idTokenPayload.sub
-                }, {
-                  reload: true
-                });
-              }
-            } else {
-              $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-            }
+            uiService.notify('Unable to login');
           }
         });
       }, function() {

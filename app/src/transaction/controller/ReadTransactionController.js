@@ -1,41 +1,64 @@
 export default class ReadTransactionController {
   constructor(
-    $window,
     $scope,
     $state,
     $mdDialog,
     storageService,
     itemService,
+    organizationService,
     transactionService,
-    toolsService,
     uiService,
-    TransactionLoader
+    db
   ) {
-    this.$window = $window;
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.itemService = itemService;
+    this.organizationService = organizationService;
     this.transactionService = transactionService;
-    this.toolsService = toolsService;
     this.uiService = uiService;
+    this.db = db;
 
     $scope.selected = [];
     $scope.searchText = '';
+    this.$scope.data = [];
 
     this.storage = storageService.read();
     $scope.$parent.selectedTab = 3;
-
-    this.loader = new TransactionLoader($window, this.itemService, transactionService, this.storage.auth.idToken, 100);
-    this.loader.query = this.getQuery();
-
-    $scope.loader = this.loader;
     this.run();
   }
 
   run() {
+    this.$scope.loading = true;
+
     this.$scope.$parent.ready.then((resolve) => {
-      this.loader.loadPage(0);
+      return this.getQuery().then((query) => {
+        return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, query).then(result => {
+          this.$scope.data = result.entity;
+        });
+      });
+    }, () => {
+      this.uiService.notify('Unable to retrieve data');
+    }).finally(() => {
+      this.$scope.loading = false;
+    });
+  }
+
+  textChange(text) {
+    this.$scope.loading = true;
+
+    this.$scope.$parent.ready.then((resolve) => {
+      return this.getQuery().then((query) => {
+        query.text = text;
+
+        return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, query).then((result) => {
+          this.$scope.data = result.entity;
+        });
+      });
+    }, () => {
+      this.uiService.notify('Unable to retrieve data');
+    }).finally(() => {
+      this.$scope.loading = false;
     });
   }
 
@@ -53,11 +76,11 @@ export default class ReadTransactionController {
 
   readTransaction(transaction, user, item) {
     this.$mdDialog.show({
-      controller: ['$window', '$scope', 'transaction', 'user', 'item', function($window, $scope, transaction, user, item) {
+      controller: ['$scope', 'transaction', 'user', 'item', function($scope, transaction, user, item) {
         $scope.transaction = transaction;
         $scope.user = user;
         $scope.item = item;
-        $scope.time = new $window.Date();
+        $scope.time = new Date();
       }],
       controllerAs: 'controller',
       templateUrl: '/src/transaction/partial/view.html',
@@ -70,10 +93,10 @@ export default class ReadTransactionController {
     });
   }
 
-  deleteTransaction(transaction, $event) {
+  deleteTransaction(transactionData, $event) {
     let confirm;
 
-    if (transaction.status === 5) {
+    if (transactionData.transaction.status === 2) {
       confirm = this.$mdDialog.confirm()
         .title('Are you sure you want to undo this revocation?')
         .ariaLabel('Revoke Transaction')
@@ -83,7 +106,7 @@ export default class ReadTransactionController {
         .cancel('Cancel');
     } else {
       confirm = this.$mdDialog.confirm()
-        .title('Are you sure you want to delete this revocation?')
+        .title('Are you sure you want to delete this?')
         .ariaLabel('Delete Transaction')
         .clickOutsideToClose(true)
         .targetEvent($event)
@@ -92,8 +115,8 @@ export default class ReadTransactionController {
     }
 
     this.$mdDialog.show(confirm).then(() => {
-      this.transactionService.delete(this.storage.auth.idToken, transaction.id).then(() => {
-        this.reload();
+      this.transactionService.delete(this.storage.auth.idToken, transactionData.transaction.id).then(() => {
+        this.run();
         this.uiService.notify('Transaction deleted');
       }, (response) => {
         this.uiService.notify('Unable to delete transaction');
@@ -112,7 +135,7 @@ export default class ReadTransactionController {
 
     this.$mdDialog.show(confirm).then(() => {
       this.transactionService.revoke(this.storage.auth.idToken, transaction.id).then((profile) => {
-        this.reload();
+        this.run();
         this.uiService.notify('Transaction revoked');
       }, (response) => {
         this.uiService.notify('Unable to revoke transaction');
@@ -120,44 +143,48 @@ export default class ReadTransactionController {
     });
   }
 
-  reload() {
-    const query = this.getQuery();
-    this.loader.reset();
-    this.loader.query = query;
-    this.loader.loadPage(0);
-  }
-
   getQuery() {
-    const query = {
-      order: '-timeCreated',
-      leaf: 'true'
-    };
+    const permissionTable = this.db.getSchema().table('Permission');
 
-    if (typeof this.$state.params.eventId !== 'undefined') {
-      query.eventId = this.$state.params.eventId;
-    }
+    return this.db.select()
+      .from(permissionTable)
+      .where(permissionTable.objectClass.eq('Organization'))
+      .exec()
+      .then(rows => {
+        const organizationIds = rows.map(permission => permission.objectId);
 
-    if (typeof this.$state.params.itemId !== 'undefined') {
-      query.itemId = this.$state.params.itemId;
-    }
+        const query = {
+          order: '-timeCreated',
+          leaf: true
+        };
 
-    if (this.$scope.searchText.length > 0) {
-      query.text = this.$scope.searchText;
-    }
+        let hasFilter = false;
 
-    return query;
+        ['eventId', 'itemId', 'id'].forEach((filter) => {
+          if (typeof this.$state.params[filter] !== 'undefined') {
+            query[filter] = this.$state.params[filter];
+            hasFilter = true;
+          }
+        });
+
+        if (!hasFilter) {
+          query.organizationId = organizationIds;
+          query.limit = 100;
+        }
+
+        return query;
+      });
   }
 }
 
 ReadTransactionController.$inject = [
-  '$window',
   '$scope',
   '$state',
   '$mdDialog',
   'StorageService',
   'ItemService',
+  'OrganizationService',
   'TransactionService',
-  'ToolsService',
   'UIService',
-  'TransactionLoader'
+  'db'
 ];

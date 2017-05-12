@@ -18,8 +18,7 @@ export default class EventService {
     }
 
     return this.$http.get(url, options).then((response) => {
-
-      response.data.event = this.toolsService.toObject(response.data.event, this.Event);
+      response.data.event = this.toolsService(response.data.event, this.Event);
       response.data.itemData.forEach((itemDatum) => {
         itemDatum.item = this.toolsService.toObject(itemDatum.item, this.Item);
       });
@@ -35,7 +34,7 @@ export default class EventService {
       headers: {
         Authorization : 'Bearer ' + token
       }
-    }).then(response => this.toObject(response.data));
+    }).then(response => this.toolsService.toObject(response.data, this.Event));
   }
 
   publicSearch(params) {
@@ -43,9 +42,11 @@ export default class EventService {
 
     return this.$http.get(url, {
       params: params,
-    }).then((response) => {
+    }).then(response => {
       return {
-        entity: response.data.entity.map(this.toObject, this),
+        entity: response.data.entity.map((event) => {
+          return this.toolsService.toObject(event, this.Event);
+        }),
         count: response.data.count
       };
     });
@@ -59,9 +60,11 @@ export default class EventService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
+    }).then(response => {
       return {
-        entity: response.data.entity.map(this.toObject, this),
+        entity: response.data.entity.map((event) => {
+          return this.toolsService.toObject(event, this.Event);
+        }),
         count: response.data.count
       };
     });
@@ -74,9 +77,7 @@ export default class EventService {
       headers: {
         Authorization : 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Event));
   }
 
   update(token, event) {
@@ -86,13 +87,11 @@ export default class EventService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Event));
   }
 
   fieldUpdate(token, id, data) {
-    return this.read(token, id).then((event) => {
+    return this.read(token, id).then(event => {
       for (let key in data) {
         event[key] = data[key];
       }
@@ -107,7 +106,7 @@ export default class EventService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Event));
   }
 
   getInactiveEventStatus() {
@@ -116,10 +115,6 @@ export default class EventService {
 
   getActiveEventStatus() {
       return 1;
-  }
-
-  toObject(subject) {
-    return this.toolsService.toObject(subject, this.Event);
   }
 }
 

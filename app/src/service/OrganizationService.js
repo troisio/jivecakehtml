@@ -7,6 +7,12 @@ export default class OrganizationService {
     this.eventService = eventService;
     this.permissionService = permissionService;
     this.toolsService = toolsService;
+
+    this.rootOrganization = new Organization();
+    this.rootOrganization.id = '55865027c1fcce003aa0aa40';
+    this.rootOrganization.children = [];
+    this.rootOrganization.name = "JiveCake";
+    this.rootOrganization.email = "luis@trois.io";
   }
 
   getObjectClassName() {
@@ -28,7 +34,7 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Organization));
   }
 
   create(token, organization) {
@@ -38,9 +44,7 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Organization));
   }
 
   update(token, organization) {
@@ -50,9 +54,7 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Organization));
   }
 
   publicSearch(params) {
@@ -62,7 +64,9 @@ export default class OrganizationService {
       params : params
     }).then((response) => {
       return {
-        entity: response.data.entity.map(this.toObject, this),
+        entity: response.data.entity.map((entity) => {
+          return this.toolsService.toObject(entity, this.Organization);
+        }),
         count: response.data.count
       };
     });
@@ -78,7 +82,9 @@ export default class OrganizationService {
       }
     }).then((response) => {
       return {
-        entity: response.data.entity.map(this.toObject, this),
+        entity: response.data.entity.map(entity => {
+          return this.toolsService.toObject(entity, this.Organization);
+        }),
         count: response.data.count
       };
     });
@@ -91,9 +97,7 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toolsService.toObject(response.data, this.Organization));
   }
 
   getOrganizationsByUser(token, user_id, params) {
@@ -104,7 +108,9 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => response.data.map(this.toObject, this));
+    }).then(response => response.data.map((entity) => {
+      return this.toolsService.toObject(entity, this.Organization);
+    }));
   }
 
   getOrganizationsWithPermissions(organizations, permissions) {
@@ -117,16 +123,12 @@ export default class OrganizationService {
         set.add(this.getReadPermission());
         set.add(this.getWritePermission());
       } else if (permission.include === 1) {
-        permission.permissions.forEach(function(p) {
-          set.add(p);
-        });
+        permission.permissions.forEach(set.add, set);
       } else if (permission.include === 2) {
         set.add(this.getReadPermission());
         set.add(this.getWritePermission());
 
-        permission.permissions.forEach(function(p) {
-          set.delete(p);
-        });
+        permission.permissions.forEach(set.delete, set);
       }
 
       return set;
@@ -150,10 +152,6 @@ export default class OrganizationService {
     });
 
     return organizations.map(organization => organizationIdToData[organization.id]);
-  }
-
-  toObject(subject) {
-    return this.toolsService.toObject(subject, this.Organization);
   }
 }
 

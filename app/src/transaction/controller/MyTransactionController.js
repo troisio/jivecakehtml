@@ -32,16 +32,14 @@ export default class MyTransactionController {
     this.pagingService = new this.Paging(
       (data) => this.$q.resolve(data.count),
       (limit, offset) => {
-        const query = this.toolsService.stateParamsToQuery(this.$state.params);
-        this.toolsService.maintainKeys(query, ['user_id', 'limit', 'offset', 'order']);
-
-        query.status = transactionService.getUsedForCountingStatuses();
-        query.limit = 100;
-        query.leaf = true;
-        query.order = '-timeCreated';
-        query.user_id = this.$state.params.user_id;
-
-        return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, query);
+        return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, {
+          status: [transactionService.SETTLED, transactionService.PENDING],
+          paymentStatus: [transactionService.PAYMENT_EQUAL, transactionService.PAYMENT_GREATER_THAN],
+          limit: 100,
+          leaf: true,
+          order: '-timeCreated',
+          user_id: this.$state.params.user_id
+        });
       }
     );
 
@@ -62,7 +60,7 @@ export default class MyTransactionController {
       });
     });
 
-    this.$scope.$on('downstream.transaction.created', () => {
+    this.$scope.$on('transaction.created', () => {
       this.loadPage(
         this.$window.parseInt(this.$state.params.page),
         this.$window.parseInt(this.$state.params.pageSize)
@@ -80,11 +78,11 @@ export default class MyTransactionController {
 
   readTransaction(transaction, user, item) {
     this.$mdDialog.show({
-      controller: ['$window', '$scope', 'transaction', 'user', 'item', function($window, $scope, transaction, user) {
+      controller: ['$scope', 'transaction', 'user', 'item', function($scope, transaction, user) {
         $scope.transaction = transaction;
         $scope.user = user;
         $scope.item = item;
-        $scope.time = new $window.Date();
+        $scope.time = new Date();
       }],
       controllerAs: 'controller',
       templateUrl: '/src/transaction/partial/view.html',
@@ -99,8 +97,8 @@ export default class MyTransactionController {
 
   viewItem(item) {
     this.$mdDialog.show({
-      controller: ['$window', '$scope', '$sanitize', 'item',  function($window, $scope, $sanitize, item) {
-        $scope.time = new $window.Date();
+      controller: ['$scope', '$sanitize', 'item',  function($scope, $sanitize, item) {
+        $scope.time = new Date();
         $scope.item = item;
         $scope.$sanitize = $sanitize;
       }],
@@ -117,12 +115,6 @@ export default class MyTransactionController {
       controller: ['$scope', 'settings', 'transaction', function($scope, settings, transaction) {
         $scope.settings = settings;
         $scope.transaction = transaction;
-
-$scope.transaction.id = '5824973124aa9a004b2ee6aa';
-        /*
-5824973124aa9a004b2ee6aa
-5802a70d24aa9a004bc5f1af
-        */
       }],
       templateUrl: '/src/transaction/partial/qr.html',
       clickOutsideToClose: true,

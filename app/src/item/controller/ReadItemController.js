@@ -1,6 +1,5 @@
 export default class ReadItemController {
   constructor(
-    $window,
     $q,
     $scope,
     $state,
@@ -9,16 +8,15 @@ export default class ReadItemController {
     eventService,
     itemService,
     transactionService,
-    permissionService,
     organizationService,
+    permissionService,
     storageService,
     settings,
     uiService,
     paypalService,
-    relationalService,
-    SearchEntity
+    db,
+    Permission
   ) {
-    this.$window = $window;
     this.$q = $q;
     this.$scope = $scope;
     this.$state = $state;
@@ -27,131 +25,126 @@ export default class ReadItemController {
     this.eventService = eventService;
     this.itemService = itemService;
     this.transactionService = transactionService;
-    this.permissionService = permissionService;
     this.organizationService = organizationService;
+    this.permissionService = permissionService;
     this.uiService = uiService;
     this.paypalService = paypalService;
-    this.relationalService = relationalService;
-    this.SearchEntity = SearchEntity;
+    this.db = db;
+    this.Permission = Permission;
 
     this.storage = storageService.read();
 
+    this.$scope.token = this.storage.auth.idToken;
     this.$scope.apiUrl = settings.jivecakeapi.uri;
     this.$scope.uiReady = false;
     this.$scope.selected = [];
+
+    ['event.update', 'item.create', 'item.update', 'item.delete', 'transaction.created', 'transaction.deleted'].forEach(event => {
+      $scope.$on(event, () => {
+        this.run();
+      });
+    });
 
     this.run();
   }
 
   run() {
-    this.$scope.token = this.storage.auth.idToken;
-    this.$scope.hasApplicationWrite = false;
+    this.$scope.uiReady = false;
 
-    this.$scope.$parent.ready.then((resolve) => {
-      const permissions = resolve.permission.entity;
-      const applicationWritePermissions = permissions.filter((permission) =>
-        permission.objectClass === this.applicationService.getObjectClassName() &&
-        permission.has(this.applicationService.getReadPermission())
-      );
-      const organizationIds = resolve.permission.entity
-        .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
-        .map(permission => permission.objectId);
-      const query = {
-        order: '-lastActivity'
-      };
+    return this.$scope.$parent.ready.then(() => {
+      const permissionTable = this.db.getSchema().table('Permission');
+      const eventTable = this.db.getSchema().table('Event');
+      const itemTable = this.db.getSchema().table('Item');
+      const transactionTable = this.db.getSchema().table('Transaction');
 
-      let hasFilter = false;
+      const and = [
+        permissionTable.objectClass.eq(this.organizationService.getObjectClassName())
+      ];
 
-      ['eventId', 'id'].forEach((filter) => {
-        if (typeof this.$state.params[filter] !== 'undefined') {
-          query[filter] = this.$state.params[filter];
-          hasFilter = true;
+      ['organizationId', 'eventId'].forEach((field) => {
+        const value = this.$state.params[field];
+
+        if (value) {
+          const arrayValue = Array.isArray(value) ? value : [value];
+          and.push(itemTable[field].in(arrayValue));
         }
       });
 
-      if (!hasFilter) {
-        query.organizationId = organizationIds;
-      }
+      const columns = [lf.fn.count(transactionTable.id).as('transactionCount')];
 
-      const onFailure = () => {
-        this.uiService.notify('Unable to retrieve items');
-      };
+      [permissionTable, eventTable, itemTable, transactionTable].forEach(table => {
+        table.getColumns()
+          .map(column => table[column.getName()])
+          .forEach(column => columns.push(column));
+      });
 
-      this.$scope.hasApplicationWrite = applicationWritePermissions.length > 0;
+      this.db.select()
+        .from(permissionTable)
+        .where(permissionTable.objectClass.eq('Application'))
+        .exec()
+        .then(rows => {
+          if (rows.length > 0) {
+            const hasPermission = new this.Permission().has;
+            const permission = rows[0];
+            this.$scope.hasApplicationWrite = hasPermission.call(permission, this.permissionService.WRITE);
+          } else {
+            this.$scope.hasApplicationWrite = false;
+          }
+        });
 
-      return this.getData(query).then((data) => {
-        this.$scope.data = data;
-      }, onFailure);
+      return this.db.select(...columns)
+        .from(itemTable)
+        .innerJoin(eventTable, itemTable.eventId.eq(eventTable.id))
+        .innerJoin(permissionTable, permissionTable.objectId.eq(itemTable.organizationId))
+        .leftOuterJoin(transactionTable, transactionTable.itemId.eq(itemTable.id))
+        .where(lf.op.and(...and))
+        .groupBy(itemTable.id)
+        .orderBy(itemTable.status, lf.Order.DESC)
+        .orderBy(itemTable.lastActivity, lf.Order.DESC)
+        .exec()
+        .then(rows => {
+          const data = angular.copy(rows);
+
+          const item = data.find(datum => datum.Item.id === this.$state.params.highlight);
+          const index = data.indexOf(item);
+
+          if (index > -1) {
+            data.splice(index, 1);
+            data.unshift(item);
+          }
+
+          this.$scope.data = rows;
+        }, (err) => {
+          this.uiService.notify('Unable to retrieve data');
+        });
     }).finally(() => {
       this.$scope.uiReady = true;
     });
   }
 
-  getData(query) {
-    return this.itemService.search(this.storage.auth.idToken, query).then((itemSearchResult) => {
-      const items = itemSearchResult.entity;
-      const eventIds = items.map(item => item.eventId);
-      const itemIds = items.map(item => item.id);
-      const eventFuture = eventIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : this.eventService.search(this.storage.auth.idToken, {id: eventIds});
-
-      let transactionFuture;
-
-      if (itemIds.length > 0) {
-        transactionFuture = this.transactionService.search(this.storage.auth.idToken, {
-          itemId: itemIds,
-          leaf: true,
-          status: this.transactionService.getUsedForCountingStatuses()
-        });
-      } else {
-        transactionFuture = this.$q.resolve(new this.SearchEntity());
-      }
-
-      return this.$q.all([
-        transactionFuture,
-        eventFuture
-      ]).then((resolve) => {
-        const transactionSearchResult = resolve[0];
-        const eventSearchResult = resolve[1];
-        const itemsWithEvent = this.relationalService.oneToOneJoin(
-          items,
-          'eventId',
-          eventSearchResult.entity,
-          'id'
-        );
-        const itemWithTransactions = this.relationalService.leftJoin(
-          items,
-          'id',
-          transactionSearchResult.entity,
-          'itemId'
-        );
-
-        return items.map(function(item, index) {
-          const transactions = itemWithTransactions[index].foreign;
-          const transactionCount = transactions.reduce((previous, next) => previous + next.quantity, 0);
-
-          return {
-            item: item,
-            transactions: transactions,
-            transactionCount: transactionCount,
-            event: itemsWithEvent[index].foreign
-          };
-        });
-      });
-    });
-  }
-
   createItem() {
-    this.$scope.$parent.ready.then((resolve) => {
-      this.$mdDialog.show({
-        templateUrl: '/src/item/partial/create.html',
-        controller: 'CreateItemController',
-        controllerAs: 'controller',
-        clickOutsideToClose: true,
-        locals: {
-          permissions: resolve.permission.entity
+    const eventTable = this.db.getSchema().table('Event');
+    const permissionTable = this.db.getSchema().table('Permission');
+
+    this.db.select()
+      .from(eventTable)
+      .innerJoin(permissionTable, permissionTable.objectId.eq(eventTable.organizationId))
+      .exec()
+      .then(rows => {
+        const hasPermission = new this.Permission().has;
+        const eventsWithWrite = rows.filter(row => hasPermission.call(row.Permission, this.permissionService.WRITE));
+
+        if (eventsWithWrite.length > 0) {
+          this.$mdDialog.show({
+            templateUrl: '/src/item/partial/create.html',
+            controller: 'CreateItemController',
+            controllerAs: 'controller',
+            clickOutsideToClose: true
+          });
+        } else {
+          this.uiService.notify('Create some events before creating items');
         }
       });
-    });
   }
 
   createPaypalTransaction(item) {
@@ -161,7 +154,7 @@ export default class ReadItemController {
     }).then(resolve => {
       const details = resolve.detail;
       const event = resolve.event;
-      const time = new this.$window.Date().getTime();
+      const time = new Date().getTime();
       const txn_id = time.toString();
 
       this.paypalService.getCartIpn(
@@ -169,7 +162,7 @@ export default class ReadItemController {
           quantity: 3,
           item: item
         }],
-        new this.$window.Date().getTime(),
+        new Date().getTime(),
         event.currency,
         txn_id,
         'Completed',
@@ -198,11 +191,8 @@ export default class ReadItemController {
       .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.itemService.delete(this.storage.auth.idToken, itemData.item.id).then(() => {
+      this.itemService.delete(this.storage.auth.idToken, itemData.Item.id).then(() => {
         this.uiService.notify('Item deleted');
-
-        const removeIndex = this.$scope.data.indexOf(itemData);
-        this.$scope.data.splice(removeIndex, 1);
       }, (response) => {
         let message;
         if (typeof response.data === 'object' && response.data.error === 'transaction') {
@@ -218,7 +208,6 @@ export default class ReadItemController {
 }
 
 ReadItemController.$inject = [
-  '$window',
   '$q',
   '$scope',
   '$state',
@@ -227,12 +216,12 @@ ReadItemController.$inject = [
   'EventService',
   'ItemService',
   'TransactionService',
-  'PermissionService',
   'OrganizationService',
+  'PermissionService',
   'StorageService',
   'settings',
   'UIService',
   'PaypalService',
-  'RelationalService',
-  'SearchEntity'
+  'db',
+  'Permission'
 ];

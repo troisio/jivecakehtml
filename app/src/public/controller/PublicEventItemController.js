@@ -40,8 +40,8 @@ export default class PublicEventItemController {
     this.$scope.selected = [];
     this.defaultAmountSize = uiService.getDefaultItemCartSelectionSize();
     this.$scope.uiReady = false;
-    this.scheduledModificationTimes = new this.$window.Set();
-    this.$scope.time = new this.$window.Date();
+    this.scheduledModificationTimes = new Set();
+    this.$scope.time = new Date();
     this.$scope.hasAnySelections = false;
 
     const storage = this.storageService.read();
@@ -59,7 +59,7 @@ export default class PublicEventItemController {
 
       if (this.$scope.event !== null) {
         const storage = this.storageService.read();
-        const currentTime = new this.$window.Date().getTime();
+        const currentTime = new Date().getTime();
 
         if (this.$scope.event.paymentProfileId !== null) {
           this.paymentProfileService.publicSearch({
@@ -77,9 +77,7 @@ export default class PublicEventItemController {
           groupData.itemData.forEach((itemData) => {
             this.$scope.itemFormData[itemData.item.id] = {amount: 0};
 
-            const countingStatuses = this.transactionService.getUsedForCountingStatuses();
-            const completeOrPendingFilter = (transaction) => countingStatuses.indexOf(transaction.status) > -1;
-            const completeOrPendingTransactions = itemData.transactions.filter(completeOrPendingFilter);
+            const completeOrPendingTransactions = itemData.transactions.filter(this.transactionService.countingFilter);
 
             let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
 
@@ -199,7 +197,7 @@ export default class PublicEventItemController {
           let future;
 
           if (mockIpn) {
-            const timestamp = new this.$window.Date().getTime();
+            const timestamp = new Date().getTime();
 
             const itemQuantities = group.itemData.filter(data => data.amount > 0).map(data => new this.$window.Object({
                 quantity: itemFormData[data.item.id].amount,
@@ -308,7 +306,7 @@ export default class PublicEventItemController {
   viewItem(item) {
     this.$mdDialog.show({
       controller: ['$window', '$scope', '$sanitize', 'item',  function($window, $scope, $sanitize, item) {
-        $scope.time = new $window.Date();
+        $scope.time = new Date();
         $scope.item = item;
         $scope.$sanitize = $sanitize;
       }],

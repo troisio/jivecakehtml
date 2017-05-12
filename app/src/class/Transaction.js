@@ -9,6 +9,7 @@ export default class Transaction {
     this.linkedId = null;
     this.linkedObjectClass = null;
     this.status = null;
+    this.paymentStatus = null;
     this.quantity = null;
     this.given_name = null;
     this.middleName = null;
@@ -16,6 +17,8 @@ export default class Transaction {
     this.amount = null;
     this.currency = null;
     this.email = null;
+    this.leaf = null;
+    this.lastTransferTime = null;
     this.timeCreated = null;
   }
 }

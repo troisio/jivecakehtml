@@ -6,8 +6,6 @@ export default class PaymentProfileService {
     this.toolsService = toolsService;
     this.PaymentProfile = PaymentProfile;
     this.PaypalPaymentProfile = PaypalPaymentProfile;
-
-    this.paypalPaymentProfileFields = Object.keys(new this.PaypalPaymentProfile());
   }
 
   search(token, params) {
@@ -18,7 +16,7 @@ export default class PaymentProfileService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
+    }).then(response => {
       return {
         entity: response.data.entity.map(this.toObject, this),
         count: response.data.count
@@ -31,7 +29,7 @@ export default class PaymentProfileService {
 
     return this.$http.get(url, {
       params: params
-    }).then((response) => {
+    }).then(response => {
       return {
         entity: response.data.entity.map(this.toObject, this),
         count: response.data.count
@@ -46,9 +44,7 @@ export default class PaymentProfileService {
       headers : {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return this.toObject(response.data);
-    });
+    }).then(response => this.toObject(response.data));
   }
 
   delete(token, paymentProfileId) {
@@ -58,7 +54,7 @@ export default class PaymentProfileService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    });
+    }).then(response => this.toObject(response.data));
   }
 
   getImplementation(data) {
@@ -67,8 +63,7 @@ export default class PaymentProfileService {
 
   toObject(subject) {
     const implementation = this.getImplementation(subject);
-    const result = this.toolsService.toObject(subject, implementation);
-    return result;
+    return this.toolsService.toObject(subject, implementation);
   }
 }
 

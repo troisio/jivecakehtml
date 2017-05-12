@@ -2,17 +2,17 @@
   <div layout="row" layout-padding layout-align="space-between center">
     <h2>Create Event</h2>
   </div>
-  <div ng-show="uiReady" layout-padding layout="column">
+  <div layout-padding layout="column">
     <form name="form" ng-submit="!loading && controller.createEvent(event)">
       <md-input-container class="md-block">
         <label>Name</label>
         <input ng-model="event.name" name="name" autocomplete="off" title="Letters, Numbers Dashes" maxlength="255" required>
       </md-input-container>
-      <md-input-container ng-show="organizations.length > 1" class="md-block">
+      <md-input-container ng-show="data.length > 1" class="md-block">
         <label>Organization</label>
         <md-select ng-model="event.organizationId">
           <md-option ng-value="null"></md-option>
-          <md-option ng-repeat="organization in organizations track by organization.id" ng-value="organization.id">{{organization.name}}</md-option>
+          <md-option ng-repeat="organizationData in data track by organizationData.Organization.id" ng-value="organizationData.Organization.id">{{organizationData.Organization.name}}</md-option>
         </md-select>
       </md-input-container>
       <div layout-sm="column">

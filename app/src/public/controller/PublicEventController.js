@@ -32,10 +32,10 @@ export default class PublicEventController {
 
   showInformation(event, organization) {
     this.$mdDialog.show({
-      controller: ['$window', '$sanitize', '$scope', 'event', 'organization', function($window, $sanitize, $scope, event, organization) {
+      controller: ['$sanitize', '$scope', 'event', 'organization', function($sanitize, $scope, event, organization) {
         $scope.event = event;
         $scope.organization = organization;
-        $scope.time = new $window.Date();
+        $scope.time = new Date();
         $scope.$sanitize = $sanitize;
       }],
       templateUrl: '/src/public/partial/viewEvent.html',

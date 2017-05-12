@@ -101,15 +101,12 @@ export default class UpdateAccountController {
       this.uiService.notify('Successfully updated');
       this.run();
     }, (response) => {
-      let message;
+      let message = 'Unable to update';
 
-      const responseIsObject = typeof response.data === 'object' && response.data !== null;
-      const hasZeroOrManyFaces = response.data.error === 'selfieLength';
-
-      if (responseIsObject && hasZeroOrManyFaces) {
-        message = response.data.length === 0 ? 'Sorry, we could not find any faces in your photo' : 'Sorry, we detected more than 1 face in your photo';
-      } else {
-        message = 'Unable to update';
+      if (typeof response.data === 'object' && response.data !== null) {
+        if (response.data.error === 'selfieLength') {
+          message = response.data.length === 0 ? 'Sorry, we could not find any faces in your photo' : 'Sorry, we detected more than 1 face in your photo';
+        }
       }
 
       this.uiService.notify(message);

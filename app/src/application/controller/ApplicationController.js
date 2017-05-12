@@ -1,7 +1,5 @@
 export default class ApplicationController {
   constructor(
-    angular,
-    $window,
     $scope,
     $q,
     $mdDialog,
@@ -10,16 +8,18 @@ export default class ApplicationController {
     accessService,
     applicationService,
     organizationService,
+    transactionService,
+    eventService,
+    itemService,
+    downstreamService,
     permissionService,
-    auth0Service,
     uiService,
     connectionService,
     storageService,
     db,
-    settings
+    Permission,
+    SearchEntity
   ) {
-    this.angular = angular;
-    this.$window = $window;
     this.$scope = $scope;
     this.$q = $q;
     this.$mdDialog = $mdDialog;
@@ -28,53 +28,65 @@ export default class ApplicationController {
     this.accessService = accessService;
     this.applicationService = applicationService;
     this.organizationService = organizationService;
+    this.transactionService = transactionService;
+    this.eventService = eventService;
+    this.itemService = itemService;
+    this.downstreamService = downstreamService;
     this.permissionService = permissionService;
-    this.auth0Service = auth0Service;
     this.uiService = uiService;
     this.connectionService = connectionService;
     this.storageService = storageService;
+    this.SearchEntity = SearchEntity;
+    this.Permission = Permission;
     this.db = db;
-    this.settings = settings;
 
     this.storage = storageService.read();
+
+    this.$scope.storage = this.storage;
     this.$scope.selectedTab = 0;
     this.$scope.uiReady = false;
+
+    this.$scope.permissionService = permissionService;
+
+    const hasPermission = new Permission().has;
+    this.$scope.hasPermission = (permission, target) => hasPermission.call(permission, target);
 
     this.run();
   }
 
   run() {
-    let ready;
-
-    if (this.storage.auth === null) {
-      ready = this.$q.reject();
-    } else {
-      ready = this.getApplicationFutures(this.storage.auth.idToken);
-    }
-
+    const ready = this.storage.auth === null ? this.$q.reject() : this.getApplicationFutures(this.storage.auth.idToken);
     this.$scope.ready = ready;
 
     ready.then(resolve => {
-      this.loadScopePermissions(resolve.permission.entity);
+      const hasPermission = new this.Permission().has;
+      const permissionTable = this.db.getSchema().table('Permission');
 
-      return this.auth0Service.getUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub).then((profile) => {
-        this.$scope.user = profile;
+      this.db.select()
+        .from(permissionTable)
+        .exec()
+        .then(rows => {
+          this.$scope.organizationPermissions = rows.filter(permission => permission.objectClass === 'Organization');
+          this.$scope.applicationReadPermissions = rows.filter(permission =>
+            permission.objectClass === 'Application' && hasPermission.call(permission, this.permissionService.READ)
+          );
+        });
 
-        const showEmailUnverified = profile.user_id.startsWith('auth0') &&
-          !profile.email_verified &&
-          profile.logins_count > 1;
+      const showEmailUnverified = this.storage.profile.user_id.startsWith('auth0') &&
+        !this.storage.profile.email_verified &&
+        this.storage.profile.logins_count > 1;
 
-        if (showEmailUnverified) {
-          this.$mdDialog.show({
-            templateUrl: '/src/access/partial/verified.html',
-            controller: 'EmailVerifiedController',
-            controllerAs: 'controller',
-            clickOutsideToClose: false
-          });
-        }
-      });
+      if (showEmailUnverified) {
+        this.$mdDialog.show({
+          templateUrl: '/src/access/partial/verified.html',
+          controller: 'EmailVerifiedController',
+          controllerAs: 'controller',
+          clickOutsideToClose: false
+        });
+      }
     }, () => {
       this.storageService.reset();
+
       if (!this.$state.$current.name.startsWith('application.public')) {
         this.$state.go('application.public.home');
       }
@@ -103,52 +115,88 @@ export default class ApplicationController {
       this.storage.auth.idToken,
       this.storage.auth.idTokenPayload.sub
     ).then(source => {
-      const onPermissionDownstream = (permissions) => {
-        this.permissionService.search(this.storage.auth.idToken, {
-          user_id: this.storage.auth.idTokenPayload.sub
-        }).then((searchResult) => {
-          const permissions = searchResult.entity;
-          const table = this.db.getSchema().table('Permission');
-
-          this.db.delete().from(table).exec();
-          const rows = searchResult.entity.map(table.createRow, table);
-          this.db.insert().into(table).values(rows).exec();
-        });
-      };
-
-      source.addEventListener('permission.delete', (sse) => {
-        onPermissionDownstream(JSON.parse(sse.data));
-      });
-
-      source.addEventListener('permission.write', (sse) => {
-        onPermissionDownstream(JSON.parse(sse.data));
-      });
-
+      this.downstreamService.bootstrapEventSource(source);
       return source;
     });
 
     const permissonFuture = this.permissionService.search(this.storage.auth.idToken, {
       user_id: this.storage.auth.idTokenPayload.sub
+    }).then((permissionSearchResult) => {
+      const permissions = permissionSearchResult.entity;
+      const organizationIds = permissions
+        .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
+        .map(permission => permission.objectId);
+
+      let futures;
+
+      if (organizationIds.length > 0) {
+        const permissionTable = this.db.getSchema().table('Permission');
+        const permissionFuture = this.db.delete().from(permissionTable).exec().then(() => {
+          const rows = permissions.map(permissionTable.createRow, permissionTable);
+          return this.db.insert().into(permissionTable).values(rows).exec();
+        });
+
+        const eventFuture = this.eventService.search(this.storage.auth.idToken, {
+          order: '-lastActivity',
+          limit: 20,
+          organizationId: organizationIds
+        }).then(search => {
+          const eventTable = this.db.getSchema().table('Event');
+          const rows = search.entity.map(eventTable.createRow, eventTable);
+          return this.db.insertOrReplace().into(eventTable).values(rows).exec();
+        });
+
+        const itemFuture = this.itemService.search(this.storage.auth.idToken, {
+          order: '-lastActivity',
+          limit: 20,
+          organizationId: organizationIds
+        }).then(search => {
+          const itemTable = this.db.getSchema().table('Item');
+          const rows = search.entity.map(itemTable.createRow, itemTable);
+          const itemFuture = this.db.insertOrReplace().into(itemTable).values(rows).exec();
+
+          const itemIds = search.entity.map(item => item.id);
+          let transactionFuture;
+
+          if (itemIds.length > 0) {
+            transactionFuture = this.transactionService.search(this.storage.auth.idToken, {
+              itemId: itemIds,
+              leaf: true,
+              limit: 500,
+              order: '-timeCreated'
+            }).then(search => {
+              const transactionTable = this.db.getSchema().table('Transaction');
+              const rows = search.entity.map(transactionTable.createRow, transactionTable);
+              return this.db.insertOrReplace().into(transactionTable).values(rows).exec();
+            });
+          } else {
+            transactionFuture = this.$q.resolve(new this.SearchEntity());
+          }
+
+          return transactionFuture;
+        });
+
+        const organizationFuture = this.organizationService.getOrganizationsByUser(
+          this.storage.auth.idToken,
+          this.storage.auth.idTokenPayload.sub,
+          {}
+        ).then((organizations) => {
+          const organiationTable = this.db.getSchema().table('Organization');
+          const rows = organizations.map(organiationTable.createRow, organiationTable);
+          return this.db.insertOrReplace().into(organiationTable).values(rows).exec();
+        });
+
+        futures = [eventFuture, itemFuture, organizationFuture, permissionFuture];
+      } else {
+        futures = [];
+      }
+
+      return this.$q.all(futures).then(() => permissionSearchResult);
     });
 
     return this.$q.all({
-      permission: permissonFuture,
-      connection: connectionFuture
+      permission: permissonFuture
     });
-  }
-
-  loadScopePermissions(permissions) {
-    const organizationPermissions = permissions.filter((permission) => {
-      return permission.objectClass === this.organizationService.getObjectClassName();
-    });
-
-    const applicationReadPermissions = permissions.filter((permission) => {
-      return permission.objectClass === this.applicationService.getObjectClassName() &&
-             permission.has(this.applicationService.getReadPermission());
-    });
-
-    this.$scope.hasOrganizations = organizationPermissions.length > 0;
-    this.$scope.hasApplicationRead = applicationReadPermissions.length > 0;
   }
 
   createEvent() {
@@ -170,8 +218,6 @@ export default class ApplicationController {
 }
 
 ApplicationController.$inject = [
-  'angular',
-  '$window',
   '$scope',
   '$q',
   '$mdDialog',
@@ -180,11 +226,15 @@ ApplicationController.$inject = [
   'AccessService',
   'ApplicationService',
   'OrganizationService',
+  'TransactionService',
+  'EventService',
+  'ItemService',
+  'DownstreamService',
   'PermissionService',
-  'Auth0Service',
   'UIService',
   'ConnectionService',
   'StorageService',
   'db',
-  'settings'
+  'Permission',
+  'SearchEntity'
 ];

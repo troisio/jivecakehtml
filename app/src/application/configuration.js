@@ -70,7 +70,7 @@ export default [
       controller: 'EventController'
     })
     .state('application.internal.event.read', {
-      url : '?organizationId&id',
+      url : '?organizationId&highlight',
       templateUrl: '/src/event/partial/read.html',
       controller: 'ReadEventController',
       controllerAs: 'controller'
@@ -88,7 +88,7 @@ export default [
       controller: 'ItemController'
     })
     .state('application.internal.item.read', {
-      url : '?eventId&id',
+      url : '?eventId&highlight',
       templateUrl: '/src/item/partial/read.html',
       controller: 'ReadItemController',
       controllerAs: 'controller'
@@ -105,7 +105,7 @@ export default [
       controller: 'OrganizationController'
     })
     .state('application.internal.organization.read', {
-      url: '/organization',
+      url: '/organization?highlight',
       templateUrl: '/src/organization/partial/read.html',
       controller: 'ReadOrganizationController',
       controllerAs: 'controller'
@@ -123,7 +123,7 @@ export default [
       template: '<ui-view flex layout="column"></ui-view>'
     })
     .state('application.internal.transaction.read', {
-      url: '?organizationId&eventId&itemId',
+      url: '?organizationId&eventId&itemId&id',
       templateUrl: '/src/transaction/partial/read.html',
       controller: 'ReadTransactionController',
       controllerAs: 'controller'

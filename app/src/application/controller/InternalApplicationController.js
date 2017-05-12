@@ -26,7 +26,7 @@ export default class InterneralApplicationController {
       const permissions = resolve.permission.entity;
 
       this.$scope.organizationIds = permissions.filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
-                                               .map(permission => permission.objectId);
+        .map(permission => permission.objectId);
 
       this.$scope.$on('jivecakeapi.oauth.invalid_grant', (event, error) => {
         this.$mdDialog.show({
@@ -34,7 +34,7 @@ export default class InterneralApplicationController {
           controller: 'SessionWarningController',
           controllerAs: 'controller',
           clickOutsideToClose: true
-        }).then(() => {
+        }).then(function() {
         }, () => {
           this.accessService.logout();
         }).finally(() => {

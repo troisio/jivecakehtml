@@ -1,6 +1,5 @@
 export default class CreateOrganizationController {
   constructor(
-    $rootScope,
     $scope,
     $state,
     $mdDialog,
@@ -9,7 +8,6 @@ export default class CreateOrganizationController {
     uiService,
     Organization
   ) {
-    this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
@@ -22,29 +20,20 @@ export default class CreateOrganizationController {
     this.$scope.close = this.$mdDialog.hide;
     this.$scope.loading = false;
     this.$scope.organization = new this.Organization();
-
-    this.rootOrganizationPromise = this.organizationService.publicSearch({
-      parentId: null
-    }).then(function(searchResult) {
-      return searchResult.entity[0];
-    });
+    this.$scope.organization.parentId = this.organizationService.rootOrganization.id;
   }
 
   submit(organization) {
     this.$scope.loading = true;
 
-    this.rootOrganizationPromise.then(rootOrganization => {
-      organization.parentId = rootOrganization.id;
+    return this.organizationService.create(this.storage.auth.idToken, organization).then(organization => {
+      this.$state.go('application.internal.organization.read');
+      this.$mdDialog.hide();
 
-      return this.organizationService.create(this.storage.auth.idToken, organization).then(organization => {
-        this.$state.go('application.internal.organization.read', {}, {reload: true});
-        this.$mdDialog.hide();
-
-        this.uiService.notify('Organization created');
-      }, (response) => {
-        const message = response.status === 409 ? 'Email has already been taken' : 'Unable to create Organization';
-        this.uiService.notify(message);
-      });
+      this.uiService.notify('Organization created');
+    }, (response) => {
+      const message = response.status === 409 ? 'Email has already been taken' : 'Unable to create Organization';
+      this.uiService.notify(message);
     }).finally(() => {
       this.$scope.loading = false;
     });
@@ -52,7 +41,6 @@ export default class CreateOrganizationController {
 }
 
 CreateOrganizationController.$inject = [
-  '$rootScope',
   '$scope',
   '$state',
   '$mdDialog',

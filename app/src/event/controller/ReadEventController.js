@@ -1,6 +1,5 @@
 export default class ReadEventController {
   constructor(
-    $window,
     $scope,
     $q,
     $state,
@@ -12,9 +11,9 @@ export default class ReadEventController {
     storageService,
     toolsService,
     settings,
-    uiService
+    uiService,
+    db
   ) {
-    this.$window = $window;
     this.$scope = $scope;
     this.$q = $q;
     this.$state = $state;
@@ -26,6 +25,7 @@ export default class ReadEventController {
     this.toolsService = toolsService;
     this.settings = settings;
     this.uiService = uiService;
+    this.db = db;
 
     this.storage = storageService.read();
     this.$scope.$parent.$parent.selectedTab = 1;
@@ -33,82 +33,77 @@ export default class ReadEventController {
     this.$scope.apiUri = settings.jivecakeapi.uri;
     this.$scope.selected = [];
     this.$scope.data = [];
-    this.$scope.uiReady = false;
+
+    ['event.create', 'event.update', 'event.delete'].forEach((name) => {
+      $scope.$on(name, () => {
+        this.run();
+      });
+    });
+
     this.run();
   }
 
   run() {
-    this.$scope.$parent.ready.then((resolve) => {
-      const organizationIds = resolve.permission.entity
-        .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
-        .map(permission => permission.objectId);
-      const query = {
-        order: '-lastActivity'
-      };
-      const failure = () => {
-        this.uiService.notify('Unable to retrieve data');
-      };
+    this.$scope.uiReady = false;
 
-      let hasFilter = false;
+    return this.$scope.$parent.ready.then(() => {
+      const permissionTable = this.db.getSchema().table('Permission');
+      const eventTable = this.db.getSchema().table('Event');
+      const organizationTable = this.db.getSchema().table('Organization');
+      const and = [
+        permissionTable.objectClass.eq(this.organizationService.getObjectClassName())
+      ];
 
-      ['organizationId', 'id'].forEach((filter) => {
-        if (typeof this.$state.params[filter] !== 'undefined') {
-          query[filter] = this.$state.params[filter];
-          hasFilter = true;
-        }
-      });
-
-      if (!hasFilter) {
-        query.organizationId = organizationIds;
+      if (this.$state.params.organizationId) {
+        const value = this.$state.params.organizationId;
+        const arrayValue = Array.isArray(value) ? value : [value];
+        and.push(eventTable.organizationId.in(arrayValue));
       }
 
-      return this.getEventData(query).then((searchResult) => {
-        this.$scope.data = searchResult.entity;
-      }, failure);
+      return this.db.select()
+        .from(eventTable)
+        .innerJoin(organizationTable, organizationTable.id.eq(eventTable.organizationId))
+        .leftOuterJoin(permissionTable, permissionTable.objectId.eq(organizationTable.id))
+        .where(lf.op.and(...and))
+        .orderBy(eventTable.status, lf.Order.DESC)
+        .orderBy(eventTable.lastActivity, lf.Order.DESC)
+        .limit(50)
+        .exec()
+        .then(rows => {
+          const data = angular.copy(rows);
+
+          const event = data.find(datum => datum.Event.id === this.$state.params.highlight);
+          const index = data.indexOf(event);
+
+          if (index > -1) {
+            data.splice(index, 1);
+            data.unshift(event);
+          }
+
+          this.$scope.data = data;
+        }, (err) => {
+          this.uiService.notify('Unable to retrieve data');
+        });
     }).finally(() => {
       this.$scope.uiReady = true;
     });
   }
 
-  getEventData(query) {
-    return this.eventService.search(this.storage.auth.idToken, query).then((eventSearchResult) => {
-      const events = eventSearchResult.entity;
-
-      let organizationFuture;
-
-      if (events.length === 0) {
-        organizationFuture = this.$q.resolve([]);
-      } else {
-        organizationFuture = this.organizationService.getOrganizationsByUser(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub);
-      }
-
-      return organizationFuture.then((organizations) => {
-        const data = {
-          count: eventSearchResult.count
-        };
-
-        data.entity = this.relationalService.oneToOneJoin(events, 'organizationId', organizations, 'id').map(function(joinedEntity) {
-          return {
-            event: joinedEntity.entity,
-            organization: joinedEntity.foreign
-          };
-        });
-
-        return data;
-      });
-    });
-  }
-
   toggleStatus(eventData, $event) {
-    this.eventService.fieldUpdate(this.storage.auth.idToken, eventData.event.id, {
-      status: eventData.event.status
+    const promise = this.uiService.load();
+
+    this.eventService.fieldUpdate(this.storage.auth.idToken, eventData.Event.id, {
+      status: eventData.Event.status
     }).then(function() {
+      promise.close.resolve();
     }, (response) => {
-      if (eventData.event.status === this.eventService.getActiveEventStatus()) {
-        eventData.event.status = this.eventService.getInactiveEventStatus();
+      promise.close.resolve();
+
+      if (eventData.Event.status === this.eventService.getActiveEventStatus()) {
+        eventData.Event.status = this.eventService.getInactiveEventStatus();
       }
 
-      if (this.$window.Array.isArray(response.data)) {
+      if (Array.isArray(response.data)) {
         this.$mdDialog.show({
           controllerAs: 'controller',
           controller: 'InsufficientSubscriptionController',
@@ -116,11 +111,11 @@ export default class ReadEventController {
           clickOutsideToClose: true,
           locals: {
             subscriptions: response.data,
-            organization: eventData.organization
+            organization: eventData.Organization
           }
         });
       } else {
-        const message = response.status === 401 ? 'You do not have permission to update this event' : 'Unable to update event' ;
+        const message = response.status === 401 ? 'You do not have permission to update this event' : 'Unable to update event';
         this.uiService.notify(message);
       }
     });
@@ -136,39 +131,26 @@ export default class ReadEventController {
       .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.$scope.uiReady = false;
-
-      this.eventService.delete(this.storage.auth.idToken, eventData.event.id).then(() => {
+      this.eventService.delete(this.storage.auth.idToken, eventData.Event.id).then(() => {
         this.uiService.notify('Event deleted');
-
-        const removeIndex = this.$scope.data.indexOf(eventData);
-        this.$scope.data.splice(removeIndex, 1);
       }, (response) => {
         const message = response.status === 401 ? 'You do not have permission to delete this event' : 'Unable to delete event';
         this.uiService.notify(message);
-      }).finally(() => {
-        this.$scope.uiReady = true;
       });
     });
   }
 
   createEvent() {
-    this.$scope.$parent.ready.then((resolve) => {
-      this.$mdDialog.show({
-        controller: 'CreateEventController',
-        controllerAs: 'controller',
-        templateUrl: '/src/event/partial/create.html',
-        clickOutsideToClose: true,
-        locals: {
-          permissions: resolve.permission.entity
-        }
-      });
+    this.$mdDialog.show({
+      controller: 'CreateEventController',
+      controllerAs: 'controller',
+      templateUrl: '/src/event/partial/create.html',
+      clickOutsideToClose: true
     });
   }
 }
 
 ReadEventController.$inject = [
-  '$window',
   '$scope',
   '$q',
   '$state',
@@ -180,5 +162,6 @@ ReadEventController.$inject = [
   'StorageService',
   'ToolsService',
   'settings',
-  'UIService'
+  'UIService',
+  'db'
 ];
