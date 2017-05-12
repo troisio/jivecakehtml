@@ -17,9 +17,9 @@ export default class EventService {
       };
     }
 
-    return this.$http.get(url, options).then((response) => {
-      response.data.event = this.toolsService(response.data.event, this.Event);
-      response.data.itemData.forEach((itemDatum) => {
+    return this.$http.get(url, options).then(response => {
+      response.data.event = this.toolsService.toObject(response.data.event, this.Event);
+      response.data.itemData.forEach(itemDatum => {
         itemDatum.item = this.toolsService.toObject(itemDatum.item, this.Item);
       });
 

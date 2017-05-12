@@ -85,7 +85,7 @@ export default class PublicEventItemController {
               itemData.completOrPendingUserTransactions = null;
             } else {
               itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.auth.idTokenPayload.sub)
-                .filter(completeOrPendingFilter);
+                .filter(this.transactionService.countingFilter);
 
               if (itemData.item.maximumPerUser !== null) {
                 const total  = itemData.completOrPendingUserTransactions.reduce((previous, next) => previous + next.quantity, 0);
