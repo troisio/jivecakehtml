@@ -132,7 +132,7 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
                 transactionService.search(auth.idToken, {
                   limit: 1,
                   organizationId: organizationIds,
-                  order: '-lastActivity'
+                  order: '-timeCreated'
                 });
 
               transactionFuture.then(transactionSearch => {
