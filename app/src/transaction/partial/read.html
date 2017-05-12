@@ -30,8 +30,10 @@
           </div>
           <span ng-show="transactionData.transaction.status === 1" class="payment-pending">pending</span>
           <span ng-show="transactionData.transaction.status === 2" class="payment-bad">revoked</span>
+          <span ng-show="transactionData.transaction.status === 3" class="payment-bad">refunded</span>
+          <span ng-show="transactionData.transaction.status === 4" class="payment-pending">unknown</span>
           <span ng-show="transactionData.transaction.paymentStatus === 1" class="payment-bad">insufficient payment</span>
-          <span ng-show="transactionData.transaction.paymentStatus === 2" class="payment-bad">payment overcharge</span>
+          <span ng-show="transactionData.transaction.paymentStatus === 2" class="payment-complete">payment overcharge</span>
         </td>
         <td md-cell>
           <md-menu md-position-mode="target-right target">
