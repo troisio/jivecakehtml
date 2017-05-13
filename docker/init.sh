@@ -11,7 +11,6 @@ if [ ! -d $SOURCE_DIRECTORY ]; then
 
   cd $SOURCE_DIRECTORY
   npm install
-  cp -R node_modules $SOURCE_DIRECTORY/app/node_modules
   cp ~/settings.js $SOURCE_DIRECTORY/app/src/settings.js
 
   $(npm bin)/gulp production

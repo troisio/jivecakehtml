@@ -73,16 +73,21 @@ export default class DownstreamService {
 
     source.addEventListener('organization.delete', (sse) => {
       const organizationsAndPermissions = JSON.parse(sse.data);
-
       const permissions = organizationsAndPermissions.filter(data => 'permissions' in data);
-      const permissionFuture = this.onPermissionDownstream(permissions);
 
       const organizations = organizationsAndPermissions.filter(data => 'children' in data);
       const organizationTable = this.db.getSchema().table('Organization');
-      const ids = organizations.map(organization => organization.id);
+      const organizationIds = organizations.map(organization => organization.id);
       const organizationFuture = this.db.delete()
         .from(organizationTable)
-        .where(organizationTable.id.in(ids))
+        .where(organizationTable.id.in(organizationIds))
+        .exec();
+
+      const permissionTable = this.db.getSchema().table('Organization');
+      const permissionIds = permissions.map(permission => permission.id);
+      const permissionFuture = this.db.delete()
+        .from(permissionTable)
+        .where(permissionTable.id.in(permissionIds))
         .exec();
 
       Promise.all([organizationFuture, permissionFuture]).then((resolve) => {

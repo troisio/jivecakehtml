@@ -13,7 +13,6 @@ RUN \
 
     curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - && \
     yum -y install nodejs && \
-    npm install -g bower && \
     chmod +x /init.sh && \
     mkdir ~/.ssh && \
     yum clean all

@@ -113,7 +113,7 @@ export default class PublicEventItemController {
             itemData.remainingTotalAvailibleTransactions = remainingTotalAvailibleTransactions;
             itemData.remaingUserTransactions = remaingUserTransactions;
 
-            itemData.amountSelections = amountSelectionSize > -1 ? this.$window.Array.from(new this.$window.Array(amountSelectionSize + 1), (item, index) => index): [0];
+            itemData.amountSelections = amountSelectionSize > -1 ? this.$window.Array.from(new Array(amountSelectionSize + 1), (item, index) => index): [0];
             itemData.completeOrPendingTransactions = completeOrPendingTransactions;
           });
 

@@ -83,7 +83,7 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   .config(configuration)
   .run([
     'lock',
-    'angular',
+    '$rootScope',
     '$location',
     '$state',
     '$q',
@@ -96,9 +96,10 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
     'Auth0Service',
     'JiveCakeLocalStorage',
     'SearchEntity',
+    'settings',
     function(
       lock,
-      angular,
+      $rootScope,
       $location,
       $state,
       $q,
@@ -110,7 +111,8 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
       storageService,
       auth0Service,
       JiveCakeLocalStorage,
-      SearchEntity
+      SearchEntity,
+      settings
     ) {
       lock.on('authenticated', function(auth) {
         lock.getUserInfo(auth.accessToken, function(error, profile) {
@@ -136,7 +138,9 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
                 });
 
               transactionFuture.then(transactionSearch => {
-                const transactions = transactionSearch.entity;
+                const millisecondsPerWeek = 604800000;
+                const currentTime = new Date().getTime();
+                const transactionsInPreviousWeek = transactionSearch.entity.filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
 
                 if (typeof auth.state === 'undefined') {
                   if (transactions.length > 0) {
@@ -151,7 +155,7 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
                     });
                   }
                 } else {
-                  const routerParameters = angular.fromJson(auth.state);
+                  const routerParameters = JSON.parse(auth.state);
 
                   if (routerParameters.name === 'application.public.home') {
                     if (permissions.length > 0) {
@@ -176,6 +180,21 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
       }, function() {
         uiService.notify('Unable to login');
       });
+/* jshint ignore:start */
+      if (settings.google.analytics.enabled) {
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-81919203-1', 'auto');
+        ga('send', 'pageview');
+
+        $rootScope.$on('$stateChangeSuccess', function (event) {
+          $window.ga('send', 'pageview', $location.path());
+        });
+      }
+/* jshint ignore:end */
     }
   ])
   .controller('ApplicationController', ApplicationController)
