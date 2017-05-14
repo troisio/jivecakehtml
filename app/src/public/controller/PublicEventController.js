@@ -1,10 +1,8 @@
 export default class PublicEventController {
   constructor(
-    angular,
     $q,
     $location,
     $state,
-    $window,
     $mdDialog,
     $timeout,
     $scope,
@@ -19,11 +17,9 @@ export default class PublicEventController {
     paypalService,
     settings
   ) {
-    this.angular = angular;
     this.$q = $q;
     this.$location = $location;
     this.$state = $state;
-    this.$window = $window;
     this.$mdDialog = $mdDialog;
     this.$timeout = $timeout;
     this.$scope = $scope;
@@ -56,101 +52,97 @@ export default class PublicEventController {
     this.$scope.uiReady = false;
     this.$scope.itemFormData = {};
 
-    this.$scope.ready.then(() => {
-      const storage = this.storageService.read();
-      const currentTime = new Date().getTime();
-      const idToken = storage.auth === null ? null : storage.auth.idToken;
+    const storage = this.storageService.read();
+    const currentTime = new Date().getTime();
+    const idToken = storage.auth === null ? null : storage.auth.idToken;
 
-      return this.eventService.getAggregatedEventData(this.$state.params.id, idToken).then((groupData) => {
-        const organizationPromise = this.organizationService.publicSearch({
-          id: groupData.event.organizationId
-        }).then(searchResult => {
-          this.$scope.organization = searchResult.entity[0];
-        });
+    return this.eventService.getAggregatedEventData(this.$state.params.id, idToken).then((groupData) => {
+      const organizationPromise = this.organizationService.publicSearch({
+        id: groupData.event.organizationId
+      }).then(searchResult => {
+        this.$scope.organization = searchResult.entity[0];
+      });
 
-        const paymentProfilePromise = this.paymentProfileService.publicSearch({
-          id: groupData.event.paymentProfileId
-        }).then((search) => {
-          if (search.entity.length > 0) {
-            this.$scope.paymentProfile = search.entity[0];
-          }
-        });
+      const paymentProfilePromise = this.paymentProfileService.publicSearch({
+        id: groupData.event.paymentProfileId
+      }).then((search) => {
+        if (search.entity.length > 0) {
+          this.$scope.paymentProfile = search.entity[0];
+        }
+      });
 
-        groupData.itemData.forEach((itemData) => {
-          this.$scope.itemFormData[itemData.item.id] = {amount: 0};
+      groupData.itemData.forEach((itemData) => {
+        this.$scope.itemFormData[itemData.item.id] = {amount: 0};
 
-          const completeOrPendingTransactions = itemData.transactions.filter(this.transactionService.countingFilter);
+        const completeOrPendingTransactions = itemData.transactions.filter(this.transactionService.countingFilter);
 
-          let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
+        let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
 
-          if (storage.auth === null) {
-            itemData.completOrPendingUserTransactions = null;
-          } else {
-            itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.auth.idTokenPayload.sub)
-              .filter(this.transactionService.countingFilter);
+        if (storage.auth === null) {
+          itemData.completOrPendingUserTransactions = null;
+        } else {
+          itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.auth.idTokenPayload.sub)
+            .filter(this.transactionService.countingFilter);
 
-            if (itemData.item.maximumPerUser !== null) {
-              const total  = itemData.completOrPendingUserTransactions.reduce((previous, next) => previous + next.quantity, 0);
-              remaingUserTransactions = itemData.item.maximumPerUser - total;
-            }
-          }
-
-          if (itemData.item.totalAvailible !== null) {
-            const total  = completeOrPendingTransactions.reduce((previous, next) => previous + next.quantity, 0);
-            remainingTotalAvailibleTransactions = itemData.item.totalAvailible - total;
-          }
-
-          let amountSelectionSize;
-
-          if (remainingTotalAvailibleTransactions === null && remaingUserTransactions === null) {
-            amountSelectionSize = this.defaultAmountSize;
-          } else if (remaingUserTransactions === null) {
-            amountSelectionSize = remainingTotalAvailibleTransactions;
-          } else if (remainingTotalAvailibleTransactions === null) {
-            amountSelectionSize = remaingUserTransactions;
-          } else {
-            amountSelectionSize = this.$window.Math.min(remaingUserTransactions, remainingTotalAvailibleTransactions);
-          }
-
-          itemData.remainingTotalAvailibleTransactions = remainingTotalAvailibleTransactions;
-          itemData.remaingUserTransactions = remaingUserTransactions;
-
-          itemData.amountSelections = amountSelectionSize > -1 ? this.$window.Array.from(new Array(amountSelectionSize + 1), (item, index) => index): [0];
-          itemData.completeOrPendingTransactions = completeOrPendingTransactions;
-        });
-
-        this.$scope.groupData = groupData;
-
-        for (let index = 0; index < this.$scope.groupData.itemData.length; index++) {
-          const itemData = this.$scope.groupData.itemData[index];
-
-          if ((itemData.item.totalAvailible === null || itemData.remainingTotalAvailibleTransactions > 0) && (itemData.item.maximumPerUser === null || itemData.remainingTotalAvailibleTransactions > 0)) {
-            this.$scope.hasAnySelections = true;
-            break;
+          if (itemData.item.maximumPerUser !== null) {
+            const total  = itemData.completOrPendingUserTransactions.reduce((previous, next) => previous + next.quantity, 0);
+            remaingUserTransactions = itemData.item.maximumPerUser - total;
           }
         }
 
-        const positiveTimes = groupData.itemData
-          .filter(itemData => itemData.item.timeAmounts !== null)
-          .reduce((array, itemData) => {
-            array.push.apply(array, itemData.item.timeAmounts.map(timeAmount => timeAmount.after));
-            return array;
-          }, [])
-          .map(time => time - currentTime)
-          .filter(time => time > 0 && !this.scheduledModificationTimes.has(time));
+        if (itemData.item.totalAvailible !== null) {
+          const total  = completeOrPendingTransactions.reduce((previous, next) => previous + next.quantity, 0);
+          remainingTotalAvailibleTransactions = itemData.item.totalAvailible - total;
+        }
 
-        positiveTimes.forEach(this.scheduledModificationTimes.add, this.scheduledModificationTimes);
-        positiveTimes.forEach(time => {
-          this.$timeout(() => {
-            this.uiService.notify('Updating data');
-            this.run();
-          }, time);
-        });
+        let amountSelectionSize;
 
-        return this.$q.all([organizationPromise, paymentProfilePromise]);
+        if (remainingTotalAvailibleTransactions === null && remaingUserTransactions === null) {
+          amountSelectionSize = this.defaultAmountSize;
+        } else if (remaingUserTransactions === null) {
+          amountSelectionSize = remainingTotalAvailibleTransactions;
+        } else if (remainingTotalAvailibleTransactions === null) {
+          amountSelectionSize = remaingUserTransactions;
+        } else {
+          amountSelectionSize = Math.min(remaingUserTransactions, remainingTotalAvailibleTransactions);
+        }
+
+        itemData.remainingTotalAvailibleTransactions = remainingTotalAvailibleTransactions;
+        itemData.remaingUserTransactions = remaingUserTransactions;
+
+        itemData.amountSelections = amountSelectionSize > -1 ? Array.from(new Array(amountSelectionSize + 1), (item, index) => index): [0];
+        itemData.completeOrPendingTransactions = completeOrPendingTransactions;
       });
-    }, () => {
-      this.uiService.notify('Unable to retrieve data');
+
+      this.$scope.groupData = groupData;
+
+      for (let index = 0; index < this.$scope.groupData.itemData.length; index++) {
+        const itemData = this.$scope.groupData.itemData[index];
+
+        if ((itemData.item.totalAvailible === null || itemData.remainingTotalAvailibleTransactions > 0) && (itemData.item.maximumPerUser === null || itemData.remainingTotalAvailibleTransactions > 0)) {
+          this.$scope.hasAnySelections = true;
+          break;
+        }
+      }
+
+      const positiveTimes = groupData.itemData
+        .filter(itemData => itemData.item.timeAmounts !== null)
+        .reduce((array, itemData) => {
+          array.push.apply(array, itemData.item.timeAmounts.map(timeAmount => timeAmount.after));
+          return array;
+        }, [])
+        .map(time => time - currentTime)
+        .filter(time => time > 0 && !this.scheduledModificationTimes.has(time));
+
+      positiveTimes.forEach(this.scheduledModificationTimes.add, this.scheduledModificationTimes);
+      positiveTimes.forEach(time => {
+        this.$timeout(() => {
+          this.uiService.notify('Updating data');
+          this.run();
+        }, time);
+      });
+
+      return this.$q.all([organizationPromise, paymentProfilePromise]);
     }).finally(() => {
       this.$scope.uiReady = true;
     });
@@ -183,7 +175,7 @@ export default class PublicEventController {
   }
 
   checkout(group, itemFormData) {
-    const totalSelected = this.$window.Object.keys(itemFormData)
+    const totalSelected = Object.keys(itemFormData)
       .reduce((previous, key) => previous + itemFormData[key].amount, 0);
 
     if (totalSelected > 0) {
@@ -219,7 +211,7 @@ export default class PublicEventController {
           if (mockIpn) {
             const timestamp = new Date().getTime();
 
-            const itemQuantities = group.itemData.filter(data => data.amount > 0).map(data => new this.$window.Object({
+            const itemQuantities = group.itemData.filter(data => data.amount > 0).map(data => new Object({
                 quantity: itemFormData[data.item.id].amount,
                 item: data.item
               })).filter(itemQuantity => itemQuantity.quantity > 0);
@@ -256,7 +248,7 @@ export default class PublicEventController {
             const returnUrl = this.$location.$$protocol + '://' + this.$location.$$host + (this.$location.port() === 80 || this.$location.port() === 443 ? '' : ':' + this.$location.port()) + '/confirmation';
             const notifyUrl = [this.settings.jivecakeapi.uri, 'paypal', 'ipn'].join('/');
             const business = this.$scope.paymentProfile.email;
-            const form = this.angular.element(`
+            const form = angular.element(`
               <form action="https://www.paypal.com/cgi-bin/webscr" method="POST">
               <input type="hidden" name="cmd" value="_cart">
               <input type="hidden" name="upload" value="1">
@@ -274,7 +266,7 @@ export default class PublicEventController {
 
             if (paidSelections.length > 0) {
               paidSelections.forEach((data, index) => {
-                const elements = this.angular.element(`
+                const elements = angular.element(`
                   <input type="hidden" name="item_name_${index + 1}" value="${data.itemData.item.name}">
                   <input type="hidden" name="amount_${index + 1}" value="${data.itemData.amount}">
                   <input type="hidden" name="item_number_${index + 1}" value="${data.itemData.item.id}">
@@ -286,7 +278,7 @@ export default class PublicEventController {
                 }
               });
 
-              this.$window.document.body.appendChild(form);
+              document.body.appendChild(form);
               form.submit();
             }
 
@@ -324,7 +316,7 @@ export default class PublicEventController {
 
   viewItem(item) {
     this.$mdDialog.show({
-      controller: ['$window', '$scope', '$sanitize', 'item',  function($window, $scope, $sanitize, item) {
+      controller: ['$scope', '$sanitize', 'item',  function($scope, $sanitize, item) {
         $scope.time = new Date();
         $scope.item = item;
         $scope.$sanitize = $sanitize;
@@ -339,11 +331,9 @@ export default class PublicEventController {
 }
 
 PublicEventController.$inject = [
-  'angular',
   '$q',
   '$location',
   '$state',
-  '$window',
   '$mdDialog',
   '$timeout',
   '$scope',

@@ -1,7 +1,5 @@
 export default class UpdateItemController {
   constructor(
-    angular,
-    $window,
     $q,
     $rootScope,
     $scope,
@@ -13,8 +11,6 @@ export default class UpdateItemController {
     uiService,
     toolsService
   ) {
-    this.angular = angular;
-    this.$window = $window;
     this.$q = $q;
     this.$rootScope = $rootScope;
     this.$scope = $scope;
@@ -29,9 +25,9 @@ export default class UpdateItemController {
     this.$scope.paymentProfiles = [];
     this.storage = storageService.read();
     this.$scope.timeSelections = this.uiService.getTimeSelections();
-    this.$scope.currentDate = new this.$window.Date();
-    this.$scope.hours = this.$window.Array.from(new this.$window.Array(24), (item, index) => index);
-    this.$scope.minutes = this.$window.Array.from(new this.$window.Array(60), (item, index) => index);
+    this.$scope.currentDate = new Date();
+    this.$scope.hours = Array.from(new Array(24), (item, index) => index);
+    this.$scope.minutes = Array.from(new Array(60), (item, index) => index);
 
     this.run();
   }
@@ -48,7 +44,7 @@ export default class UpdateItemController {
         };
       } else {
         this.$scope.timeStart = {
-          time: new this.$window.Date(item.timeStart)
+          time: new Date(item.timeStart)
         };
 
         this.$scope.timeStart.hour = this.$scope.timeStart.time.getHours();
@@ -63,7 +59,7 @@ export default class UpdateItemController {
         };
       } else {
         this.$scope.timeEnd = {
-          time: new this.$window.Date(item.timeEnd)
+          time: new Date(item.timeEnd)
         };
 
         this.$scope.timeEnd.hour = this.$scope.timeEnd.time.getHours();
@@ -91,7 +87,7 @@ export default class UpdateItemController {
   }
 
   addTimeAmount(price, time) {
-    const validTime = time.date instanceof this.$window.Date && typeof time.hour === 'number' && typeof time.minute === 'number';
+    const validTime = time.date instanceof Date && typeof time.hour === 'number' && typeof time.minute === 'number';
     const validPrice = typeof price === 'number';
 
     if (validTime && validPrice) {
@@ -99,7 +95,7 @@ export default class UpdateItemController {
         this.$scope.item.timeAmounts = [];
       }
 
-      const date = new this.$window.Date(time.date);
+      const date = new Date(time.date);
       date.setHours(time.hour);
       date.setMinutes(time.minute);
 
@@ -122,12 +118,12 @@ export default class UpdateItemController {
   }
 
   submit(item, free, enableScheduledPriceModifications, timeStart, timeEnd) {
-    const itemCopy = this.angular.copy(item);
+    const itemCopy = angular.copy(item);
 
     if (timeStart.time === null) {
       itemCopy.timeStart = null;
     } else {
-      const date = new this.$window.Date(timeStart.time);
+      const date = new Date(timeStart.time);
 
       if (timeStart.hour === null) {
         date.setHours(0);
@@ -147,7 +143,7 @@ export default class UpdateItemController {
     if (timeEnd.time === null) {
       itemCopy.timeEnd = null;
     } else {
-      const date = new this.$window.Date(timeEnd.time);
+      const date = new Date(timeEnd.time);
 
       if (timeEnd.hour === null) {
         date.setHours(0);
@@ -179,19 +175,13 @@ export default class UpdateItemController {
         itemCopy.timeAmounts = null;
       }
 
-      if (this.$window.Array.isArray(itemCopy.timeAmounts) && itemCopy.timeAmounts.length === 0) {
+      if (Array.isArray(itemCopy.timeAmounts) && itemCopy.timeAmounts.length === 0) {
         itemCopy.timeAmounts = null;
       }
 
-      this.itemService.update(this.storage.auth.idToken, itemCopy).then((item) => {
-        this.$scope.item = item;
-
+      this.itemService.update(this.storage.auth.idToken, itemCopy).then(item => {
+        this.$state.go('application.internal.item.read');
         this.uiService.notify('Updated ' + item.name);
-        this.$rootScope.$broadcast('ITEM.UPDATED', this.$scope.item);
-
-        const parameters = 'organizationId' in item ? {organizationId: item.organizationId} : {eventId: item.eventId};
-
-        this.$state.go('application.internal.item.read', parameters);
       }, () => {
         this.uiService.notify('Unable to update item');
       }).finally(() => {
@@ -202,8 +192,6 @@ export default class UpdateItemController {
 }
 
 UpdateItemController.$inject = [
-  'angular',
-  '$window',
   '$q',
   '$rootScope',
   '$scope',

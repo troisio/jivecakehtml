@@ -39,7 +39,15 @@ export default class ReadItemController {
     this.$scope.uiReady = false;
     this.$scope.selected = [];
 
-    ['event.update', 'item.create', 'item.update', 'item.delete', 'transaction.created', 'transaction.deleted'].forEach(event => {
+    [
+      'event.update',
+      'item.create',
+      'item.delete',
+      'item.update',
+      'transaction.created',
+      'transaction.revoke',
+      'transaction.deleted'
+    ].forEach(event => {
       $scope.$on(event, () => {
         this.run();
       });
@@ -58,7 +66,7 @@ export default class ReadItemController {
       const transactionTable = this.db.getSchema().table('Transaction');
 
       const and = [
-        permissionTable.objectClass.eq(this.organizationService.getObjectClassName())
+        permissionTable.objectClass.eq('Organization')
       ];
 
       ['organizationId', 'eventId'].forEach((field) => {

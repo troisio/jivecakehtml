@@ -52,14 +52,14 @@ export default class DownstreamService {
         .where(lf.op.or(...ands))
         .exec()
         .then(() => {
-          this.db.insertOrReplace()
+          return this.db.insertOrReplace()
             .into(permissionTable)
             .values(rows)
             .exec()
             .then(() => {
               const storage = this.storageService.read();
 
-              this.organizationService.getOrganizationsByUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, {}).then((organizations) => {
+              return this.organizationService.getOrganizationsByUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, {}).then((organizations) => {
                 const organizationTable = this.db.getSchema().table('Organization');
                 const organizationRows = organizations.map(organizationTable.createRow, organizationTable);
                 const organizationFuture = this.db.insertOrReplace()
@@ -68,6 +68,8 @@ export default class DownstreamService {
                   .exec();
               });
             });
+        }).then(() => {
+          this.$rootScope.$broadcast('permission.write', permissions);
         });
     });
 
@@ -99,7 +101,13 @@ export default class DownstreamService {
       const organizations = JSON.parse(sse.data);
       const table = this.db.getSchema().table('Organization');
       const rows = organizations.map(table.createRow, table);
-      this.db.insertOrReplace().into(table).values(rows).exec();
+      this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec()
+        .then(() => {
+            this.$rootScope.$broadcast('organization.update', organizations);
+        });
     });
 
     source.addEventListener('organization.create', (sse) => {
@@ -184,11 +192,12 @@ export default class DownstreamService {
       const items = JSON.parse(sse.data);
       const table = this.db.getSchema().table('Item');
       const rows = items.map(table.createRow, table);
+
       this.db.insertOrReplace()
         .into(table)
         .values(rows)
         .exec()
-        .then(() => {
+        .then(res => {
           this.$rootScope.$broadcast('item.update', items);
         });
     });
@@ -211,14 +220,26 @@ export default class DownstreamService {
       const transactions = JSON.parse(sse.data);
       const table = this.db.getSchema().table('Transaction');
       const rows = transactions.map(table.createRow, table);
-      this.db.insertOrReplace().into(table).values(rows).exec();
+      this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('transaction.create', transactions);
+        });
     });
 
     source.addEventListener('transaction.revoke', (sse) => {
       const transactions = JSON.parse(sse.data);
       const table = this.db.getSchema().table('Transaction');
       const rows = transactions.map(table.createRow, table);
-      this.db.insertOrReplace().into(table).values(rows).exec();
+      this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('transaction.revoke', transactions);
+        });
     });
 
     source.addEventListener('transaction.delete', (sse) => {
@@ -226,19 +247,29 @@ export default class DownstreamService {
       const deletedTransaction = transactions[0];
       const table = this.db.getSchema().table('Transaction');
 
-      this.db.delete()
+      const futures = [];
+
+      const deleteFuture = this.db.delete()
         .from(table)
         .where(table.id.eq(deletedTransaction.id))
         .exec();
 
+      futures.push(deleteFuture);
+
       if (transactions.length > 0) {
         const updatedParent = transactions[1];
 
-        this.db.insertOrReplace()
+        const updateFuture = this.db.insertOrReplace()
           .into(table)
           .values([table.createRow(updatedParent)])
           .exec();
+
+        futures.push(updateFuture);
       }
+
+      Promise.all(futures).then(() => {
+        this.$rootScope.$broadcast('transaction.delete', transactions);
+      });
     });
   }
 }

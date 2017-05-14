@@ -4,7 +4,7 @@
       <tbody md-body>
         <tr md-row md-auto-select ng-repeat="itemData in data track by itemData.Item.id">
           <td md-cell class="name">
-            <p>{{itemData.Item.name}} {{hasApplicationWrite}}</p>
+            <p>{{itemData.Item.name}}</p>
             <a ui-sref="application.internal.event.read({highlight: itemData.Event.id})">{{itemData.Event.name}}</a>
           </td>
           <td md-cell>

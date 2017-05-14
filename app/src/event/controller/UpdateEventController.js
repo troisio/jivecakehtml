@@ -193,10 +193,8 @@ export default class UpdateEventController {
       this.$scope.loading = false;
     } else {
       this.eventService.update(this.storage.auth.idToken, eventCopy).then((event) => {
-        this.$scope.event = event;
-        this.uiService.notify('Event updated');
-
         this.$state.go('application.internal.event.read');
+        this.uiService.notify('Event updated');
       }, (response) => {
         let message;
 

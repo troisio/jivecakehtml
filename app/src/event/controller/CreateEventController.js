@@ -1,6 +1,5 @@
 export default class CreateEventController {
   constructor(
-    $rootScope,
     $scope,
     $mdDialog,
     $state,
@@ -13,7 +12,6 @@ export default class CreateEventController {
     Permission,
     db
   ) {
-    this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
     this.$state = $state;
@@ -60,9 +58,10 @@ export default class CreateEventController {
     this.$scope.loading = true;
 
     return this.eventService.create(this.storage.auth.idToken, event.organizationId, event).then((event) => {
-      this.uiService.notify('Event created');
-      this.$mdDialog.hide();
-      this.$state.go('application.internal.event.update', {eventId: event.id});
+      this.$mdDialog.hide().then(() => {
+        this.$state.go('application.internal.event.read', {highlight: event.id});
+        this.uiService.notify('Event created');
+      });
     }, (response) => {
       const message = response.status === 409 ? 'Sorry, that name has already been taken' : 'Unable to create event';
       this.uiService.notify(message);
@@ -73,7 +72,6 @@ export default class CreateEventController {
 }
 
 CreateEventController.$inject = [
-  '$rootScope',
   '$scope',
   '$mdDialog',
   '$state',

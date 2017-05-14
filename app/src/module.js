@@ -141,34 +141,22 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
                 const currentTime = new Date().getTime();
                 const transactionsInPreviousWeek = transactionSearch.entity.filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
 
-                if (typeof auth.state === 'undefined') {
-                  if (transactions.length > 0) {
-                    $state.go('application.internal.transaction.read', {}, {reload: true});
-                  } else if (permissions.length > 0) {
-                    $state.go('application.internal.organization.read', {}, {reload: true});
-                  } else {
-                    $state.go('application.internal.myTransaction', {
-                      user_id: auth.idTokenPayload.sub
-                    }, {
-                      reload: true
-                    });
-                  }
-                } else {
-                  const routerParameters = JSON.parse(auth.state);
+                const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
 
-                  if (routerParameters.name === 'application.public.home') {
-                    if (permissions.length > 0) {
-                      $state.go('application.internal.organization.read', {}, {reload: true});
-                    } else {
-                      $state.go('application.internal.myTransaction', {
-                        user_id: auth.idTokenPayload.sub
-                      }, {
-                        reload: true
-                      });
-                    }
-                  } else {
-                    $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-                  }
+                if (routerParameters !== null && routerParameters.name === 'application.public.event') {
+                  $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+                } else if (transactionsInPreviousWeek.length > 0) {
+                  $state.go('application.internal.transaction.read', {}, {reload: true});
+                } else if (permissions.length > 0) {
+                  $state.go('application.internal.organization.read', {}, {reload: true});
+                } else if (routerParameters === null) {
+                  $state.go('application.internal.myTransaction', {
+                    user_id: auth.idTokenPayload.sub
+                  }, {
+                    reload: true
+                  });
+                } else {
+                  $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
                 }
               });
             });
@@ -179,21 +167,15 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
       }, function() {
         uiService.notify('Unable to login');
       });
-/* jshint ignore:start */
-      if (settings.google.analytics.enabled) {
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
+      if (settings.google.analytics.enabled) {
         ga('create', 'UA-81919203-1', 'auto');
         ga('send', 'pageview');
 
         $rootScope.$on('$stateChangeSuccess', function (event) {
-          $window.ga('send', 'pageview', $location.path());
+          ga('send', 'pageview', $location.path());
         });
       }
-/* jshint ignore:end */
     }
   ])
   .controller('ApplicationController', ApplicationController)

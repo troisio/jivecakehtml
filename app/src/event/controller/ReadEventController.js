@@ -103,7 +103,7 @@ export default class ReadEventController {
         eventData.Event.status = this.eventService.getInactiveEventStatus();
       }
 
-      if (Array.isArray(response.data)) {
+      if (typeof response.data === 'object' && response.data.error === 'subscription') {
         this.$mdDialog.show({
           controllerAs: 'controller',
           controller: 'InsufficientSubscriptionController',
