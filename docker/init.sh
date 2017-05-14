@@ -13,7 +13,7 @@ if [ ! -d $SOURCE_DIRECTORY ]; then
   cd $SOURCE_DIRECTORY
   npm install
   mv ~/settings.js $SOURCE_DIRECTORY/app/src/settings.js
-  mv ~/server-settings.js $SOURCE_DIRECTORY/app/src/settings.js
+  mv ~/server-settings.json $SOURCE_DIRECTORY/server-settings.json
 
   $(npm bin)/gulp production
 fi
