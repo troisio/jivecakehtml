@@ -20,7 +20,7 @@ fi
 
 cd $SOURCE_DIRECTORY
 
-if [ -a ~/star_jivecake_com.pem ] && [ -a ~/star_jivecake_com.key ]; then
+if [ -a ~/www_jivecake_com.pem ] && [ -a ~/www_jivecake_com.key ]; then
   nginx -c /root/nginx-https.conf
 else
   nginx -c /root/nginx.conf
