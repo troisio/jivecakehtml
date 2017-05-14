@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "JiveCake",
   "background_color": "white",
-  "theme_color": "CornflowerBlue ",
+  "theme_color": "CornflowerBlue",
   "default_locale": "en",
   "icons": [
     {

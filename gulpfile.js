@@ -21,7 +21,7 @@ var vendorCSS = function() {
     './node_modules/font-awesome/css/font-awesome.min.css'
   ])
     .pipe(concat('vendor.css'))
-    .pipe(gulp.dest('./app/dist'))
+    .pipe(gulp.dest('./app/dist'));
 };
 
 var vendorJS = function(minified) {

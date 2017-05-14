@@ -48,7 +48,6 @@ import CreatePaymentProfileController from './payment/profile/controller/CreateP
 
 import PublicController from './public/controller/PublicController';
 import PublicEventController from './public/controller/PublicEventController';
-import PublicEventItemController from './public/controller/PublicEventItemController';
 import MyTransactionController from './transaction/controller/MyTransactionController';
 
 import CreateTransactionController from './transaction/controller/CreateTransactionController';
@@ -229,7 +228,6 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
 
   .controller('PublicController', PublicController)
   .controller('PublicEventController', PublicEventController)
-  .controller('PublicEventItemController', PublicEventItemController)
   .controller('MyTransactionController', MyTransactionController)
 
   .controller('CreateTransactionController', CreateTransactionController)

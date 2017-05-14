@@ -2,15 +2,62 @@
   <md-toolbar class="md-hue-2">
     <div ng-show="uiReady" class="md-toolbar-tools">
       <div>
-        <p ng-show="event !== null">{{event.name}}</p>
-        <p ng-show="event === null">Not found</p>
+        <p ng-show="groupData.event !== null">{{groupData.event.name}}</p>
+        <p ng-show="groupData.event === null">Not found</p>
       </div>
       <div>
-        <ng-md-icon ng-show="event !== null" size="30" ng-click="controller.showInformation(event, organization)" icon="info"></ng-md-icon>
+        <ng-md-icon ng-show="groupData.event !== null" size="30" ng-click="controller.showInformation(groupData.event, organization)" icon="info"></ng-md-icon>
       </div>
     </div>
   </md-toolbar>
-  <ui-view ng-show="event !== null"></ui-view>
+  <div class="public-item-page" ng-show="uiReady">
+    <section ng-show="groupData.event.currency !== null && groupData.event.paymentProfileId !== null">
+      <md-table-container>
+        <table ng-model="selected" md-table multiple>
+          <tbody md-body>
+            <tr md-row md-auto-select ng-repeat="itemData in groupData.itemData track by itemData.item.id">
+              <td md-cell>
+                <a href="" ng-click="controller.viewItem(itemData.item)">{{itemData.item.name}}</a>
+              </td>
+              <td md-cell>
+                <div ng-show="itemData.amount !== 0" class="amount" layout-align="column">
+                  <span ng-show="groupData.event.currency === 'USD'">&#36;</span><span ng-show="groupData.event.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
+                </div>
+                <span ng-show="itemData.amount === 0">free</span>
+              </td>
+              <td md-cell>
+                <!--
+                We're using ng-if here since if the login href is clicked, a dropdown from the (hidden) md-select is shown
+                Bug in angular material
+                -->
+                <md-input-container ng-if="!controller.itemIsBlocked(groupData, itemData, auth)">
+                  <md-select aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
+                    <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
+                  </md-select>
+                </md-input-container>
+                <a href="" ng-click="controller.login()" ng-show="itemData.item.requiresAccountForRegistration() && auth === null">requires login</a>
+              </td>
+              <td md-cell>
+                <ng-md-icon ng-show="controller.itemIsBlocked(groupData, itemData)" icon="block"></ng-md-icon>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </md-table-container>
+    </section>
+    <div ng-show="groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections" class="checkout">
+      <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
+    </div>
+    <div ng-show="groupData.itemData.length === 0" layout-padding>
+      <p>Sorry, this event does not have any items to display</p>
+    </div>
+    <div ng-show="event.currency === null || event.paymentProfileId === null" layout-padding>
+      <p>Sorry, this event does not have any valid payment options</p>
+    </div>
+  </div>
+  <div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
+    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+  </div>
   <div ng-show="uiReady && event === null" layout-padding>
     <p class="message">Sorry, this event does not exist or is not availible</p>
   </div>

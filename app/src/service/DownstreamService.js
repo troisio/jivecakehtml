@@ -215,17 +215,30 @@ export default class DownstreamService {
     });
 
     source.addEventListener('transaction.revoke', (sse) => {
+      const transactions = JSON.parse(sse.data);
+      const table = this.db.getSchema().table('Transaction');
+      const rows = transactions.map(table.createRow, table);
+      this.db.insertOrReplace().into(table).values(rows).exec();
     });
 
     source.addEventListener('transaction.delete', (sse) => {
       const transactions = JSON.parse(sse.data);
-      const ids = transactions.map(transaction => transaction.id);
-
+      const deletedTransaction = transactions[0];
       const table = this.db.getSchema().table('Transaction');
+
       this.db.delete()
         .from(table)
-        .where(table.id.in(ids))
+        .where(table.id.eq(deletedTransaction.id))
         .exec();
+
+      if (transactions.length > 0) {
+        const updatedParent = transactions[1];
+
+        this.db.insertOrReplace()
+          .into(table)
+          .values([table.createRow(updatedParent)])
+          .exec();
+      }
     });
   }
 }

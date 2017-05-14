@@ -4,7 +4,6 @@
 
 ```sh
 npm install
-cp -R node_modules app/node_modules
 cd docker
 docker build -t jivecakehtml .
 ```
@@ -20,6 +19,7 @@ $(npm bin)/gulp
 ```sh
 docker run \
     -it \
+    --rm \
     -p 80:80 \
     --name=jivecakehtml \
     -v $(pwd):/root/jivecakehtml \

@@ -65,7 +65,7 @@ export default [
     })
     .state('application.internal.event', {
       abstract: true,
-      url : '/event?status&name',
+      url : '/event',
       template: '<div ui-view></div>',
       controller: 'EventController'
     })
@@ -149,12 +149,6 @@ export default [
       url: '/event/{id}',
       templateUrl: '/src/public/partial/event.html',
       controller: 'PublicEventController',
-      controllerAs: 'controller'
-    })
-    .state('application.public.event.item', {
-      url: '/item',
-      templateUrl: '/src/public/partial/item.html',
-      controller: 'PublicEventItemController',
       controllerAs: 'controller'
     })
     .state('application.internal.myTransaction', {

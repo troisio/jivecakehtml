@@ -4,7 +4,7 @@
       <tr md-row md-auto-select ng-repeat="eventData in data track by eventData.Event.id">
         <td md-cell>
           <div>
-            <a ui-sref="application.public.event.item({id: eventData.Event.id})" ng-show="eventData.Event.status === 1">{{eventData.Event.name}}</a>
+            <a ui-sref="application.public.event({id: eventData.Event.id})" ng-show="eventData.Event.status === 1">{{eventData.Event.name}}</a>
             <p ng-show="eventData.Event.status !== 1">{{eventData.Event.name}}</p>
           </div>
           <a ui-sref="application.internal.organization.read({id: eventData.Organization.id})">{{eventData.Organization.name}}</a>
