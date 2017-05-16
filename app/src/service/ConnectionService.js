@@ -1,6 +1,5 @@
 export default class ConnectionService {
-  constructor($window, $http, settings, ClientConnection, toolsService, auth0Service) {
-    this.$window = $window;
+  constructor($http, settings, ClientConnection, toolsService, auth0Service) {
     this.$http = $http;
     this.ClientConnection = ClientConnection;
     this.toolsService = toolsService;
@@ -11,32 +10,26 @@ export default class ConnectionService {
   }
 
   getEventSource(token, user_id) {
-    return this.auth0Service.getUser(token, user_id).then((user) => {
-      const userHasEventSource = user.user_id in this.eventSources;
+    const userHasEventSource = user_id in this.eventSources;
 
-      if (!userHasEventSource) {
-        let  source;
-        const browserHasEventSource = typeof this.$window.EventSource !== 'undefined';
+    if (!userHasEventSource) {
+      let  source;
 
-        if (browserHasEventSource) {
-          source = new this.$window.EventSource([
-            this.settings.jivecakeapi.uri,
-            'notification?Authorization=Bearer ' + token
-          ].join('/'));
-        } else {
-          source = {
-            addEventListener: function() {
-            },
-            close: function() {
-            }
-          };
-        }
-
-        this.eventSources[user.user_id] = source;
+      if ('EventSource' in window) {
+        source = new EventSource(this.settings.jivecakeapi.uri + '/notification?Authorization=Bearer ' + token);
+      } else {
+        source = {
+          addEventListener: function() {
+          },
+          close: function() {
+          }
+        };
       }
 
-      return this.eventSources[user.user_id];
-    });
+      this.eventSources[user_id] = source;
+    }
+
+    return this.eventSources[user_id];
   }
 
   deleteEventSources() {
@@ -62,19 +55,6 @@ export default class ConnectionService {
       }
     }).then(response => response.data);
   }
-
-  search(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'connection'].join('/');
-
-    return this.$http.get(url, {
-      params: params,
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).then((response) => {
-      return response.data.map(connection => this.toolsService.toObject(subject, this.ClientConnection));
-    });
-  }
 }
 
-ConnectionService.$inject = ['$window', '$http', 'settings', 'ClientConnection', 'ToolsService', 'Auth0Service'];
+ConnectionService.$inject = ['$http', 'settings', 'ClientConnection', 'ToolsService', 'Auth0Service'];

@@ -55,7 +55,7 @@ export default class ApplicationController {
   }
 
   run() {
-    const ready = this.storage.auth === null ? this.$q.reject() : this.getApplicationFutures(this.storage.auth.idToken);
+    const ready = this.storage.auth === null ? this.$q.reject() : this.getApplicationFutures();
     this.$scope.ready = ready;
 
     ready.then(resolve => {
@@ -111,13 +111,8 @@ export default class ApplicationController {
     this.connectionService.closeEventSources();
     this.connectionService.deleteEventSources();
 
-    const connectionFuture = this.connectionService.getEventSource(
-      this.storage.auth.idToken,
-      this.storage.auth.idTokenPayload.sub
-    ).then(source => {
-      this.downstreamService.bootstrapEventSource(source);
-      return source;
-    });
+    const eventSource = this.connectionService.getEventSource(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub);
+    this.downstreamService.bootstrapEventSource(eventSource);
 
     const permissonFuture = this.permissionService.search(this.storage.auth.idToken, {
       user_id: this.storage.auth.idTokenPayload.sub

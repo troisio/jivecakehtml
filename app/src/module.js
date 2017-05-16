@@ -82,7 +82,7 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   .config(configuration)
   .run([
     'lock',
-    '$rootScope',
+    '$transitions',
     '$location',
     '$state',
     '$q',
@@ -98,7 +98,7 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
     'settings',
     function(
       lock,
-      $rootScope,
+      $transitions,
       $location,
       $state,
       $q,
@@ -168,11 +168,10 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
         uiService.notify('Unable to login');
       });
 
-      if (settings.google.analytics.enabled) {
+      if (true || settings.google.analytics.enabled) {
         ga('create', 'UA-81919203-1', 'auto');
-        ga('send', 'pageview');
 
-        $rootScope.$on('$stateChangeSuccess', function (event) {
+        $transitions.onSuccess({}, function() {
           ga('send', 'pageview', $location.path());
         });
       }

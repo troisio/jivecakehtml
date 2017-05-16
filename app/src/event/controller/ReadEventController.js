@@ -32,7 +32,6 @@ export default class ReadEventController {
     this.$scope.token = this.storage.auth.idToken;
     this.$scope.apiUri = settings.jivecakeapi.uri;
     this.$scope.selected = [];
-    this.$scope.data = [];
 
     ['event.create', 'event.update', 'event.delete'].forEach((name) => {
       $scope.$on(name, () => {

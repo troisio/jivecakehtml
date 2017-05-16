@@ -61,8 +61,7 @@ export default [
     })
     .state('application.public.oauthRedirect', {
       url: '/oauth/redirect',
-      controller: function() {
-      },
+      controller: 'OAuthRedirectController',
       template: '<div layout="row" layout-margin layout-align="center"><md-progress-circular md-mode="indeterminate"></md-progress-circular></div>'
     })
     .state('application.internal.event', {

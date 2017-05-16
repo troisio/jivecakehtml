@@ -44,9 +44,9 @@ export default class ReadItemController {
       'item.create',
       'item.delete',
       'item.update',
-      'transaction.created',
+      'transaction.create',
       'transaction.revoke',
-      'transaction.deleted'
+      'transaction.delete'
     ].forEach(event => {
       $scope.$on(event, () => {
         this.run();
@@ -66,10 +66,26 @@ export default class ReadItemController {
       const transactionTable = this.db.getSchema().table('Transaction');
 
       const and = [
-        permissionTable.objectClass.eq('Organization')
+        permissionTable.objectClass.eq('Organization'),
+        lf.op.or(
+          transactionTable.id.isNull(),
+          lf.op.and(
+            transactionTable.leaf.eq(true),
+            lf.op.and(
+              lf.op.or(
+                transactionTable.paymentStatus.eq(this.transactionService.PAYMENT_EQUAL),
+                transactionTable.paymentStatus.eq(this.transactionService.PAYMENT_GREATER_THAN)
+              ),
+              lf.op.or(
+                transactionTable.status.eq(this.transactionService.SETTLED),
+                transactionTable.status.eq(this.transactionService.PENDING)
+              )
+            )
+          )
+        )
       ];
 
-      ['organizationId', 'eventId'].forEach((field) => {
+      ['organizationId', 'eventId'].forEach(field => {
         const value = this.$state.params[field];
 
         if (value) {
@@ -112,7 +128,6 @@ export default class ReadItemController {
         .exec()
         .then(rows => {
           const data = angular.copy(rows);
-
           const item = data.find(datum => datum.Item.id === this.$state.params.highlight);
           const index = data.indexOf(item);
 
