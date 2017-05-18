@@ -53,7 +53,6 @@ import MyTransactionController from './transaction/controller/MyTransactionContr
 import CreateTransactionController from './transaction/controller/CreateTransactionController';
 import TransactionController from './transaction/controller/TransactionController';
 import ReadTransactionController from './transaction/controller/ReadTransactionController';
-import TransferPassController from './transaction/controller/TransferPassController';
 
 import UpdateAccountController from './user/controller/UpdateAccountController';
 
@@ -214,7 +213,6 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   .controller('CreateTransactionController', CreateTransactionController)
   .controller('TransactionController', TransactionController)
   .controller('ReadTransactionController', ReadTransactionController)
-  .controller('TransferPassController', TransferPassController)
 
   .controller('UpdateAccountController', UpdateAccountController)
   .constant('angular', angular);

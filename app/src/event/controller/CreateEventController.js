@@ -31,7 +31,6 @@ export default class CreateEventController {
 
   run() {
     this.$scope.event = new this.Event();
-    this.$scope.event.minimumTimeBetweenTransactionTransfer = -1;
 
     const organizationTable = this.db.getSchema().table('Organization');
     const permissionTable = this.db.getSchema().table('Permission');

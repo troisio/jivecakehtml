@@ -271,21 +271,20 @@ export default class UpdateOrganizationController {
       .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      const loader = this.uiService.load();
-
       this.paymentProfileService.delete(this.storage.auth.idToken, paymentProfile.id).then(() => {
         loader.dialog.finally(() => {
           this.$rootScope.$broadcast('PAYMENT.PROFILE.DELETED');
         });
       }, (response) => {
-        const hasItems = Array.isArray(response.data);
-        const text = hasItems ? 'Unable to delete, Payment Profile is associated with an Event' : 'Unable to delete Payment Profile';
+        let text;
 
-        loader.dialog.finally(() => {
-          this.uiService.notify(text);
-        });
-      }).finally(() => {
-        loader.close.resolve();
+        if (typeof response.data === 'object' && response.data.error === 'event') {
+          text = 'Unable to delete, Payment Profile is associated with an Event';
+        } else {
+          text = 'Unable to delete Payment Profile';
+        }
+
+        this.uiService.notify(text);
       });
     });
   }

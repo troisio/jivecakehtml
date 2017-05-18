@@ -18,7 +18,6 @@ export default class Transaction {
     this.currency = null;
     this.email = null;
     this.leaf = null;
-    this.lastTransferTime = null;
     this.timeCreated = null;
   }
 }

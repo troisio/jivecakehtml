@@ -37,7 +37,6 @@ export default class CreateOrganizationAndEventController {
 
       return this.organizationService.create(storage.auth.idToken, organization).then((organization) => {
         event.status = this.eventService.getInactiveEventStatus();
-        event.minimumTimeBetweenTransactionTransfer = -1;
 
         return this.eventService.create(storage.auth.idToken, organization.id, event).then((event) => {
           this.$mdDialog.hide();

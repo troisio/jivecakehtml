@@ -146,16 +146,6 @@ export default class TransactionService {
     }).then(response => this.toolsService.toObject(response.data, this.Transaction));
   }
 
-  transfer(token, id, user_id) {
-    const url = [this.settings.jivecakeapi.uri, 'transaction', id, 'transfer', user_id].join('/');
-
-    return this.$http.post(url, '', {
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).then(response => response.data.map(transaction => this.toolsService.toObject(transaction, this.Transaction)));
-  }
-
   getTransactionData(itemService, token, query) {
     return this.search(token, query).then((searchResult) => {
       const transactionIdsSet = new Set();

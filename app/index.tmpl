@@ -26,17 +26,16 @@
     <link rel="apple-touch-icon" sizes="152x152" href="/assets/safari/apple-touch-152x152.png">
     <link rel="apple-touch-icon" sizes="120x120" href="/assets/safari/apple-touch-120x120.png">
     <link rel="apple-touch-icon" sizes="76x76" href="/assets/safari/apple-touch-76x76.png">
-
+    <link rel="stylesheet" href="dist/vendor.css">
+    <link rel="stylesheet" href="dist/dist.css">
+  </head>
+  <body layout="column">
+    <ui-view flex layout="row"></ui-view>
     <script src="https://www.google-analytics.com/analytics.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script src="https://checkout.stripe.com/checkout.js"></script>
     <script src="https://cdn.auth0.com/js/lock/10.15/lock.min.js"></script>
-    <link rel="stylesheet" href="dist/vendor.css">
-    <link rel="stylesheet" href="dist/dist.css">
     <script src="dist/vendor.js"></script>
     <script src="dist/dist.js"></script>
-  </head>
-  <body layout="column">
-    <ui-view flex layout="row"></ui-view>
   </body>
 </html>

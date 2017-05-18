@@ -87,8 +87,6 @@ export default class UpdateEventController {
           this.$scope.timeEnd.minute = this.$scope.timeEnd.time.getMinutes();
         }
 
-        this.$scope.minimumTimeBetweenTransactionTransferEnabled = event.minimumTimeBetweenTransactionTransfer > -1;
-
         this.$scope.event = event;
 
         return this.$q.all({
@@ -134,16 +132,12 @@ export default class UpdateEventController {
     });
   }
 
-  submit(event, timeStart, timeEnd, minimumTimeBetweenTransactionTransferEnabled) {
+  submit(event, timeStart, timeEnd) {
     this.$scope.loading = true;
     const eventCopy = this.angular.copy(event);
 
     const invalidPaymentDetails = (eventCopy.currency === null && eventCopy.paymentProfileId !== null) ||
       (eventCopy.currency !== null && eventCopy.paymentProfileId === null);
-
-    if (!minimumTimeBetweenTransactionTransferEnabled) {
-      eventCopy.minimumTimeBetweenTransactionTransfer = -1;
-    }
 
     if (timeStart.time === null) {
       eventCopy.timeStart = null;

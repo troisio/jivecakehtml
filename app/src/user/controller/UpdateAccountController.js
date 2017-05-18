@@ -1,6 +1,5 @@
 export default class UpdateAccountController {
-  constructor($window, $q, $scope, auth0Service, storageService, userService, uiService, assetService) {
-    this.$window = $window;
+  constructor($q, $scope, auth0Service, storageService, userService, uiService, assetService) {
     this.$q = $q;
     this.$scope = $scope;
     this.auth0Service = auth0Service;
@@ -18,14 +17,6 @@ export default class UpdateAccountController {
   run() {
     this.$scope.$parent.ready.then(() => {
       const storage = this.storageService.read();
-
-      const assetFuture = this.assetService.getUserImages(storage.auth.idToken, {
-        entityId: storage.auth.idTokenPayload.sub,
-        limit: 1,
-        order: '-timeCreated'
-      }).then((entities) => {
-        this.$scope.entities = entities;
-      });
 
       const userFuture = this.auth0Service.getUser(storage.auth.idToken, storage.auth.idTokenPayload.sub).then((user) => {
         this.user = user;
@@ -46,7 +37,7 @@ export default class UpdateAccountController {
         }
       });
 
-      this.$q.all([assetFuture, userFuture]).then(() => {
+      userFuture.then(() => {
       }, () => {
         this.uiService.notify('Unable to get user information');
       }).finally(() => {
@@ -63,11 +54,11 @@ export default class UpdateAccountController {
     const futures = [filePromise.promise, this.$q.resolve()];
 
     if (fileElement.files.length > 0) {
-      const fileReader = new this.$window.FileReader();
+      const fileReader = new FileReader();
       const file = fileElement.files[0];
 
       fileReader.onloadend = (event) => {
-        const data = new this.$window.Uint8Array(event.target.result);
+        const data = new Uint8Array(event.target.result);
         const future = this.userService.uploadSelfie(storage.auth.idToken, this.user.user_id, data, file.type);
 
         filePromise.resolve(future);
@@ -97,7 +88,7 @@ export default class UpdateAccountController {
 
     this.$scope.loading = true;
 
-    this.$q.all(futures).then((responses) => {
+    this.$q.all(futures).then(responses => {
       this.uiService.notify('Successfully updated');
       this.run();
     }, (response) => {
@@ -116,4 +107,4 @@ export default class UpdateAccountController {
   }
 }
 
-UpdateAccountController.$inject = ['$window', '$q', '$scope', 'Auth0Service', 'StorageService', 'UserService', 'UIService', 'AssetService'];
+UpdateAccountController.$inject = ['$q', '$scope', 'Auth0Service', 'StorageService', 'UserService', 'UIService', 'AssetService'];

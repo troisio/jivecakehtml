@@ -62,18 +62,6 @@ export default class ReadTransactionController {
     });
   }
 
-  transferTransaction(transaction) {
-    this.$mdDialog.show({
-      controller: 'TransferPassController',
-      controllerAs: 'controller',
-      templateUrl: '/src/transaction/partial/transferTransaction.html',
-      clickOutsideToClose: true,
-      locals: {
-        transaction: transaction
-      }
-    });
-  }
-
   readTransaction(transaction, user, item) {
     this.$mdDialog.show({
       controller: ['$scope', 'transaction', 'user', 'item', function($scope, transaction, user, item) {

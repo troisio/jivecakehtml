@@ -27,10 +27,7 @@
         <input ng-model="user.email" type="email" ng-disabled="isIdentityProviderAccount" required maxlength="255">
       </md-input-container>
       <div>
-        <div ng-if="entities.length > 0" class="image-cropper">
-          <img ng-src="{{entities[0].data.link}}">
-        </div>
-        <label ng-show="entities.length === 0">A picture of your beautiful face</label>
+        <label>Your beautiful face</label>
         <md-input-container flex class="md-block">
           <input type="file" aria-label="A picture of you" name="photo" accept="image/*;capture=camera">
         </md-input-container>

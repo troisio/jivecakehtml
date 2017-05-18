@@ -271,6 +271,14 @@ export default class DownstreamService {
         this.$rootScope.$broadcast('transaction.delete', transactions);
       });
     });
+
+    source.addEventListener('paymentprofile.delete', (sse) => {
+
+    });
+
+    source.addEventListener('paymentprofile.create', (sse) => {
+
+    });
   }
 }
 

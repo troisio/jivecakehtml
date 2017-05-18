@@ -26,7 +26,6 @@ builder.createTable('Organization')
 builder.createTable('Event')
   .addColumn('id', lf.Type.STRING)
   .addColumn('name', lf.Type.STRING)
-  .addColumn('minimumTimeBetweenTransactionTransfer', lf.Type.INTEGER)
   .addColumn('description', lf.Type.STRING)
   .addColumn('status', lf.Type.STRING)
   .addColumn('organizationId', lf.Type.STRING)
@@ -96,7 +95,6 @@ builder.createTable('Transaction')
   .addColumn('currency', lf.Type.STRING)
   .addColumn('email', lf.Type.STRING)
   .addColumn('leaf', lf.Type.BOOLEAN)
-  .addColumn('lastTransferTime', lf.Type.DATETIME)
   .addColumn('timeCreated', lf.Type.DATETIME)
   .addNullable([
     'parentTransactionId',
@@ -106,8 +104,7 @@ builder.createTable('Transaction')
     'given_name',
     'middleName',
     'family_name',
-    'email',
-    'lastTransferTime'
+    'email'
   ])
   .addPrimaryKey(['id']);
 
