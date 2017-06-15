@@ -1,8 +1,8 @@
 ### Contributing
 
-If you are interested in contributing a feature, please open an issue first for discussion.
+Most important thing: in all things you do, be succint, simple and cogent. Both in your code and otherwise.
 
-If you are interested in filing a bug, just open an issue. The clearer you are when you're filing, the better. (Nothing beats a submitting a merge request for a failing test!)
+If you are interested in filing a bug, just open an issue.
 
 If you're interested in fixing a bug there's no need to open an issue, you can just submit a merge request with a fix.
 

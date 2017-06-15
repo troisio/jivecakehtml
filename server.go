@@ -39,11 +39,12 @@ type Settings struct {
 
 func publicEventHandler(settings Settings, indexTemplate *template.Template) httprouter.Handle {
   return func(w http.ResponseWriter, r *http.Request, parameters httprouter.Params) {
+    defer r.Body.Close()
+
     client := &http.Client{Timeout: 5 * time.Second}
     id := parameters.ByName("id")
 
     response, requestError := client.Get(settings.Api.Uri + "/event/search?id=" + id)
-    defer r.Body.Close()
 
     if requestError != nil {
       panic(requestError)

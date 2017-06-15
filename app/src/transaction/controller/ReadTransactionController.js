@@ -7,15 +7,18 @@ export default class ReadTransactionController {
     itemService,
     organizationService,
     transactionService,
+    userService,
     uiService,
     db
   ) {
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
+    this.storageService = storageService;
     this.itemService = itemService;
     this.organizationService = organizationService;
     this.transactionService = transactionService;
+    this.userService = userService;
     this.uiService = uiService;
     this.db = db;
 
@@ -23,7 +26,6 @@ export default class ReadTransactionController {
     $scope.searchText = '';
     this.$scope.data = [];
 
-    this.storage = storageService.read();
     $scope.$parent.selectedTab = 3;
     this.run();
   }
@@ -31,10 +33,35 @@ export default class ReadTransactionController {
   run() {
     this.$scope.loading = true;
 
-    this.$scope.$parent.ready.then((resolve) => {
-      return this.getQuery().then((query) => {
-        return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, query).then(result => {
-          this.$scope.data = result.entity;
+    this.$scope.data = [];
+
+    this.$scope.$parent.ready.then(() => {
+      return this.getWhere().then(loveFieldQuery => {
+
+        const storage = this.storageService.read();
+        return this.userService.refreshUserCacheFromTransactions(storage.auth.idToken, loveFieldQuery).then(() => {
+          const transactionTable = this.db.getSchema().table('Transaction');
+          const userTable = this.db.getSchema().table('User');
+          const itemTable = this.db.getSchema().table('Item');
+
+          const columns = [];
+
+          [transactionTable, userTable, itemTable].forEach(table => {
+            table.getColumns()
+              .map(column => table[column.getName()])
+              .forEach(column => columns.push(column));
+          });
+
+          return this.db.select(...columns)
+            .from(transactionTable)
+            .innerJoin(itemTable, itemTable.id.eq(transactionTable.itemId))
+            .leftOuterJoin(userTable, userTable.user_id.eq(transactionTable.user_id))
+            .where(loveFieldQuery)
+            .orderBy(transactionTable.timeCreated, lf.Order.DESC)
+            .exec()
+            .then(rows => {
+              this.$scope.data = rows;
+            });
         });
       });
     }, () => {
@@ -44,16 +71,51 @@ export default class ReadTransactionController {
     });
   }
 
+  getWhere() {
+    const permissionTable = this.db.getSchema().table('Permission');
+
+    return this.db.select()
+      .from(permissionTable)
+      .where(permissionTable.objectClass.eq('Organization'))
+      .exec()
+      .then(rows => {
+        const transactionTable = this.db.getSchema().table('Transaction');
+
+        const ands = [
+          transactionTable.leaf.eq(true)
+        ];
+
+        let hasFilter = false;
+
+        ['eventId', 'itemId', 'id'].forEach(filter => {
+          if (typeof this.$state.params[filter] !== 'undefined') {
+            const value = this.$state.params[filter];
+            if (Array.isArray(value)) {
+              ands.push(transactionTable[filter].in(value));
+            } else {
+              ands.push(transactionTable[filter].eq(value));
+            }
+            hasFilter = true;
+          }
+        });
+
+        if (!hasFilter) {
+          const organizationIds = rows.map(permission => permission.objectId);
+          ands.push(
+            transactionTable.organizationId.in(organizationIds)
+          );
+        }
+
+        return lf.op.and(...ands);
+      });
+  }
+
   textChange(text) {
     this.$scope.loading = true;
 
-    this.$scope.$parent.ready.then((resolve) => {
-      return this.getQuery().then((query) => {
-        query.text = text;
+    this.$scope.$parent.ready.then(() => {
+      return this.getWhere().then((query) => {
 
-        return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, query).then((result) => {
-          this.$scope.data = result.entity;
-        });
       });
     }, () => {
       this.uiService.notify('Unable to retrieve data');
@@ -84,7 +146,7 @@ export default class ReadTransactionController {
   deleteTransaction(transactionData, $event) {
     let confirm;
 
-    if (transactionData.transaction.status === 2) {
+    if (transactionData.Transaction.status === 2) {
       confirm = this.$mdDialog.confirm()
         .title('Are you sure you want to undo this revocation?')
         .ariaLabel('Revoke Transaction')
@@ -103,7 +165,8 @@ export default class ReadTransactionController {
     }
 
     this.$mdDialog.show(confirm).then(() => {
-      this.transactionService.delete(this.storage.auth.idToken, transactionData.transaction.id).then(() => {
+      const storage = this.storageService.read();
+      this.transactionService.delete(storage.auth.idToken, transactionData.Transaction.id).then(() => {
         this.run();
         this.uiService.notify('Transaction deleted');
       }, (response) => {
@@ -122,46 +185,14 @@ export default class ReadTransactionController {
       .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.transactionService.revoke(this.storage.auth.idToken, transaction.id).then((profile) => {
+      const storage = this.storageService.read();
+      this.transactionService.revoke(storage.auth.idToken, transaction.id).then((profile) => {
         this.run();
         this.uiService.notify('Transaction revoked');
       }, (response) => {
         this.uiService.notify('Unable to revoke transaction');
       });
     });
-  }
-
-  getQuery() {
-    const permissionTable = this.db.getSchema().table('Permission');
-
-    return this.db.select()
-      .from(permissionTable)
-      .where(permissionTable.objectClass.eq('Organization'))
-      .exec()
-      .then(rows => {
-        const organizationIds = rows.map(permission => permission.objectId);
-
-        const query = {
-          order: '-timeCreated',
-          leaf: true
-        };
-
-        let hasFilter = false;
-
-        ['eventId', 'itemId', 'id'].forEach((filter) => {
-          if (typeof this.$state.params[filter] !== 'undefined') {
-            query[filter] = this.$state.params[filter];
-            hasFilter = true;
-          }
-        });
-
-        if (!hasFilter) {
-          query.organizationId = organizationIds;
-          query.limit = 100;
-        }
-
-        return query;
-      });
   }
 }
 
@@ -173,6 +204,7 @@ ReadTransactionController.$inject = [
   'ItemService',
   'OrganizationService',
   'TransactionService',
+  'UserService',
   'UIService',
   'db'
 ];

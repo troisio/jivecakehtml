@@ -14,7 +14,7 @@ docker build -t jivecakehtml .
 $(npm bin)/gulp
 ```
 
-#### Run the nginx server
+#### Run the nginx / go server
 
 ```sh
 docker run \
@@ -28,7 +28,7 @@ docker run \
 
 ### Settings
 
-You need to fill out app/src/settings.js
+You need to fill out `app/src/settings.js`
 
 You also need to run [jivecakeapi](https://github.com/troisio/jivecakeapi). That's what `jivecakeapi.uri` is for in the settings file.
 

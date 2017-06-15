@@ -56,6 +56,12 @@ import ReadTransactionController from './transaction/controller/ReadTransactionC
 
 import UpdateAccountController from './user/controller/UpdateAccountController';
 
+import Promise from 'promise-polyfill';
+
+if (!window.Promise) {
+  window.Promise = Promise;
+}
+
 builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   angular.module('jivecakeweb', [
     jiveCakeClassModule.name,
@@ -94,6 +100,7 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
     'Auth0Service',
     'JiveCakeLocalStorage',
     'SearchEntity',
+    'UserInterfaceEvent',
     'settings',
     function(
       lock,
@@ -110,11 +117,48 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
       auth0Service,
       JiveCakeLocalStorage,
       SearchEntity,
+      UserInterfaceEvent,
       settings
     ) {
+      if (settings.google.analytics.enabled) {
+        ga('create', 'UA-81919203-1', 'auto');
+      }
+
+      $transitions.onSuccess({}, function(e) {
+        if (settings.google.analytics.enabled) {
+          ga('send', 'pageview', $location.path());
+        }
+
+        const storage = storageService.read();
+        const token = storage.auth === null ? null : storage.auth.idToken;
+        const event = new UserInterfaceEvent();
+        event.event = e.to().name;
+        uiService.logInteraction(token, event);
+      });
+
+      document.addEventListener('visibilitychange', function(e) {
+        const storage = storageService.read();
+        const token = storage.auth === null ? null : storage.auth.idToken;
+        const event = new UserInterfaceEvent();
+        event.event = 'visibilitychange';
+        event.parameters = {
+          visibilityState: document.visibilityState
+        };
+        uiService.logInteraction(token, event);
+      });
+
+      window.addEventListener('beforeunload', function(e) {
+        const storage = storageService.read();
+        const token = storage.auth === null ? null : storage.auth.idToken;
+        const event = new UserInterfaceEvent();
+        event.event = 'beforeunload';
+        uiService.logInteraction(token, event);
+      });
+
       lock.on('authenticated', function(auth) {
         lock.getUserInfo(auth.accessToken, function(error, profile) {
-          if (typeof err === 'undefined') {
+
+          if (typeof error === 'undefined' || error === null) {
             const storage = new JiveCakeLocalStorage();
             storage.timeCreated = new Date().getTime();
             storage.auth = auth;
@@ -160,20 +204,13 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
               });
             });
           } else {
+            console.log(error);
             uiService.notify('Unable to login');
           }
         });
       }, function() {
         uiService.notify('Unable to login');
       });
-
-      if (true || settings.google.analytics.enabled) {
-        ga('create', 'UA-81919203-1', 'auto');
-
-        $transitions.onSuccess({}, function() {
-          ga('send', 'pageview', $location.path());
-        });
-      }
     }
   ])
   .controller('ApplicationController', ApplicationController)

@@ -10,8 +10,11 @@ export default class UpdateEventController {
     storageService,
     eventService,
     organizationService,
+    permissionService,
     paymentProfileService,
-    uiService
+    uiService,
+    db,
+    Permission
   ) {
     this.angular = angular;
     this.$window = $window;
@@ -22,8 +25,11 @@ export default class UpdateEventController {
     this.$mdDialog = $mdDialog;
     this.eventService = eventService;
     this.organizationService = organizationService;
+    this.permissionService = permissionService;
     this.paymentProfileService = paymentProfileService;
     this.uiService = uiService;
+    this.db = db;
+    this.Permission = Permission;
 
     this.$scope.currentDate = new Date();
     this.$scope.paymentProfiles = null;
@@ -41,66 +47,69 @@ export default class UpdateEventController {
   run() {
     this.$scope.uiReady = false;
 
-    this.$scope.$parent.ready.then((resolve) => {
-      const readOrganizationIds = resolve.permission.entity.filter((permission) => {
-        return permission.objectClass === this.organizationService.getObjectClassName() &&
-               permission.has(this.organizationService.getReadPermission());
-      }).map(function(permission) {
-        return permission.objectId;
-      });
+    this.$scope.$parent.ready.then(() => {
+      const permissionTable = this.db.getSchema().table('Permission');
 
-      this.$scope.organizationIds = readOrganizationIds;
+      return this.db.select()
+        .from(permissionTable)
+        .where(permissionTable.objectClass.eq('Organization'))
+        .exec()
+        .then(rows => {
+          const hasPermission = new this.Permission().has;
+          this.$scope.organizationIds = rows.filter(row => hasPermission.call(row, this.permissionService.READ))
+            .map(row => row.objectId);
 
-      this.eventService.read(this.storage.auth.idToken, this.$stateParams.eventId).then((event) => {
-        const paymentProfileFuture = this.paymentProfileService.search(this.storage.auth.idToken, {
-          organizationId: event.organizationId
+          return this.eventService.read(this.storage.auth.idToken, this.$stateParams.eventId).then((event) => {
+            const paymentProfileFuture = this.paymentProfileService.search(this.storage.auth.idToken, {
+              organizationId: event.organizationId
+            });
+            const organizationFuture = this.organizationService.read(this.storage.auth.idToken, event.organizationId);
+
+            if (event.timeStart === null) {
+              this.$scope.timeStart = {
+                time: null,
+                hour: null,
+                minute: null
+              };
+            } else {
+              this.$scope.timeStart = {
+                time: new Date(event.timeStart)
+              };
+
+              this.$scope.timeStart.hour = this.$scope.timeStart.time.getHours();
+              this.$scope.timeStart.minute = this.$scope.timeStart.time.getMinutes();
+            }
+
+            if (event.timeEnd === null) {
+              this.$scope.timeEnd = {
+                time: null,
+                hour: null,
+                minute: null
+              };
+            } else {
+              this.$scope.timeEnd = {
+                time: new Date(event.timeEnd)
+              };
+
+              this.$scope.timeEnd.hour = this.$scope.timeEnd.time.getHours();
+              this.$scope.timeEnd.minute = this.$scope.timeEnd.time.getMinutes();
+            }
+
+            this.$scope.event = event;
+
+            return this.$q.all({
+              paymentProfile: paymentProfileFuture,
+              organization: organizationFuture
+            }).then(resolve => {
+              this.$scope.organization = resolve.organization;
+              this.$scope.paymentProfiles = resolve.paymentProfile.entity;
+            });
+          }, () => {
+            this.uiService.notify('Unable to find event');
+          });
         });
-        const organizationFuture = this.organizationService.read(this.storage.auth.idToken, event.organizationId);
-
-        if (event.timeStart === null) {
-          this.$scope.timeStart = {
-            time: null,
-            hour: null,
-            minute: null
-          };
-        } else {
-          this.$scope.timeStart = {
-            time: new Date(event.timeStart)
-          };
-
-          this.$scope.timeStart.hour = this.$scope.timeStart.time.getHours();
-          this.$scope.timeStart.minute = this.$scope.timeStart.time.getMinutes();
-        }
-
-        if (event.timeEnd === null) {
-          this.$scope.timeEnd = {
-            time: null,
-            hour: null,
-            minute: null
-          };
-        } else {
-          this.$scope.timeEnd = {
-            time: new Date(event.timeEnd)
-          };
-
-          this.$scope.timeEnd.hour = this.$scope.timeEnd.time.getHours();
-          this.$scope.timeEnd.minute = this.$scope.timeEnd.time.getMinutes();
-        }
-
-        this.$scope.event = event;
-
-        return this.$q.all({
-          paymentProfile: paymentProfileFuture,
-          organization: organizationFuture
-        }).then(resolve => {
-          this.$scope.organization = resolve.organization;
-          this.$scope.paymentProfiles = resolve.paymentProfile.entity;
-        });
-      }, () => {
-        this.uiService.notify('Unable to find event');
-      }).finally(() => {
-        this.$scope.uiReady = true;
-      });
+    }).finally(() => {
+      this.$scope.uiReady = true;
     });
   }
 
@@ -114,14 +123,11 @@ export default class UpdateEventController {
       }
     }).finally(() => {
       this.$scope.ready.then((resolve) => {
-        const readOrganizationIds = resolve.permission.entity.filter((permission) => {
-          return permission.objectClass === this.organizationService.getObjectClassName() &&
-                 permission.has(this.organizationService.getReadPermission());
-        }).map(permission => permission.objectId);
+        const readOrganizationIds = this.$scope.organizationIds;
 
         this.paymentProfileService.search(this.storage.auth.idToken, {
           organizationId: readOrganizationIds
-        }).then((search) => {
+        }).then(search => {
           this.$scope.paymentProfiles = search.entity;
 
           if (this.$scope.paymentProfiles.length > 0) {
@@ -217,6 +223,9 @@ UpdateEventController.$inject = [
   'StorageService',
   'EventService',
   'OrganizationService',
+  'PermissionService',
   'PaymentProfileService',
-  'UIService'
+  'UIService',
+  'db',
+  'Permission'
 ];

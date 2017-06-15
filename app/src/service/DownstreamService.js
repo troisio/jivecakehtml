@@ -1,5 +1,6 @@
 export default class DownstreamService {
   constructor(
+    $q,
     $rootScope,
     permissionService,
     organizationService,
@@ -9,6 +10,7 @@ export default class DownstreamService {
     storageService,
     db
   ) {
+    this.$q = $q;
     this.$rootScope = $rootScope;
     this.permissionService = permissionService;
     this.organizationService = organizationService;
@@ -280,9 +282,105 @@ export default class DownstreamService {
 
     });
   }
+
+  cacheUserData(auth) {
+    return this.permissionService.search(auth.idToken, {
+      user_id: auth.idTokenPayload.sub
+    }).then((permissionSearchResult) => {
+      const permissions = permissionSearchResult.entity;
+      const organizationIds = permissions
+        .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
+        .map(permission => permission.objectId);
+
+      let futures;
+
+      if (organizationIds.length > 0) {
+        const permissionTable = this.db.getSchema().table('Permission');
+        const permissionFuture = this.db.delete().from(permissionTable).exec().then(() => {
+          const rows = permissions.map(permissionTable.createRow, permissionTable);
+          return this.db.insert().into(permissionTable).values(rows).exec();
+        });
+
+        const eventFuture = this.eventService.search(auth.idToken, {
+          order: '-lastActivity',
+          limit: 20,
+          organizationId: organizationIds
+        }).then(search => {
+          const events = search.entity;
+          const eventTable = this.db.getSchema().table('Event');
+          const rows = events.map(eventTable.createRow, eventTable);
+          const eventFuture = this.db.insertOrReplace().into(eventTable).values(rows).exec();
+
+          let transactionFuture;
+
+          if (events.length > 0) {
+            const eventIds = events.map(event => event.id);
+            transactionFuture = this.transactionService.search(auth.idToken, {
+              eventId: eventIds,
+              leaf: true
+            }).then(search => {
+              const transactions = search.entity;
+              const transactionTable = this.db.getSchema().table('Transaction');
+              const rows = transactions.map(transactionTable.createRow, transactionTable);
+              const transactionFuture = this.db.insertOrReplace().into(transactionTable).values(rows).exec();
+
+              let userFuture;
+
+              if (transactions.length > 0) {
+                const transactionIds = transactions.map(transaction => transaction.id);
+
+                userFuture = this.transactionService.searchUsers(auth.idToken, {
+                  id: transactionIds
+                }).then((users) => {
+                  const userTable = this.db.getSchema().table('User');
+                  const rows = users.map(userTable.createRow, userTable);
+                  return this.db.insertOrReplace().into(userTable).values(rows).exec();
+                });
+              } else {
+                userFuture = Promise.resolve();
+              }
+
+              return Promise.all([transactionFuture, userFuture]);
+            });
+          } else {
+            transactionFuture = Promise.resolve();
+          }
+
+          return Promise.all([eventFuture, transactionFuture]);
+        });
+
+        const itemFuture = this.itemService.search(auth.idToken, {
+          order: '-lastActivity',
+          limit: 20,
+          organizationId: organizationIds
+        }).then(search => {
+          const itemTable = this.db.getSchema().table('Item');
+          const rows = search.entity.map(itemTable.createRow, itemTable);
+          return this.db.insertOrReplace().into(itemTable).values(rows).exec();
+        });
+
+        const organizationFuture = this.organizationService.getOrganizationsByUser(
+          auth.idToken,
+          auth.idTokenPayload.sub,
+          {}
+        ).then((organizations) => {
+          const organiationTable = this.db.getSchema().table('Organization');
+          const rows = organizations.map(organiationTable.createRow, organiationTable);
+          return this.db.insertOrReplace().into(organiationTable).values(rows).exec();
+        });
+
+        futures = [eventFuture, itemFuture, organizationFuture, permissionFuture];
+      } else {
+        futures = [];
+      }
+
+      return this.$q.all(futures);
+    });
+  }
 }
 
 DownstreamService.$inject = [
+  '$q',
   '$rootScope',
   'PermissionService',
   'OrganizationService',

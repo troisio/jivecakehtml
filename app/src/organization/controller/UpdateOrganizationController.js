@@ -14,7 +14,8 @@ export default class UpdateOrganizationController {
     uiService,
     relationalService,
     stripeService,
-    Permission
+    Permission,
+    db
   ) {
     this.$q = $q;
     this.$rootScope = $rootScope;
@@ -31,6 +32,7 @@ export default class UpdateOrganizationController {
     this.relationalService = relationalService;
     this.stripeService = stripeService;
     this.Permission = Permission;
+    this.db = db;
 
     this.$scope.selectedSubscriptions = [];
     this.$scope.subscriptions = [];
@@ -49,14 +51,18 @@ export default class UpdateOrganizationController {
     this.$scope.uiReady = false;
     this.$scope.loading = false;
 
-    this.$scope.$parent.ready.then((resolve) => {
-      const applicationWritePermissions = resolve.permission.entity.filter((permission) => {
-        return permission.objectClass === this.applicationService.getObjectClassName() &&
-               permission.has(this.applicationService.getWritePermission());
-      });
+    this.$scope.$parent.ready.then(() => {
+      const permissionTable = this.db.getSchema().table('Permission');
 
-      this.$scope.hasApplicationWrite = applicationWritePermissions.length > 0;
-      return this.loadUI(this.$stateParams.organizationId);
+      return this.db.select()
+        .from(permissionTable)
+        .where(permissionTable.objectClass.eq('Application'))
+        .exec()
+        .then(rows => {
+          const hasPermission = new this.Permission().has;
+          this.$scope.hasApplicationWrite = rows.filter(row => hasPermission.call(row, this.permissionService.WRITE)).length > 0;
+          return this.loadUI(this.$stateParams.organizationId);
+        });
     }, () => {
       this.uiService.notify('Unable to find organization');
     }).finally(() => {
@@ -272,9 +278,7 @@ export default class UpdateOrganizationController {
 
     this.$mdDialog.show(confirm).then(() => {
       this.paymentProfileService.delete(this.storage.auth.idToken, paymentProfile.id).then(() => {
-        loader.dialog.finally(() => {
-          this.$rootScope.$broadcast('PAYMENT.PROFILE.DELETED');
-        });
+        this.$rootScope.$broadcast('PAYMENT.PROFILE.DELETED');
       }, (response) => {
         let text;
 
@@ -318,5 +322,6 @@ UpdateOrganizationController.$inject = [
   'UIService',
   'RelationalService',
   'StripeService',
-  'Permission'
+  'Permission',
+  'db'
 ];

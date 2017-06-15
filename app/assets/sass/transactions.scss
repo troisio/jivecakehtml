@@ -16,4 +16,8 @@ ng-md-icon{
   &.payment-bad {
     fill: $payment-bad;
   }
+
+  &.payment-free {
+    fill: $payment-free;
+  }
 }

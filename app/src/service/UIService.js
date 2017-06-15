@@ -1,15 +1,25 @@
 export default class UIService {
-  constructor($window, $q, $mdToast, $mdDialog) {
+  constructor($window, $q, $http, $mdToast, $mdDialog, settings) {
     this.$window = $window;
     this.$q = $q;
+    this.$http = $http;
     this.$mdToast = $mdToast;
     this.$mdDialog = $mdDialog;
+    this.settings = settings;
     this.timeSelections = this.getTimeSelections();
+  }
 
-    this.toast = {
-      position: 'pos top right',
-      hideDelay: 3000
-    };
+  logInteraction(token, body) {
+    const headers = {};
+
+    if (token !== null) {
+      headers.Authorization = 'Bearer ' + token;
+    }
+
+    const url = [this.settings.jivecakeapi.uri, 'log', 'ui'].join('/');
+    return this.$http.post(url, body, {
+      headers: headers
+    });
   }
 
   getTimeSelections() {
@@ -50,8 +60,8 @@ export default class UIService {
     return this.$mdToast.show(
       this.$mdToast.simple()
         .content(text)
-        .position(this.toast.position)
-        .hideDelay(this.toast.hideDelay)
+        .position('pos top right')
+        .hideDelay(3000)
     );
   }
 
@@ -60,4 +70,4 @@ export default class UIService {
   }
 }
 
-UIService.$inject = ['$window', '$q', '$mdToast', '$mdDialog'];
+UIService.$inject = ['$window', '$q', '$http', '$mdToast', '$mdDialog', 'settings'];

@@ -108,4 +108,16 @@ builder.createTable('Transaction')
   ])
   .addPrimaryKey(['id']);
 
+  builder.createTable('User')
+    .addColumn('user_id', lf.Type.STRING)
+    .addColumn('email', lf.Type.STRING)
+    .addColumn('name', lf.Type.STRING)
+    .addColumn('nickname', lf.Type.STRING)
+    .addColumn('user_metadata', lf.Type.OBJECT)
+    .addColumn('given_name', lf.Type.STRING)
+    .addColumn('family_name', lf.Type.STRING)
+    .addColumn('picture', lf.Type.STRING)
+    .addNullable(['given_name', 'family_name', 'email', 'user_metadata'])
+    .addPrimaryKey(['user_id']);
+
 export default builder;

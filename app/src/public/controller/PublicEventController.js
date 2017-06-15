@@ -118,8 +118,15 @@ export default class PublicEventController {
 
       for (let index = 0; index < this.$scope.groupData.itemData.length; index++) {
         const itemData = this.$scope.groupData.itemData[index];
+        const canDisplayItem = (
+          itemData.item.totalAvailible === null ||
+          itemData.remainingTotalAvailibleTransactions > 0
+        ) && (
+          itemData.item.maximumPerUser === null ||
+          itemData.remainingTotalAvailibleTransactions > 0
+        );
 
-        if ((itemData.item.totalAvailible === null || itemData.remainingTotalAvailibleTransactions > 0) && (itemData.item.maximumPerUser === null || itemData.remainingTotalAvailibleTransactions > 0)) {
+        if (canDisplayItem) {
           this.$scope.hasAnySelections = true;
           break;
         }
@@ -289,7 +296,7 @@ export default class PublicEventController {
         }, () => {
           return 'Unable to create payment details';
         });
-      }, (resolve) => {
+      }, () => {
         return 'Unable to purchase free items';
       }).then((message) => {
         if (message.length > 0) {

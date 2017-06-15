@@ -38,6 +38,10 @@ span, strong {
     color: #FF6347;
   }
 
+  &.payment-free {
+    color: $payment-free;
+  }
+
   &.payment-bad {
     color: rgb(221,44,0);
   }
