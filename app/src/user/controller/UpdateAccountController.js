@@ -45,7 +45,7 @@ export default class UpdateAccountController {
         limit: 1
       }).then((assets) => {
         this.$scope.assets = assets;
-      })
+      });
 
       this.$q.all([userFuture, assetFuture]).then(() => {
       }, () => {

@@ -71,7 +71,7 @@ export default class ApplicationController {
     if (storage.auth === null) {
       ready = this.$q.reject();
     } else {
-      const exp = storage.auth.idTokenPayload.exp * 1000
+      const exp = storage.auth.idTokenPayload.exp * 1000;
       if (new Date().getTime() < exp) {
         ready = this.getApplicationFutures();
 

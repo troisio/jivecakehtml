@@ -316,50 +316,54 @@ export default class DownstreamService {
           const itemFuture = this.itemService.search(auth.idToken, {
             order: '-lastActivity',
             eventId: eventids,
-            limit: 20,
+            limit: 40,
             organizationId: organizationIds
           }).then(search => {
+            const items = search.entity;
             const itemTable = this.db.getSchema().table('Item');
-            const rows = search.entity.map(itemTable.createRow, itemTable);
-            return this.db.insertOrReplace().into(itemTable).values(rows).exec();
+            const rows = items.map(itemTable.createRow, itemTable);
+            return this.db.insertOrReplace()
+              .into(itemTable)
+              .values(rows)
+              .exec()
+              .then(() => {
+                const itemIds = items.map(item => item.id);
+
+                let transactionFuture;
+
+                if (itemIds.length > 0) {
+                  transactionFuture = this.transactionService.search(auth.idToken, {
+                    itemId: itemIds,
+                    leaf: true
+                  }).then(search => {
+                    const transactions = search.entity;
+                    const transactionTable = this.db.getSchema().table('Transaction');
+                    const rows = transactions.map(transactionTable.createRow, transactionTable);
+                    const insertFuture = this.db.insertOrReplace().into(transactionTable).values(rows).exec();
+
+                    let userFuture;
+
+                    if (transactions.length > 0) {
+                      const transactionIds = transactions.map(transaction => transaction.id);
+
+                      userFuture = this.transactionService.searchUsers(auth.idToken, {
+                        id: transactionIds
+                      }).then((users) => {
+                        const userTable = this.db.getSchema().table('User');
+                        const rows = users.map(userTable.createRow, userTable);
+                        return this.db.insertOrReplace().into(userTable).values(rows).exec();
+                      });
+                    } else {
+                      userFuture = Promise.resolve();
+                    }
+
+                    return Promise.all([insertFuture, userFuture]);
+                  });
+                } else {
+                  transactionFuture = Promise.resolve();
+                }
+              });
           });
-
-          let transactionFuture;
-
-          if (events.length > 0) {
-            const eventIds = events.map(event => event.id);
-            transactionFuture = this.transactionService.search(auth.idToken, {
-              eventId: eventIds,
-              leaf: true
-            }).then(search => {
-              const transactions = search.entity;
-              const transactionTable = this.db.getSchema().table('Transaction');
-              const rows = transactions.map(transactionTable.createRow, transactionTable);
-              const transactionFuture = this.db.insertOrReplace().into(transactionTable).values(rows).exec();
-
-              let userFuture;
-
-              if (transactions.length > 0) {
-                const transactionIds = transactions.map(transaction => transaction.id);
-
-                userFuture = this.transactionService.searchUsers(auth.idToken, {
-                  id: transactionIds
-                }).then((users) => {
-                  const userTable = this.db.getSchema().table('User');
-                  const rows = users.map(userTable.createRow, userTable);
-                  return this.db.insertOrReplace().into(userTable).values(rows).exec();
-                });
-              } else {
-                userFuture = Promise.resolve();
-              }
-
-              return Promise.all([transactionFuture, userFuture, itemFuture]);
-            });
-          } else {
-            transactionFuture = Promise.resolve();
-          }
-
-          return Promise.all([eventFuture, transactionFuture]);
         });
 
         const organizationFuture = this.organizationService.getOrganizationsByUser(
