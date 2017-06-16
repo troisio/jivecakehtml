@@ -50,7 +50,7 @@ export default class TransactionService {
       }
     }).then((response) => {
       return {
-        entity: response.data.entity.map(this.toObject, this),
+        entity: response.data.entity.map(transaction => this.toolsService.toObject(transaction, this.Transaction)),
         count: response.data.count
       };
     });
@@ -68,13 +68,13 @@ export default class TransactionService {
     };
 
     if (Array.isArray(params.id)) {
-      const segmentLength = 75;
+      const segmentLength = 60;
       const ids = params.id;
 
       for (let index = 0; index < params.id.length / segmentLength; index++) {
         const start = index * segmentLength;
         const optionsCopy = Object.assign({}, options);
-        optionsCopy.id = ids.slice(start, start + segmentLength);
+        optionsCopy.params.id = ids.slice(start, start + segmentLength);
 
         futures.push(
           this.$http.get(url, optionsCopy).then(response => response.data)
@@ -110,7 +110,7 @@ export default class TransactionService {
       params: params
     }).then((response) => {
       return {
-        entity: response.data.entity.map(this.toObject, this),
+        entity: response.data.entity.map(transaction => this.toolsService.toObject(transaction, this.Transaction)),
         count: response.data.count
       };
     });
@@ -198,10 +198,6 @@ export default class TransactionService {
         };
       });
     });
-  }
-
-  toObject(subject) {
-    return this.toolsService.toObject(subject, this.Transaction);
   }
 }
 

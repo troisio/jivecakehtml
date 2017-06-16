@@ -4,8 +4,6 @@ export default class ReadTransactionController {
     $state,
     $mdDialog,
     storageService,
-    itemService,
-    organizationService,
     transactionService,
     userService,
     uiService,
@@ -15,8 +13,6 @@ export default class ReadTransactionController {
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.storageService = storageService;
-    this.itemService = itemService;
-    this.organizationService = organizationService;
     this.transactionService = transactionService;
     this.userService = userService;
     this.uiService = uiService;
@@ -27,6 +23,30 @@ export default class ReadTransactionController {
     this.$scope.data = [];
 
     $scope.$parent.selectedTab = 3;
+
+    [
+      'transaction.create',
+      'transaction.revoke',
+      'transaction.delete'
+    ].forEach(event => {
+      $scope.$on(event, () => {
+        this.run();
+      });
+    });
+
+    this.selectColumns = [];
+
+    this.permissionTable = this.db.getSchema().table('Permission');
+    this.transactionTable = this.db.getSchema().table('Transaction');
+    this.userTable = this.db.getSchema().table('User');
+    this.itemTable = this.db.getSchema().table('Item');
+
+    [this.transactionTable, this.userTable, this.itemTable].forEach(table => {
+      table.getColumns()
+        .map(column => table[column.getName()])
+        .forEach(column => this.selectColumns.push(column));
+    });
+
     this.run();
   }
 
@@ -36,29 +56,10 @@ export default class ReadTransactionController {
     this.$scope.data = [];
 
     this.$scope.$parent.ready.then(() => {
-      return this.getWhere().then(loveFieldQuery => {
-
+      return this.getWhereClause(this.$scope.searchText).then(whereClause => {
         const storage = this.storageService.read();
-        return this.userService.refreshUserCacheFromTransactions(storage.auth.idToken, loveFieldQuery).then(() => {
-          const transactionTable = this.db.getSchema().table('Transaction');
-          const userTable = this.db.getSchema().table('User');
-          const itemTable = this.db.getSchema().table('Item');
-
-          const columns = [];
-
-          [transactionTable, userTable, itemTable].forEach(table => {
-            table.getColumns()
-              .map(column => table[column.getName()])
-              .forEach(column => columns.push(column));
-          });
-
-          return this.db.select(...columns)
-            .from(transactionTable)
-            .innerJoin(itemTable, itemTable.id.eq(transactionTable.itemId))
-            .leftOuterJoin(userTable, userTable.user_id.eq(transactionTable.user_id))
-            .where(loveFieldQuery)
-            .orderBy(transactionTable.timeCreated, lf.Order.DESC)
-            .exec()
+        return this.userService.refreshUserCacheFromTransactions(storage.auth.idToken, whereClause).then(() => {
+          return this.getRows(whereClause)
             .then(rows => {
               this.$scope.data = rows;
             });
@@ -71,38 +72,65 @@ export default class ReadTransactionController {
     });
   }
 
-  getWhere() {
-    const permissionTable = this.db.getSchema().table('Permission');
+  getRows(whereClause) {
+    return this.db.select(...this.selectColumns)
+      .from(this.transactionTable)
+      .innerJoin(this.itemTable, this.itemTable.id.eq(this.transactionTable.itemId))
+      .leftOuterJoin(this.userTable, this.userTable.user_id.eq(this.transactionTable.user_id))
+      .where(whereClause)
+      .limit(100)
+      .orderBy(this.transactionTable.timeCreated, lf.Order.DESC)
+      .exec();
+  }
 
+  getWhereClause(text) {
     return this.db.select()
-      .from(permissionTable)
-      .where(permissionTable.objectClass.eq('Organization'))
+      .from(this.permissionTable)
+      .where(this.permissionTable.objectClass.eq('Organization'))
       .exec()
       .then(rows => {
-        const transactionTable = this.db.getSchema().table('Transaction');
-
         const ands = [
-          transactionTable.leaf.eq(true)
+          this.transactionTable.leaf.eq(true)
         ];
 
         let hasFilter = false;
 
         ['eventId', 'itemId', 'id'].forEach(filter => {
-          if (typeof this.$state.params[filter] !== 'undefined') {
-            const value = this.$state.params[filter];
+          const value = this.$state.params[filter];
+
+          if (typeof value !== 'undefined') {
             if (Array.isArray(value)) {
-              ands.push(transactionTable[filter].in(value));
+              ands.push(this.transactionTable[filter].in(value));
             } else {
-              ands.push(transactionTable[filter].eq(value));
+              ands.push(this.transactionTable[filter].eq(value));
             }
             hasFilter = true;
           }
         });
 
+        if (typeof text !== 'undefined' && text.length > 0) {
+          const escapedPattern= text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const regex = new RegExp(escapedPattern, 'i');
+          ands.push(
+            lf.op.or(
+              this.transactionTable.family_name.match(regex),
+              this.transactionTable.middleName.match(regex),
+              this.transactionTable.given_name.match(regex),
+              this.transactionTable.email.match(regex),
+              this.itemTable.name.match(regex),
+              this.userTable.given_name.match(regex),
+              this.userTable.family_name.match(regex),
+              this.userTable.email.match(regex),
+              this.userTable.name.match(regex),
+              this.userTable.nickname.match(regex)
+            )
+          );
+        }
+
         if (!hasFilter) {
           const organizationIds = rows.map(permission => permission.objectId);
           ands.push(
-            transactionTable.organizationId.in(organizationIds)
+            this.transactionTable.organizationId.in(organizationIds)
           );
         }
 
@@ -110,12 +138,15 @@ export default class ReadTransactionController {
       });
   }
 
-  textChange(text) {
+  onSearchTextChange(text) {
     this.$scope.loading = true;
 
     this.$scope.$parent.ready.then(() => {
-      return this.getWhere().then((query) => {
-
+      return this.getWhereClause(text).then((whereClause) => {
+        return this.getRows(whereClause)
+          .then(rows => {
+            this.$scope.data = rows;
+          });
       });
     }, () => {
       this.uiService.notify('Unable to retrieve data');
@@ -167,7 +198,6 @@ export default class ReadTransactionController {
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
       this.transactionService.delete(storage.auth.idToken, transactionData.Transaction.id).then(() => {
-        this.run();
         this.uiService.notify('Transaction deleted');
       }, (response) => {
         this.uiService.notify('Unable to delete transaction');
@@ -186,10 +216,9 @@ export default class ReadTransactionController {
 
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
-      this.transactionService.revoke(storage.auth.idToken, transaction.id).then((profile) => {
-        this.run();
+      this.transactionService.revoke(storage.auth.idToken, transaction.id).then(() => {
         this.uiService.notify('Transaction revoked');
-      }, (response) => {
+      }, () => {
         this.uiService.notify('Unable to revoke transaction');
       });
     });
@@ -201,8 +230,6 @@ ReadTransactionController.$inject = [
   '$state',
   '$mdDialog',
   'StorageService',
-  'ItemService',
-  'OrganizationService',
   'TransactionService',
   'UserService',
   'UIService',

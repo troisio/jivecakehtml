@@ -235,6 +235,7 @@ export default class DownstreamService {
       const transactions = JSON.parse(sse.data);
       const table = this.db.getSchema().table('Transaction');
       const rows = transactions.map(table.createRow, table);
+
       this.db.insertOrReplace()
         .into(table)
         .values(rows)
@@ -307,9 +308,21 @@ export default class DownstreamService {
           organizationId: organizationIds
         }).then(search => {
           const events = search.entity;
+          const eventids = events.map(event => event.id);
           const eventTable = this.db.getSchema().table('Event');
           const rows = events.map(eventTable.createRow, eventTable);
           const eventFuture = this.db.insertOrReplace().into(eventTable).values(rows).exec();
+
+          const itemFuture = this.itemService.search(auth.idToken, {
+            order: '-lastActivity',
+            eventId: eventids,
+            limit: 20,
+            organizationId: organizationIds
+          }).then(search => {
+            const itemTable = this.db.getSchema().table('Item');
+            const rows = search.entity.map(itemTable.createRow, itemTable);
+            return this.db.insertOrReplace().into(itemTable).values(rows).exec();
+          });
 
           let transactionFuture;
 
@@ -340,23 +353,13 @@ export default class DownstreamService {
                 userFuture = Promise.resolve();
               }
 
-              return Promise.all([transactionFuture, userFuture]);
+              return Promise.all([transactionFuture, userFuture, itemFuture]);
             });
           } else {
             transactionFuture = Promise.resolve();
           }
 
           return Promise.all([eventFuture, transactionFuture]);
-        });
-
-        const itemFuture = this.itemService.search(auth.idToken, {
-          order: '-lastActivity',
-          limit: 20,
-          organizationId: organizationIds
-        }).then(search => {
-          const itemTable = this.db.getSchema().table('Item');
-          const rows = search.entity.map(itemTable.createRow, itemTable);
-          return this.db.insertOrReplace().into(itemTable).values(rows).exec();
         });
 
         const organizationFuture = this.organizationService.getOrganizationsByUser(
@@ -369,7 +372,7 @@ export default class DownstreamService {
           return this.db.insertOrReplace().into(organiationTable).values(rows).exec();
         });
 
-        futures = [eventFuture, itemFuture, organizationFuture, permissionFuture];
+        futures = [eventFuture, organizationFuture, permissionFuture];
       } else {
         futures = [];
       }

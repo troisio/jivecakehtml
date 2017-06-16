@@ -40,9 +40,7 @@ export default class ApplicationController {
     this.Permission = Permission;
     this.db = db;
 
-    this.storage = storageService.read();
-
-    this.$scope.storage = this.storage;
+    this.$scope.storage = storageService.read();
     this.$scope.selectedTab = 0;
     this.$scope.uiReady = false;
 
@@ -50,49 +48,6 @@ export default class ApplicationController {
 
     const hasPermission = new Permission().has;
     this.$scope.hasPermission = (permission, target) => hasPermission.call(permission, target);
-
-    this.run();
-  }
-
-  run() {
-    const ready = this.storage.auth === null ? this.$q.reject() : this.getApplicationFutures();
-    this.$scope.ready = ready;
-
-    ready.then(resolve => {
-      const hasPermission = new this.Permission().has;
-      const permissionTable = this.db.getSchema().table('Permission');
-
-      this.db.select()
-        .from(permissionTable)
-        .exec()
-        .then(rows => {
-          this.$scope.organizationPermissions = rows.filter(permission => permission.objectClass === 'Organization');
-          this.$scope.applicationReadPermissions = rows.filter(permission =>
-            permission.objectClass === 'Application' && hasPermission.call(permission, this.permissionService.READ)
-          );
-        });
-
-      const showEmailUnverified = this.storage.profile.user_id.startsWith('auth0') &&
-        !this.storage.profile.email_verified &&
-        this.storage.profile.logins_count > 1;
-
-      if (showEmailUnverified) {
-        this.$mdDialog.show({
-          templateUrl: '/src/access/partial/verified.html',
-          controller: 'EmailVerifiedController',
-          controllerAs: 'controller',
-          clickOutsideToClose: false
-        });
-      }
-    }, () => {
-      this.storageService.reset();
-
-      if (!this.$state.$current.name.startsWith('application.public')) {
-        this.$state.go('application.public.home');
-      }
-    }).finally(() => {
-      this.$scope.uiReady = true;
-    });
 
     this.$scope.toggleSidenav = (id) => {
       this.$mdSidenav(id).toggle();
@@ -105,16 +60,75 @@ export default class ApplicationController {
         component.close();
       }
     };
+
+    this.run();
+  }
+
+  run() {
+    const storage = this.storageService.read();
+    let ready;
+
+    if (storage.auth === null) {
+      ready = this.$q.reject();
+    } else {
+      const exp = storage.auth.idTokenPayload.exp * 1000
+      if (new Date().getTime() < exp) {
+        ready = this.getApplicationFutures();
+
+      } else {
+        ready = this.$q.reject();
+      }
+    }
+
+    ready.then(resolve => {
+      const hasPermission = new this.Permission().has;
+      const permissionTable = this.db.getSchema().table('Permission');
+
+      const showEmailUnverified = storage.profile.user_id.startsWith('auth0') &&
+        !storage.profile.email_verified &&
+        storage.profile.logins_count > 1;
+
+      if (showEmailUnverified) {
+        this.$mdDialog.show({
+          templateUrl: '/src/access/partial/verified.html',
+          controller: 'EmailVerifiedController',
+          controllerAs: 'controller',
+          clickOutsideToClose: false
+        });
+      }
+
+      return this.db.select()
+        .from(permissionTable)
+        .exec()
+        .then(rows => {
+          this.$scope.organizationPermissions = rows.filter(permission => permission.objectClass === 'Organization');
+          this.$scope.applicationReadPermissions = rows.filter(permission =>
+            permission.objectClass === 'Application' && hasPermission.call(permission, this.permissionService.READ)
+          );
+        });
+    }, () => {
+      this.storageService.reset();
+      this.$scope.storage = this.storageService.read();
+
+      if (!this.$state.$current.name.startsWith('application.public')) {
+        this.$state.go('application.public.home');
+      }
+    }).finally(() => {
+      this.$scope.uiReady = true;
+    });
+
+    this.$scope.ready = ready;
   }
 
   getApplicationFutures() {
+    const storage = this.storageService.read();
     this.connectionService.closeEventSources();
     this.connectionService.deleteEventSources();
 
-    const eventSource = this.connectionService.getEventSource(this.storage.auth.idToken, this.storage.auth.idTokenPayload.sub);
+    const eventSource = this.connectionService.getEventSource(storage.auth.idToken, storage.auth.idTokenPayload.sub);
     this.downstreamService.bootstrapEventSource(eventSource);
 
-    return this.downstreamService.cacheUserData(this.storage.auth);
+    return this.downstreamService.cacheUserData(storage.auth);
   }
 
   createEvent() {

@@ -1,29 +1,28 @@
 export default class StorageService {
-  constructor($window, JiveCakeLocalStorage) {
-    this.$window = $window;
+  constructor(JiveCakeLocalStorage) {
     this.JiveCakeLocalStorage = JiveCakeLocalStorage;
 
     this.localStorageKey = 'jivecakelocalstorage';
   }
 
   write(storage) {
-    const data = this.$window.JSON.stringify(storage);
-    this.$window.localStorage.setItem(this.localStorageKey, data);
+    const data = JSON.stringify(storage);
+    localStorage.setItem(this.localStorageKey, data);
   }
 
   read() {
-    const string = this.$window.localStorage.getItem(this.localStorageKey);
+    const string = localStorage.getItem(this.localStorageKey);
     let result;
 
     if (string === null) {
       result = new this.JiveCakeLocalStorage();
-      result.timeCreated = new this.$window.Date().getTime();
+      result.timeCreated = new Date().getTime();
       this.write(result);
     } else {
       let json;
 
       try {
-        json = this.$window.JSON.parse(string);
+        json = JSON.parse(string);
       } catch(e) {
         json = null;
       }
@@ -31,7 +30,7 @@ export default class StorageService {
       result = new this.JiveCakeLocalStorage();
 
       if (json === null) {
-        result.timeCreated = new this.$window.Date().getTime();
+        result.timeCreated = new Date().getTime();
         this.write(result);
       } else {
         for (let key in result) {
@@ -47,12 +46,11 @@ export default class StorageService {
 
   reset() {
     const storage = new this.JiveCakeLocalStorage();
-    storage.timeCreated = new this.$window.Date().getTime();
+    storage.timeCreated = new Date().getTime();
     this.write(storage);
   }
 }
 
 StorageService.$inject = [
-  '$window',
   'JiveCakeLocalStorage'
 ];

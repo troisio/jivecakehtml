@@ -41,7 +41,7 @@ export default class UserService {
       });
   }
 
-  getUsersNotInDBCacheFromTransactions(token, loveFieldQuery) {
+  getUsersNotInDBCacheFromTransactionQuery(token, loveFieldQuery) {
     const transactionTable = this.db.getSchema().table('Transaction');
 
     return this.db.select()
@@ -67,7 +67,7 @@ export default class UserService {
   }
 
   refreshUserCacheFromTransactions(token, loveFieldQuery) {
-    return this.getUsersNotInDBCacheFromTransactions(token, loveFieldQuery).then(users => {
+    return this.getUsersNotInDBCacheFromTransactionQuery(token, loveFieldQuery).then(users => {
       const userTable = this.db.getSchema().table('User');
       const rows = users.map(userTable.createRow, userTable);
       return this.db.insertOrReplace().into(userTable).values(rows).exec();

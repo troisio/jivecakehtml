@@ -37,7 +37,17 @@ export default class UpdateAccountController {
         }
       });
 
-      userFuture.then(() => {
+      const assetFuture = this.assetService.search(storage.auth.idToken, {
+        assetType: this.assetService.GOOGLE_CLOUD_STORAGE_BLOB,
+        entityId: storage.auth.idTokenPayload.sub,
+        entityType: this.assetService.USER,
+        order: '-timeCreated',
+        limit: 1
+      }).then((assets) => {
+        this.$scope.assets = assets;
+      })
+
+      this.$q.all([userFuture, assetFuture]).then(() => {
       }, () => {
         this.uiService.notify('Unable to get user information');
       }).finally(() => {

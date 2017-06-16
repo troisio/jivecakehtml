@@ -2,6 +2,9 @@ export default class AssetService {
   constructor($http, settings) {
     this.$http = $http;
     this.settings = settings;
+
+    this.USER_TYPE = 0;
+    this.GOOGLE_CLOUD_STORAGE_BLOB = 0;
   }
 
   search(token, params) {
@@ -19,28 +22,18 @@ export default class AssetService {
     return 0;
   }
 
-  getImgurAssetType() {
-    return 0;
-  }
-
   getUserImages(token, params) {
     const url = [this.settings.jivecakeapi.uri, 'asset'].join('/');
 
-    params.entityType = this.getUserType();
-    params.assetType = this.getImgurAssetType();
+    params.entityType = this.USER_TYPE;
+    params.assetType = this.GOOGLE_CLOUD_STORAGE_BLOB;
 
     return this.$http.get(url, {
       params: params,
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      response.data.forEach((asset) => {
-        asset.data = JSON.parse(atob(asset.data));
-      });
-
-      return response.data;
-    });
+    }).then(response => response.data);
   }
 }
 

@@ -1,6 +1,6 @@
 <md-sidenav class="md-sidenav-left md-whiteframe-2dp" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
   <md-list ng-show="uiReady">
-    <md-item ng-show="this.storage.auth !== null && organizationPermissions.length > 0">
+    <md-item ng-show="storage.auth !== null && organizationPermissions.length > 0">
       <a ng-click="closeSideNav('left')" ui-sref="application.internal.organization.read">
         <md-item-content md-ink-ripple layout="row" layout-align="start center">
           <div class="inset">
@@ -10,7 +10,7 @@
         </md-item-content>
       </a>
     </md-item>
-    <md-item ng-show="this.storage.auth !== null">
+    <md-item ng-show="storage.auth !== null">
       <a ng-click="closeSideNav('left')" ui-sref="application.internal.account()">
         <md-item-content md-ink-ripple layout="row" layout-align="start center">
           <div class="inset">
@@ -20,7 +20,7 @@
         </md-item-content>
       </a>
     </md-item>
-    <md-item ng-show="this.storage.auth !== null">
+    <md-item ng-show="storage.auth !== null">
       <a ng-click="closeSideNav('left')" ui-sref="application.internal.myTransaction({user_id: this.storage.profile.user_id})">
         <md-item-content md-ink-ripple layout="row" layout-align="start center">
           <div class="inset">
@@ -30,7 +30,7 @@
         </md-item-content>
       </a>
     </md-item>
-    <md-item ng-show="this.storage.auth !== null && organizationPermissions.length === 0">
+    <md-item ng-show="storage.auth !== null && organizationPermissions.length === 0">
       <a href="" ng-click="closeSideNav('left'); controller.createEvent();">
         <md-item-content md-ink-ripple layout="row" layout-align="start center">
           <div class="inset">
@@ -50,7 +50,7 @@
         </md-item-content>
       </a>
     </md-item>
-    <md-item ng-show="this.storage.auth === null">
+    <md-item ng-show="storage.auth === null">
       <a ng-click="controller.oauthSignIn()" href="">
         <md-item-content md-ink-ripple layout="row" layout-align="start center">
           <div class="inset">
@@ -60,7 +60,7 @@
         </md-item-content>
       </a>
     </md-item>
-    <md-item ng-show="this.storage.auth !== null">
+    <md-item ng-show="storage.auth !== null">
       <a ng-click="controller.logout()" href="">
         <md-item-content md-ink-ripple layout="row" layout-align="start center">
           <div class="inset">

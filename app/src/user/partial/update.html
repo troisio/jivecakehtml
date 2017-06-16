@@ -1,13 +1,12 @@
 <div layout-padding ng-show="uiReady">
   <style>
   .image-cropper {
-      overflow: hidden;
-      border-radius: 25%;
       display: inline-block;
   }
 
   .image-cropper img {
-    width: 60px;
+    width: 7em;
+    border: 2px solid black;
   }
   </style>
   <div>
@@ -26,11 +25,14 @@
         <label>Email</label>
         <input ng-model="user.email" type="email" ng-disabled="isIdentityProviderAccount" required maxlength="255">
       </md-input-container>
-      <div ng-show="false">
-        <label>Your beautiful face</label>
-        <md-input-container flex class="md-block">
-          <input type="file" aria-label="A picture of you" name="photo" accept="image/*;capture=camera">
-        </md-input-container>
+      <div>
+        <label for="image-upload">Profile picture</label>
+        <input id="image-upload" type="file" aria-label="A picture of your face" name="photo" accept="image/*;capture=camera">
+      </div>
+      <div layout-padding ng-if="assets.length > 0">
+        <div class="image-cropper">
+          <img ng-src="https://storage.googleapis.com/{{assets[0].assetId}}">
+        </div>
       </div>
       <div layout layout-sm="column">
         <md-input-container flex layout="row">

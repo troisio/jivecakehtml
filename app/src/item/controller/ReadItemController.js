@@ -60,29 +60,13 @@ export default class ReadItemController {
     this.$scope.uiReady = false;
 
     return this.$scope.$parent.ready.then(() => {
+      const transactionTable = this.db.getSchema().table('Transaction');
       const permissionTable = this.db.getSchema().table('Permission');
       const eventTable = this.db.getSchema().table('Event');
       const itemTable = this.db.getSchema().table('Item');
-      const transactionTable = this.db.getSchema().table('Transaction');
 
       const and = [
-        permissionTable.objectClass.eq('Organization'),
-        lf.op.or(
-          transactionTable.id.isNull(),
-          lf.op.and(
-            transactionTable.leaf.eq(true),
-            lf.op.and(
-              lf.op.or(
-                transactionTable.paymentStatus.eq(this.transactionService.PAYMENT_EQUAL),
-                transactionTable.paymentStatus.eq(this.transactionService.PAYMENT_GREATER_THAN)
-              ),
-              lf.op.or(
-                transactionTable.status.eq(this.transactionService.SETTLED),
-                transactionTable.status.eq(this.transactionService.PENDING)
-              )
-            )
-          )
-        )
+        permissionTable.objectClass.eq('Organization')
       ];
 
       ['organizationId', 'eventId'].forEach(field => {
@@ -94,9 +78,9 @@ export default class ReadItemController {
         }
       });
 
-      const columns = [lf.fn.count(transactionTable.id).as('transactionCount')];
+      const columns = [];
 
-      [permissionTable, eventTable, itemTable, transactionTable].forEach(table => {
+      [permissionTable, eventTable, itemTable].forEach(table => {
         table.getColumns()
           .map(column => table[column.getName()])
           .forEach(column => columns.push(column));
@@ -109,8 +93,7 @@ export default class ReadItemController {
         .then(rows => {
           if (rows.length > 0) {
             const hasPermission = new this.Permission().has;
-            const permission = rows[0];
-            this.$scope.hasApplicationWrite = hasPermission.call(permission, this.permissionService.WRITE);
+            this.$scope.hasApplicationWrite = hasPermission.call(rows[0], this.permissionService.WRITE);
           } else {
             this.$scope.hasApplicationWrite = false;
           }
@@ -120,10 +103,8 @@ export default class ReadItemController {
         .from(itemTable)
         .innerJoin(eventTable, itemTable.eventId.eq(eventTable.id))
         .innerJoin(permissionTable, permissionTable.objectId.eq(itemTable.organizationId))
-        .leftOuterJoin(transactionTable, transactionTable.itemId.eq(itemTable.id))
-        .where(lf.op.and(...and))
-        .groupBy(itemTable.id)
-        .orderBy(itemTable.status, lf.Order.DESC)
+        .where(permissionTable.objectClass.eq('Organization'))
+        .orderBy(itemTable.status, lf.Order.ASC)
         .orderBy(itemTable.lastActivity, lf.Order.DESC)
         .exec()
         .then(rows => {
@@ -136,7 +117,35 @@ export default class ReadItemController {
             data.unshift(item);
           }
 
-          this.$scope.data = rows;
+          return this.db.select(transactionTable.itemId, lf.fn.count(transactionTable.id).as('count'))
+            .from(transactionTable)
+            .where(
+              lf.op.and(
+                transactionTable.leaf.eq(true),
+                lf.op.and(
+                  lf.op.or(
+                    transactionTable.paymentStatus.eq(this.transactionService.PAYMENT_EQUAL),
+                    transactionTable.paymentStatus.eq(this.transactionService.PAYMENT_GREATER_THAN)
+                  ),
+                  lf.op.or(
+                    transactionTable.status.eq(this.transactionService.SETTLED),
+                    transactionTable.status.eq(this.transactionService.PENDING)
+                  )
+                )
+              )
+            )
+            .groupBy(transactionTable.itemId)
+            .exec()
+            .then(rows => {
+              const dataById = {};
+              data.forEach(datum => {
+                dataById[datum.Item.id] = datum;
+                datum.transactionCount = 0;
+              });
+              rows.forEach(row => dataById[row.itemId].transactionCount = row.count);
+
+              this.$scope.data = data;
+            });
         }, (err) => {
           this.uiService.notify('Unable to retrieve data');
         });

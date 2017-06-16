@@ -63,6 +63,11 @@ builder.createTable('Item')
   .addColumn('timeUpdated', lf.Type.DATETIME)
   .addColumn('timeCreated', lf.Type.DATETIME)
   .addColumn('lastActivity', lf.Type.DATETIME)
+  .addForeignKey('ItemToEventForeignKey', {
+    local: 'eventId',
+    ref: 'Event.id',
+    action: lf.ConstraintAction.CASCADE
+  })
   .addNullable([
     'timeUpdated',
     'timeStart',
@@ -96,6 +101,11 @@ builder.createTable('Transaction')
   .addColumn('email', lf.Type.STRING)
   .addColumn('leaf', lf.Type.BOOLEAN)
   .addColumn('timeCreated', lf.Type.DATETIME)
+  .addForeignKey('TransactionToItemForeignKey', {
+    local: 'itemId',
+    ref: 'Item.id',
+    action: lf.ConstraintAction.CASCADE
+  })
   .addNullable([
     'parentTransactionId',
     'user_id',

@@ -1,19 +1,21 @@
 <md-toolbar class="md-table-toolbar md-default transactions-partial">
   <div class="md-toolbar-tools">
     <ng-md-icon icon="search"></ng-md-icon>
-    <input flex ng-model="searchText" ng-change="controller.textChange(searchText)" ng-model-options="{debounce: 300}" placeholder="search">
+    <input flex ng-model="searchText" ng-change="controller.onSearchTextChange(searchText)" placeholder="search">
   </div>
 </md-toolbar>
 <md-table-container>
   <table ng-model="selected" md-table md-row-select multiple>
     <tbody md-body>
-      <tr ng-repeat="transactionData in data track by transactionData.Transaction.id" md-row md-auto-select md-item-size="20">
+      <tr ng-repeat="transactionData in data track by transactionData.Transaction.id" md-row md-auto-select>
         <td md-cell>
-          <span ng-show="transactionData.User.user_id === null">{{transactionData.Transaction.given_name}} {{transactionData.Transaction.family_name}}</span>
-          <span ng-show="transactionData.User.user_id !== null">{{transactionData.User | userIdentificationFilter: false}}</span>
-        </td>
-        <td md-cell>
-          <a href="" ui-sref="application.internal.item.read({id: transactionData.Item.id})">{{transactionData.Item.name}}</a>
+          <div>
+            <span ng-show="transactionData.User.user_id === null">{{transactionData.Transaction.given_name}} {{transactionData.Transaction.family_name}}</span>
+            <span ng-show="transactionData.User.user_id !== null">{{transactionData.User | userIdentificationFilter: false}}</span>
+          </div>
+          <div>
+            <a href="" ui-sref="application.internal.item.read({id: transactionData.Item.id})">{{transactionData.Item.name}}</a>
+          </div>
         </td>
         <td md-cell>
           <div ng-show="transactionData.Transaction.status === 0">
@@ -22,9 +24,8 @@
               <span ng-show="transactionData.Transaction.quantity > 1">({{transactionData.Transaction.quantity}})</span>
             </div>
             <div ng-show="transactionData.Transaction.amount !== 0">
-              <strong ng-show="transactionData.Transaction.amount > 0" class="payment-complete">+</strong>
               <strong ng-show="transactionData.Transaction.amount < 0" class="payment-bad">-</strong>
-              <span ng-show="transactionData.Transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.Transaction.currency === 'EUR'">&#128;</span><span>{{transactionData.Transaction.amount / transactionData.Transaction.quantity | absoluteValue | number: 2}}</span>
+              <strong ng-show="transactionData.Transaction.amount > 0" class="payment-complete">+</strong><span ng-show="transactionData.Transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.Transaction.currency === 'EUR'">&#128;</span><span>{{transactionData.Transaction.amount / transactionData.Transaction.quantity | absoluteValue | number: 2}}</span>
               <span ng-show="transactionData.Transaction.quantity > 1">({{transactionData.Transaction.quantity}})</span>
             </div>
           </div>
@@ -48,7 +49,7 @@
               </md-menu-item>
               <md-menu-item ng-show="transactionData.Transaction.linkedObjectClass !== 'PaypalIPN'">
                 <md-button ng-click="controller.deleteTransaction(transactionData, $event)">
-                  <span ng-show="transactionData.Transactionstatus !== 2" md-menu-align-target>delete transaction</span>
+                  <span ng-show="transactionData.Transaction.status !== 2" md-menu-align-target>delete transaction</span>
                   <span ng-show="transactionData.Transaction.status === 2" md-menu-align-target>undo revocation</span>
                 </md-button>
               </md-menu-item>
@@ -62,7 +63,7 @@
         </td>
       </tr>
       <tr ng-show="data.length === 0 && !loading" md-row>
-        <td md-cell colspan="4">
+        <td md-cell colspan="3">
           <span class="md-subheader">No data found</span>
         </td>
       </tr>

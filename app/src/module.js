@@ -147,17 +147,8 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
         uiService.logInteraction(token, event);
       });
 
-      window.addEventListener('beforeunload', function(e) {
-        const storage = storageService.read();
-        const token = storage.auth === null ? null : storage.auth.idToken;
-        const event = new UserInterfaceEvent();
-        event.event = 'beforeunload';
-        uiService.logInteraction(token, event);
-      });
-
       lock.on('authenticated', function(auth) {
         lock.getUserInfo(auth.accessToken, function(error, profile) {
-
           if (typeof error === 'undefined' || error === null) {
             const storage = new JiveCakeLocalStorage();
             storage.timeCreated = new Date().getTime();
