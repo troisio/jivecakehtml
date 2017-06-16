@@ -7,7 +7,7 @@
 <md-table-container>
   <table ng-model="selected" md-table md-row-select multiple>
     <tbody md-body>
-      <tr ng-repeat="transactionData in data track by transactionData.Transaction.id" md-row md-auto-select>
+      <tr ng-click="controller.readTransaction(transactionData.Transaction, transactionData.User, transactionData.Item)" ng-repeat="transactionData in data track by transactionData.Transaction.id" md-row md-auto-select>
         <td md-cell>
           <div>
             <span ng-show="transactionData.User.user_id === null">{{transactionData.Transaction.given_name}} {{transactionData.Transaction.family_name}}</span>

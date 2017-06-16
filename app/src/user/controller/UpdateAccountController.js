@@ -89,9 +89,7 @@ export default class UpdateAccountController {
         }
       };
 
-      const future = this.auth0Service.updateUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, body).then((user) => {
-        this.$scope.$parent.$parent.user = user;
-      });
+      const future = this.auth0Service.updateUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, body);
 
       futures[1] = future;
     }
