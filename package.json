@@ -46,6 +46,7 @@
     "jshint-stylish": "2.1.0",
     "lovefield": "2.1.12",
     "promise-polyfill": "^6.0.2",
+    "ui-cropper": "^1.0.4",
     "vinyl-buffer": "1.0.0",
     "vinyl-source-stream": "1.1.0"
   }

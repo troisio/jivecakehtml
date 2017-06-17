@@ -1,12 +1,16 @@
-<div layout-padding ng-show="uiReady">
+<div class="user-account" layout-padding ng-show="uiReady">
   <style>
   .image-cropper {
       display: inline-block;
   }
 
-  .image-cropper img {
-    width: 7em;
-    border: 2px solid black;
+  .crop {
+    width: 260px;
+    height: 200px;
+  }
+
+  .user-account .image-cropper img {
+    width: 3em;
   }
   </style>
   <div>
@@ -25,16 +29,22 @@
         <label>Email</label>
         <input ng-model="user.email" type="email" ng-disabled="isIdentityProviderAccount" required maxlength="255">
       </md-input-container>
-      <div>
-        <label for="image-upload">Profile picture</label>
-        <input id="image-upload" type="file" aria-label="A picture of your face" name="photo" accept="image/*;capture=camera">
-      </div>
       <div layout-padding ng-if="assets.length > 0">
         <div class="image-cropper">
           <img ng-src="https://storage.googleapis.com/{{assets[0].assetId}}">
         </div>
       </div>
+      <div>
+        <label ng-show="assets.length === 0" for="image-upload">Profile picture</label>
+        <input id="image-upload" type="file" aria-label="A picture of your face" name="photo" accept="image/*;capture=camera">
+      </div>
+      <div class="crop">
+        <ui-cropper image="image" result-image="croppedImage" area-type="square"></ui-cropper>
+      </div>
       <div layout layout-sm="column">
+        <md-input-container flex layout="row">
+          <md-button ng-click="controller.reset()" class="md-raised">Reset</md-button>
+        </md-input-container>
         <md-input-container flex layout="row">
           <md-button type="submit" class="md-raised md-primary">Update</md-button>
           <md-progress-circular ng-show="loading" md-diameter="45" md-mode="indeterminate"></md-progress-circular>

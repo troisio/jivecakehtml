@@ -74,7 +74,8 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
     'auth0.lock',
     'angular-jwt',
     'md.data.table',
-    'monospaced.qrcode'
+    'monospaced.qrcode',
+    'uiCropper'
   ])
   .filter('featureTypeFilter', featureTypeFilter)
   .service('HTTPInterceptor', HTTPInterceptor)

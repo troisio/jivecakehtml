@@ -9,7 +9,7 @@ export default class HomeController {
   }
 
   selected() {
-    this.$state.go('application.public.event.item', {id: this.$scope.event.id});
+    this.$state.go('application.public.event', {id: this.$scope.event.id});
   }
 
   query(search) {

@@ -10,6 +10,9 @@ export default class UpdateAccountController {
 
     this.$scope.uiReady = false;
     $scope.$parent.showTabs = false;
+    $scope.assets = [];
+    $scope.croppedImage = '';
+    $scope.image = null;
 
     this.run();
   }
@@ -19,7 +22,6 @@ export default class UpdateAccountController {
       const storage = this.storageService.read();
 
       const userFuture = this.auth0Service.getUser(storage.auth.idToken, storage.auth.idTokenPayload.sub).then((user) => {
-        this.user = user;
         this.$scope.isIdentityProviderAccount = user.user_id.startsWith('facebook') || user.user_id.startsWith('google');
 
         this.$scope.user = {
@@ -35,6 +37,8 @@ export default class UpdateAccountController {
             this.$scope.user.family_name = user.user_metadata.family_name;
           }
         }
+      }, () => {
+        this.uiService.notify('Unable to get user information');
       });
 
       const assetFuture = this.assetService.search(storage.auth.idToken, {
@@ -45,39 +49,58 @@ export default class UpdateAccountController {
         limit: 1
       }).then((assets) => {
         this.$scope.assets = assets;
+      }, () => {
+        this.uiService.notify('Unable to get asset information');
       });
 
-      this.$q.all([userFuture, assetFuture]).then(() => {
-      }, () => {
-        this.uiService.notify('Unable to get user information');
-      }).finally(() => {
+      this.$q.all([userFuture, assetFuture]).finally(() => {
         this.$scope.uiReady = true;
       });
+    });
+
+    angular.element(document.querySelector('[name=photo]')).on('change', (e) => {
+      const file = e.currentTarget.files[0];
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        this.$scope.$apply(() => {
+          this.$scope.image = e.target.result;
+        });
+      };
+
+      reader.readAsDataURL(file);
     });
   }
 
   submit(user) {
     const storage = this.storageService.read();
-    const fileElement = document.querySelector('[name=photo]');
+    let imageFuture;
 
-    const filePromise = this.$q.defer();
-    const futures = [filePromise.promise, this.$q.resolve()];
-
-    if (fileElement.files.length > 0) {
-      const fileReader = new FileReader();
-      const file = fileElement.files[0];
-
-      fileReader.onloadend = (event) => {
-        const data = new Uint8Array(event.target.result);
-        const future = this.userService.uploadSelfie(storage.auth.idToken, this.user.user_id, data, file.type);
-
-        filePromise.resolve(future);
-      };
-
-      fileReader.readAsArrayBuffer(file);
+    if (this.$scope.croppedImage === '') {
+      imageFuture = this.$q.resolve();
     } else {
-      filePromise.resolve();
+      const index = this.$scope.croppedImage.indexOf(';base64,') + ';base64,'.length;
+      const base64 = this.$scope.croppedImage.substring(index);
+      const raw = atob(base64);
+      const data = new Uint8Array(new ArrayBuffer(raw.length));
+
+      for(let index = 0; index < raw.length; index++) {
+        data[index] = raw.charCodeAt(index);
+      }
+
+      const sliceStart = this.$scope.croppedImage.indexOf(':') + 1;
+      const sliceEnd = this.$scope.croppedImage.indexOf(';');
+      const type = this.$scope.croppedImage.substring(sliceStart, sliceEnd);
+
+      imageFuture = this.userService.uploadSelfie(
+        storage.auth.idToken,
+        storage.auth.idTokenPayload.sub,
+        data,
+        type
+      );
     }
+
+    let userUpdateFuture;
 
     if (!this.$scope.isIdentityProviderAccount) {
       this.$scope.loading = true;
@@ -89,14 +112,14 @@ export default class UpdateAccountController {
         }
       };
 
-      const future = this.auth0Service.updateUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, body);
-
-      futures[1] = future;
+      userUpdateFuture = this.auth0Service.updateUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, body);
+    } else {
+      userUpdateFuture = this.$q.resolve();
     }
 
     this.$scope.loading = true;
 
-    this.$q.all(futures).then(responses => {
+    this.$q.all([imageFuture, userUpdateFuture]).then(responses => {
       this.uiService.notify('Successfully updated');
       this.run();
     }, (response) => {
@@ -111,7 +134,13 @@ export default class UpdateAccountController {
       this.uiService.notify(message);
     }).finally(() => {
       this.$scope.loading = false;
+      this.reset();
     });
+  }
+
+  reset() {
+    this.$scope.image = null;
+    document.querySelector('[name=photo]').value = '';
   }
 }
 

@@ -18,7 +18,8 @@ var vendorCSS = function() {
   return gulp.src([
     './node_modules/angular-material/angular-material.min.css',
     './node_modules//angular-material-data-table/dist/md-data-table.min.css',
-    './node_modules/font-awesome/css/font-awesome.min.css'
+    './node_modules/font-awesome/css/font-awesome.min.css',
+    './node_modules/ui-cropper/compile/minified/ui-cropper.css'
   ])
     .pipe(concat('vendor.css'))
     .pipe(gulp.dest('./app/dist'));
@@ -40,7 +41,8 @@ var vendorJS = function(minified) {
       './node_modules/qrcode-generator/js/qrcode.js',
       './node_modules/angular-qrcode/angular-qrcode.js',
       './node_modules/lovefield/dist/lovefield.min.js',
-      './node_modules/event-source-polyfill/eventsource.min.js'
+      './node_modules/event-source-polyfill/eventsource.min.js',
+      './node_modules/ui-cropper/compile/minified/ui-cropper.js'
     ])
       .pipe(concat('vendor.js'))
       .pipe(gulp.dest('./app/dist'));
