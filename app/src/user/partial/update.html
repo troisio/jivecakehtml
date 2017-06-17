@@ -38,7 +38,7 @@
         <label ng-show="assets.length === 0" for="image-upload">Profile picture</label>
         <input id="image-upload" type="file" aria-label="A picture of your face" name="photo" accept="image/*;capture=camera">
       </div>
-      <div class="crop">
+      <div ng-show="showCroppingDiv" class="crop">
         <ui-cropper image="image" result-image="croppedImage" area-type="square"></ui-cropper>
       </div>
       <div layout layout-sm="column">

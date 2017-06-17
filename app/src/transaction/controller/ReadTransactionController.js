@@ -40,8 +40,9 @@ export default class ReadTransactionController {
     this.transactionTable = this.db.getSchema().table('Transaction');
     this.userTable = this.db.getSchema().table('User');
     this.itemTable = this.db.getSchema().table('Item');
+    this.assetTable = this.db.getSchema().table('EntityAsset');
 
-    [this.transactionTable, this.userTable, this.itemTable].forEach(table => {
+    [this.transactionTable, this.itemTable, this.assetTable, this.userTable].forEach(table => {
       table.getColumns()
         .map(column => table[column.getName()])
         .forEach(column => this.selectColumns.push(column));
@@ -77,6 +78,7 @@ export default class ReadTransactionController {
       .from(this.transactionTable)
       .innerJoin(this.itemTable, this.itemTable.id.eq(this.transactionTable.itemId))
       .leftOuterJoin(this.userTable, this.userTable.user_id.eq(this.transactionTable.user_id))
+      .leftOuterJoin(this.assetTable, this.assetTable.entityId.eq(this.transactionTable.user_id))
       .where(whereClause)
       .limit(100)
       .orderBy(this.transactionTable.timeCreated, lf.Order.DESC)
@@ -152,6 +154,16 @@ export default class ReadTransactionController {
       this.uiService.notify('Unable to retrieve data');
     }).finally(() => {
       this.$scope.loading = false;
+    });
+  }
+
+  showImage(src) {
+    this.$mdDialog.show({
+      controller: ['$scope', function($scope) {
+        $scope.src = src;
+      }],
+      template: '<md-dialog class="profile-picture" aria-label="profile-picture"><md-dialog-content><div layout-padding class="img-preview"><img ng-src="{{src}}"></div></md-dialog-content></md-dialog>',
+      clickOutsideToClose: true
     });
   }
 

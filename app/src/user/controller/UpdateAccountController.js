@@ -13,11 +13,14 @@ export default class UpdateAccountController {
     $scope.assets = [];
     $scope.croppedImage = '';
     $scope.image = null;
+    $scope.showCroppingDiv = false;
 
     this.run();
   }
 
   run() {
+    this.$scope.uiReady = false;
+
     this.$scope.$parent.ready.then(() => {
       const storage = this.storageService.read();
 
@@ -42,7 +45,7 @@ export default class UpdateAccountController {
       });
 
       const assetFuture = this.assetService.search(storage.auth.idToken, {
-        assetType: this.assetService.GOOGLE_CLOUD_STORAGE_BLOB,
+        assetType: this.assetService.GOOGLE_CLOUD_STORAGE_BLOB_FACE,
         entityId: storage.auth.idTokenPayload.sub,
         entityType: this.assetService.USER,
         order: '-timeCreated',
@@ -65,10 +68,12 @@ export default class UpdateAccountController {
       reader.onload = (e) => {
         this.$scope.$apply(() => {
           this.$scope.image = e.target.result;
+          this.$scope.showCroppingDiv = true;
         });
       };
 
       reader.readAsDataURL(file);
+
     });
   }
 
@@ -112,7 +117,12 @@ export default class UpdateAccountController {
         }
       };
 
-      userUpdateFuture = this.auth0Service.updateUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, body);
+      userUpdateFuture = this.auth0Service.updateUser(
+        storage.auth.idToken,
+        storage.auth.idTokenPayload.sub,
+        body
+      ).then(() => {
+      });
     } else {
       userUpdateFuture = this.$q.resolve();
     }
@@ -123,15 +133,14 @@ export default class UpdateAccountController {
       this.uiService.notify('Successfully updated');
       this.run();
     }, (response) => {
-      let message = 'Unable to update';
-
-      if (typeof response.data === 'object' && response.data !== null) {
-        if (response.data.error === 'selfieLength') {
-          message = response.data.length === 0 ? 'Sorry, we could not find any faces in your photo' : 'Sorry, we detected more than 1 face in your photo';
+      if  (typeof response.data === 'object' && response.data.error === 'face') {
+        if (response.data.data.annotationsCount === 1) {
+          this.uiService.notify("Sorry, please upload a higher quality photo");
+        } else {
+          const message = response.data.data.annotationsCount === 0 ? 'Sorry, we could not find any faces in your photo' : 'Sorry, we found more than 1 face in your photo';
+          this.uiService.notify(message);
         }
       }
-
-      this.uiService.notify(message);
     }).finally(() => {
       this.$scope.loading = false;
       this.reset();
@@ -139,6 +148,7 @@ export default class UpdateAccountController {
   }
 
   reset() {
+    this.$scope.showCroppingDiv = false;
     this.$scope.image = null;
     document.querySelector('[name=photo]').value = '';
   }

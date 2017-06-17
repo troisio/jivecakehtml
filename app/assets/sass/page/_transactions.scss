@@ -10,4 +10,19 @@
   input:focus {
     outline: none;
   }
+
+  .transaction-user-td {
+    > div {
+      display:inline-block;
+    }
+  }
+
+  .transaction-user-td {
+    img {
+      border-radius: 50%;
+      height: 2em;
+      border: 1px solid aliceblue;
+      box-shadow: 2px 2px 2px #888888;
+    }
+  }
 }

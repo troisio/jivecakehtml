@@ -146,6 +146,43 @@ export default class TransactionService {
     }).then(response => this.toolsService.toObject(response.data, this.Transaction));
   }
 
+  getUserAssets(token, params) {
+    const url = [this.settings.jivecakeapi.uri, 'transaction', 'asset', 'user'].join('/');
+    const futures = [];
+
+    const options = {
+      params: params,
+      headers: {
+        Authorization : 'Bearer ' + token
+      }
+    };
+
+    if (Array.isArray(params.id)) {
+      const segmentLength = 60;
+      const ids = params.id;
+
+      for (let index = 0; index < params.id.length / segmentLength; index++) {
+        const start = index * segmentLength;
+        const optionsCopy = Object.assign({}, options);
+        optionsCopy.params.id = ids.slice(start, start + segmentLength);
+
+        futures.push(
+          this.$http.get(url, optionsCopy).then(response => response.data)
+        );
+      }
+    } else {
+      futures.push(
+        this.$http.get(url, options).then(response => response.data)
+      );
+    }
+
+    return this.$q.all(futures).then(entities => {
+      const result = [];
+      entities.forEach(array => result.push.apply(result, array));
+      return result;
+    });
+  }
+
   getTransactionData(itemService, token, query) {
     return this.search(token, query).then((searchResult) => {
       const transactionIdsSet = new Set();

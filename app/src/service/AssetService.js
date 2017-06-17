@@ -4,7 +4,7 @@ export default class AssetService {
     this.settings = settings;
 
     this.USER_TYPE = 0;
-    this.GOOGLE_CLOUD_STORAGE_BLOB = 0;
+    this.GOOGLE_CLOUD_STORAGE_BLOB_FACE = 0;
   }
 
   search(token, params) {
@@ -26,7 +26,7 @@ export default class AssetService {
     const url = [this.settings.jivecakeapi.uri, 'asset'].join('/');
 
     params.entityType = this.USER_TYPE;
-    params.assetType = this.GOOGLE_CLOUD_STORAGE_BLOB;
+    params.assetType = this.GOOGLE_CLOUD_STORAGE_BLOB_FACE;
 
     return this.$http.get(url, {
       params: params,

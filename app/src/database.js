@@ -118,16 +118,26 @@ builder.createTable('Transaction')
   ])
   .addPrimaryKey(['id']);
 
-  builder.createTable('User')
-    .addColumn('user_id', lf.Type.STRING)
-    .addColumn('email', lf.Type.STRING)
-    .addColumn('name', lf.Type.STRING)
-    .addColumn('nickname', lf.Type.STRING)
-    .addColumn('user_metadata', lf.Type.OBJECT)
-    .addColumn('given_name', lf.Type.STRING)
-    .addColumn('family_name', lf.Type.STRING)
-    .addColumn('picture', lf.Type.STRING)
-    .addNullable(['given_name', 'family_name', 'email', 'user_metadata'])
-    .addPrimaryKey(['user_id']);
+builder.createTable('User')
+  .addColumn('user_id', lf.Type.STRING)
+  .addColumn('email', lf.Type.STRING)
+  .addColumn('name', lf.Type.STRING)
+  .addColumn('nickname', lf.Type.STRING)
+  .addColumn('user_metadata', lf.Type.OBJECT)
+  .addColumn('given_name', lf.Type.STRING)
+  .addColumn('family_name', lf.Type.STRING)
+  .addColumn('picture', lf.Type.STRING)
+  .addNullable(['given_name', 'family_name', 'email', 'user_metadata'])
+  .addPrimaryKey(['user_id']);
+
+builder.createTable('EntityAsset')
+  .addColumn('id', lf.Type.STRING)
+  .addColumn('entityId', lf.Type.STRING)
+  .addColumn('entityType', lf.Type.STRING)
+  .addColumn('assetId', lf.Type.STRING)
+  .addColumn('assetType', lf.Type.STRING)
+  .addColumn('data', lf.Type.ARRAY_BUFFER)
+  .addColumn('timeCreated', lf.Type.DATETIME)
+  .addPrimaryKey(['id']);
 
 export default builder;
