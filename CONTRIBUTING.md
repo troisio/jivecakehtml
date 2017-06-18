@@ -10,4 +10,4 @@ All merge requests are related to only 1 issue and only contain 1 commit
 
 ### Committing
 
-We follow the commit message guidelines set forth by the AngularJS2's contribution guidelines, check them out [here](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#user-content--commit-message-guidelines)
+We follow the commit message guidelines set forth by karma, check them out [here](https://github.com/karma-runner/karma/blob/master/docs/dev/06-git-commit-msg.md)

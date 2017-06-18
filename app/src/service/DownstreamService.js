@@ -77,9 +77,9 @@ export default class DownstreamService {
 
     source.addEventListener('organization.delete', (sse) => {
       const organizationsAndPermissions = JSON.parse(sse.data);
-      const permissions = organizationsAndPermissions.filter(data => 'permissions' in data);
+      const permissions = organizationsAndPermissions.filter(data => data.hasOwnProperty('permissions'));
 
-      const organizations = organizationsAndPermissions.filter(data => 'children' in data);
+      const organizations = organizationsAndPermissions.filter(data => data.hasOwnProperty('children'));
       const organizationTable = this.db.getSchema().table('Organization');
       const organizationIds = organizations.map(organization => organization.id);
       const organizationFuture = this.db.delete()
@@ -115,7 +115,7 @@ export default class DownstreamService {
     source.addEventListener('organization.create', (sse) => {
       const organizationsAndPermissions = JSON.parse(sse.data);
 
-      const permissions = organizationsAndPermissions.filter(data => 'permissions' in data);
+      const permissions = organizationsAndPermissions.filter(data => data.hasOwnProperty('permissions'));
       const permissionTable = this.db.getSchema().table('Permission');
       const permissionRows = permissions.map(permissionTable.createRow, permissionTable);
       const permissionFuture = this.db.insertOrReplace()
@@ -123,7 +123,7 @@ export default class DownstreamService {
         .values(permissionRows)
         .exec();
 
-      const organizations = organizationsAndPermissions.filter(data => 'children' in data);
+      const organizations = organizationsAndPermissions.filter(data => data.hasOwnProperty('children'));
       const organizationTable = this.db.getSchema().table('Organization');
       const organizationRows = organizations.map(organizationTable.createRow, organizationTable);
 
@@ -245,42 +245,58 @@ export default class DownstreamService {
         });
     });
 
+    source.addEventListener('transaction.update',(sse) => {
+      const transactions = JSON.parse(sse.data);
+      const table = this.db.getSchema().table('Transaction');
+      const rows = transactions.map(table.createRow, table);
+
+      this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('transaction.update', transactions);
+        });
+    });
+
     source.addEventListener('transaction.delete', (sse) => {
       const transactions = JSON.parse(sse.data);
-      const deletedTransaction = transactions[0];
       const table = this.db.getSchema().table('Transaction');
-
-      const futures = [];
-
+      const ids = transactions.map(transaction => transaction.id);
       const deleteFuture = this.db.delete()
         .from(table)
-        .where(table.id.eq(deletedTransaction.id))
-        .exec();
-
-      futures.push(deleteFuture);
-
-      if (transactions.length > 0) {
-        const updatedParent = transactions[1];
-
-        const updateFuture = this.db.insertOrReplace()
-          .into(table)
-          .values([table.createRow(updatedParent)])
-          .exec();
-
-        futures.push(updateFuture);
-      }
-
-      Promise.all(futures).then(() => {
-        this.$rootScope.$broadcast('transaction.delete', transactions);
-      });
+        .where(table.id.in(ids))
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('transaction.delete', transactions);
+        });
     });
 
     source.addEventListener('paymentprofile.delete', (sse) => {
-
+      const profiles = JSON.parse(sse.data);
+      const table = this.db.getSchema().table('PaypalPaymentProfile');
+      const ids = profiles.map(profile => profile.id);
+      const deleteFuture = this.db.delete()
+        .from(table)
+        .where(table.id.in(ids))
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('paymentprofile.delete', profiles);
+        });
     });
 
     source.addEventListener('paymentprofile.create', (sse) => {
+      const profiles = JSON.parse(sse.data);
+      const table = this.db.getSchema().table('PaypalPaymentProfile');
+      const rows = profiles.map(table.createRow, table);
 
+      this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('paymentprofile.create', profiles);
+        });
     });
   }
 

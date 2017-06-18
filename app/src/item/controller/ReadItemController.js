@@ -11,11 +11,13 @@ export default class ReadItemController {
     organizationService,
     permissionService,
     storageService,
+    toolsService,
     settings,
     uiService,
     paypalService,
     db,
-    Permission
+    Permission,
+    Item
   ) {
     this.$q = $q;
     this.$scope = $scope;
@@ -27,10 +29,12 @@ export default class ReadItemController {
     this.transactionService = transactionService;
     this.organizationService = organizationService;
     this.permissionService = permissionService;
+    this.toolsService = toolsService;
     this.uiService = uiService;
     this.paypalService = paypalService;
     this.db = db;
     this.Permission = Permission;
+    this.Item = Item;
 
     this.storage = storageService.read();
 
@@ -45,6 +49,7 @@ export default class ReadItemController {
       'item.delete',
       'item.update',
       'transaction.create',
+      'transaction.update',
       'transaction.revoke',
       'transaction.delete'
     ].forEach(event => {
@@ -189,10 +194,12 @@ export default class ReadItemController {
       const time = new Date().getTime();
       const txn_id = time.toString();
 
+      const itemInstance = this.toolsService.toObject(item, this.Item);
+
       this.paypalService.getCartIpn(
         [{
           quantity: 3,
-          item: item
+          item: itemInstance
         }],
         new Date().getTime(),
         event.currency,
@@ -251,9 +258,11 @@ ReadItemController.$inject = [
   'OrganizationService',
   'PermissionService',
   'StorageService',
+  'ToolsService',
   'settings',
   'UIService',
   'PaypalService',
   'db',
-  'Permission'
+  'Permission',
+  'Item'
 ];

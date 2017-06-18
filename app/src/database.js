@@ -130,6 +130,14 @@ builder.createTable('User')
   .addNullable(['given_name', 'family_name', 'email', 'user_metadata'])
   .addPrimaryKey(['user_id']);
 
+  builder.createTable('PaypalPaymentProfile')
+    .addColumn('id', lf.Type.STRING)
+    .addColumn('organizationId', lf.Type.STRING)
+    .addColumn('name', lf.Type.STRING)
+    .addColumn('email', lf.Type.STRING)
+    .addColumn('timeCreated', lf.Type.DATETIME)
+    .addPrimaryKey(['id']);
+
 builder.createTable('EntityAsset')
   .addColumn('id', lf.Type.STRING)
   .addColumn('entityId', lf.Type.STRING)
@@ -138,6 +146,7 @@ builder.createTable('EntityAsset')
   .addColumn('assetType', lf.Type.STRING)
   .addColumn('data', lf.Type.ARRAY_BUFFER)
   .addColumn('timeCreated', lf.Type.DATETIME)
+  .addNullable(['data'])
   .addPrimaryKey(['id']);
 
 export default builder;

@@ -7,7 +7,8 @@ export default class ReadTransactionController {
     transactionService,
     userService,
     uiService,
-    db
+    db,
+    Transaction
   ) {
     this.$scope = $scope;
     this.$state = $state;
@@ -26,6 +27,7 @@ export default class ReadTransactionController {
 
     [
       'transaction.create',
+      'transaction.update',
       'transaction.revoke',
       'transaction.delete'
     ].forEach(event => {
@@ -33,6 +35,12 @@ export default class ReadTransactionController {
         this.run();
       });
     });
+
+    const isVendorTransaction = new Transaction().isVendorTransaction;
+
+    $scope.isVendorTransaction = function(transaction) {
+      return isVendorTransaction.call(transaction);
+    };
 
     this.selectColumns = [];
 
@@ -188,6 +196,8 @@ export default class ReadTransactionController {
 
   deleteTransaction(transactionData, $event) {
     let confirm;
+    let successMessage;
+    let failureMessage;
 
     if (transactionData.Transaction.status === 2) {
       confirm = this.$mdDialog.confirm()
@@ -197,6 +207,9 @@ export default class ReadTransactionController {
         .targetEvent($event)
         .ok('UNDO')
         .cancel('Cancel');
+
+        successMessage = 'Revocation reversed';
+        failureMessage = 'Unable to undo revocation';
     } else {
       confirm = this.$mdDialog.confirm()
         .title('Are you sure you want to delete this?')
@@ -205,14 +218,17 @@ export default class ReadTransactionController {
         .targetEvent($event)
         .ok('DELETE')
         .cancel('Cancel');
+
+        successMessage = 'Transaction deleted';
+        failureMessage = 'Unable to delete transaction';
     }
 
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
       this.transactionService.delete(storage.auth.idToken, transactionData.Transaction.id).then(() => {
-        this.uiService.notify('Transaction deleted');
+        this.uiService.notify(successMessage);
       }, (response) => {
-        this.uiService.notify('Unable to delete transaction');
+        this.uiService.notify(failureMessage);
       });
     });
   }
@@ -245,5 +261,6 @@ ReadTransactionController.$inject = [
   'TransactionService',
   'UserService',
   'UIService',
-  'db'
+  'db',
+  'Transaction'
 ];

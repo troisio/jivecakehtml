@@ -20,4 +20,8 @@ export default class Transaction {
     this.leaf = null;
     this.timeCreated = null;
   }
+
+  isVendorTransaction() {
+    return this.linkedObjectClass === 'PaypalIPN';
+  }
 }
