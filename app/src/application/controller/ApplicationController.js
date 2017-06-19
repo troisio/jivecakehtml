@@ -128,7 +128,18 @@ export default class ApplicationController {
     const eventSource = this.connectionService.getEventSource(storage.auth.idToken, storage.auth.idTokenPayload.sub);
     this.downstreamService.bootstrapEventSource(eventSource);
 
-    return this.downstreamService.cacheUserData(storage.auth);
+    const userCacheStart = new Date().getTime();
+
+    return this.downstreamService.cacheUserData(storage.auth).then(() => {
+      const userCacheEnd = new Date().getTime();
+
+      this.uiService.logInteraction(storage.auth.idToken, {
+        event: 'cacheUserData',
+        parameters: {
+          duration: userCacheEnd - userCacheStart
+        }
+      });
+    });
   }
 
   createEvent() {

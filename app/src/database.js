@@ -7,7 +7,7 @@ builder.createTable('Permission')
   .addColumn('include', lf.Type.INTEGER)
   .addColumn('objectClass', lf.Type.STRING)
   .addColumn('permissions', lf.Type.ARRAY_BUFFER)
-  .addColumn('timeCreated', lf.Type.DATETIME)
+  .addColumn('timeCreated', lf.Type.INTEGER)
   .addUnique('unique', ['objectClass', 'objectId', 'user_id'])
   .addPrimaryKey(['id']);
 
@@ -17,9 +17,9 @@ builder.createTable('Organization')
   .addColumn('children', lf.Type.ARRAY_BUFFER)
   .addColumn('name', lf.Type.STRING)
   .addColumn('email', lf.Type.STRING)
-  .addColumn('timeUpdated', lf.Type.DATETIME)
-  .addColumn('timeCreated', lf.Type.DATETIME)
-  .addColumn('lastActivity', lf.Type.DATETIME)
+  .addColumn('timeUpdated', lf.Type.INTEGER)
+  .addColumn('timeCreated', lf.Type.INTEGER)
+  .addColumn('lastActivity', lf.Type.INTEGER)
   .addNullable(['parentId', 'timeUpdated', 'lastActivity'])
   .addPrimaryKey(['id']);
 
@@ -31,11 +31,11 @@ builder.createTable('Event')
   .addColumn('organizationId', lf.Type.STRING)
   .addColumn('paymentProfileId', lf.Type.STRING)
   .addColumn('currency', lf.Type.STRING)
-  .addColumn('timeStart', lf.Type.DATETIME)
-  .addColumn('timeEnd', lf.Type.DATETIME)
-  .addColumn('timeCreated', lf.Type.DATETIME)
-  .addColumn('timeUpdated', lf.Type.DATETIME)
-  .addColumn('lastActivity', lf.Type.DATETIME)
+  .addColumn('timeStart', lf.Type.INTEGER)
+  .addColumn('timeEnd', lf.Type.INTEGER)
+  .addColumn('timeCreated', lf.Type.INTEGER)
+  .addColumn('timeUpdated', lf.Type.INTEGER)
+  .addColumn('lastActivity', lf.Type.INTEGER)
   .addNullable([
     'paymentProfileId',
     'description',
@@ -58,11 +58,11 @@ builder.createTable('Item')
   .addColumn('timeAmounts', lf.Type.ARRAY_BUFFER)
   .addColumn('countAmounts', lf.Type.ARRAY_BUFFER)
   .addColumn('status', lf.Type.INTEGER)
-  .addColumn('timeStart', lf.Type.DATETIME)
-  .addColumn('timeEnd', lf.Type.DATETIME)
-  .addColumn('timeUpdated', lf.Type.DATETIME)
-  .addColumn('timeCreated', lf.Type.DATETIME)
-  .addColumn('lastActivity', lf.Type.DATETIME)
+  .addColumn('timeStart', lf.Type.INTEGER)
+  .addColumn('timeEnd', lf.Type.INTEGER)
+  .addColumn('timeUpdated', lf.Type.INTEGER)
+  .addColumn('timeCreated', lf.Type.INTEGER)
+  .addColumn('lastActivity', lf.Type.INTEGER)
   .addForeignKey('ItemToEventForeignKey', {
     local: 'eventId',
     ref: 'Event.id',
@@ -100,7 +100,7 @@ builder.createTable('Transaction')
   .addColumn('currency', lf.Type.STRING)
   .addColumn('email', lf.Type.STRING)
   .addColumn('leaf', lf.Type.BOOLEAN)
-  .addColumn('timeCreated', lf.Type.DATETIME)
+  .addColumn('timeCreated', lf.Type.INTEGER)
   .addForeignKey('TransactionToItemForeignKey', {
     local: 'itemId',
     ref: 'Item.id',
@@ -116,7 +116,8 @@ builder.createTable('Transaction')
     'family_name',
     'email'
   ])
-  .addPrimaryKey(['id']);
+  .addPrimaryKey(['id'])
+  .addIndex('timeCreatedIndex', ['timeCreated'], false, lf.Order.DESC);
 
 builder.createTable('User')
   .addColumn('user_id', lf.Type.STRING)
@@ -135,7 +136,7 @@ builder.createTable('User')
     .addColumn('organizationId', lf.Type.STRING)
     .addColumn('name', lf.Type.STRING)
     .addColumn('email', lf.Type.STRING)
-    .addColumn('timeCreated', lf.Type.DATETIME)
+    .addColumn('timeCreated', lf.Type.INTEGER)
     .addPrimaryKey(['id']);
 
 builder.createTable('EntityAsset')
@@ -145,7 +146,7 @@ builder.createTable('EntityAsset')
   .addColumn('assetId', lf.Type.STRING)
   .addColumn('assetType', lf.Type.STRING)
   .addColumn('data', lf.Type.ARRAY_BUFFER)
-  .addColumn('timeCreated', lf.Type.DATETIME)
+  .addColumn('timeCreated', lf.Type.INTEGER)
   .addNullable(['data'])
   .addPrimaryKey(['id']);
 

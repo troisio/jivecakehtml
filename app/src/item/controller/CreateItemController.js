@@ -55,10 +55,6 @@ export default class CreateItemController {
     item.status = this.itemService.getInactiveStatus();
 
     this.itemService.create(this.storage.auth.idToken, item).then(item => {
-      /*this.$state.go('application.internal.item.update', {
-        itemId: item.id
-      });*/
-
       this.$mdDialog.cancel();
       this.uiService.notify('Item created');
     }, () => {

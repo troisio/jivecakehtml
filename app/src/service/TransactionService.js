@@ -48,7 +48,7 @@ export default class TransactionService {
       headers: {
         Authorization : 'Bearer ' + token
       }
-    }).then((response) => {
+    }).then(response => {
       return {
         entity: response.data.entity.map(transaction => this.toolsService.toObject(transaction, this.Transaction)),
         count: response.data.count

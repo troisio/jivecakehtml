@@ -298,6 +298,20 @@ export default class DownstreamService {
           this.$rootScope.$broadcast('paymentprofile.create', profiles);
         });
     });
+
+    source.addEventListener('asset.create', (sse) => {
+      const assets = JSON.parse(sse.data);
+      const table = this.db.getSchema().table('EntityAsset');
+      const rows = assets.map(table.createRow, table);
+
+      this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('asset.create', profiles);
+        });
+    });
   }
 
   cacheUserData(auth) {
@@ -342,6 +356,7 @@ export default class DownstreamService {
               const items = search.entity;
               const itemTable = this.db.getSchema().table('Item');
               const rows = items.map(itemTable.createRow, itemTable);
+
               return this.db.insertOrReplace()
                 .into(itemTable)
                 .values(rows)
@@ -392,9 +407,13 @@ export default class DownstreamService {
                   } else {
                     transactionFuture = Promise.resolve();
                   }
+
+                  return transactionFuture;
                 });
             });
           }
+
+          return itemFuture;
         });
 
         const organizationFuture = this.organizationService.getOrganizationsByUser(

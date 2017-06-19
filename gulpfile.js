@@ -18,7 +18,6 @@ var vendorCSS = function() {
   return gulp.src([
     './node_modules/angular-material/angular-material.min.css',
     './node_modules//angular-material-data-table/dist/md-data-table.min.css',
-    './node_modules/font-awesome/css/font-awesome.min.css',
     './node_modules/ui-cropper/compile/minified/ui-cropper.css'
   ])
     .pipe(concat('vendor.css'))

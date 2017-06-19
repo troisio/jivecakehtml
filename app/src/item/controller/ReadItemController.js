@@ -83,13 +83,10 @@ export default class ReadItemController {
         }
       });
 
-      const columns = [];
-
-      [permissionTable, eventTable, itemTable].forEach(table => {
-        table.getColumns()
-          .map(column => table[column.getName()])
-          .forEach(column => columns.push(column));
-      });
+      const columns = [permissionTable, eventTable, itemTable, transactionTable].reduce(function(columns, table) {
+        columns.push.apply(columns, table.getColumns().map(column => table[column.getName()]));
+        return columns;
+      }, []);
 
       this.db.select()
         .from(permissionTable)
@@ -104,16 +101,57 @@ export default class ReadItemController {
           }
         });
 
+      const userId = this.storage.auth.idTokenPayload.sub;
+
       return this.db.select(...columns)
         .from(itemTable)
         .innerJoin(eventTable, itemTable.eventId.eq(eventTable.id))
         .innerJoin(permissionTable, permissionTable.objectId.eq(itemTable.organizationId))
-        .where(permissionTable.objectClass.eq('Organization'))
-        .orderBy(itemTable.status, lf.Order.ASC)
-        .orderBy(itemTable.lastActivity, lf.Order.DESC)
+        .leftOuterJoin(transactionTable, transactionTable.itemId.eq(itemTable.id))
+        .where(
+          permissionTable.objectClass.eq('Organization'),
+          permissionTable.user_id.eq(userId)
+        )
         .exec()
         .then(rows => {
-          const data = angular.copy(rows);
+          const data = [];
+
+          if (rows.length > 0) {
+            data.push(Object.assign({
+              transactionCount: 0
+            }, rows[0]));
+          }
+
+          for (let row of rows) {
+            let itemData;
+            const lastItem = data[data.length - 1];
+
+            if (row.Item.id === lastItem.Item.id) {
+              itemData = lastItem;
+            } else {
+              itemData = Object.assign({
+                transactionCount: 0
+              }, row);
+              data.push(itemData);
+            }
+
+            const usedForCounting = this.transactionService.countingFilter(row.Transaction);
+
+            if (usedForCounting) {
+              itemData.transactionCount += row.Transaction.quantity;
+            }
+          }
+
+          data.sort(function(first, second) {
+            let result = second.status - first.status;
+
+            if (result === 0) {
+              result = second.lastActivity - first.lastActivity;
+            }
+
+            return result;
+          });
+
           const item = data.find(datum => datum.Item.id === this.$state.params.highlight);
           const index = data.indexOf(item);
 
@@ -122,35 +160,7 @@ export default class ReadItemController {
             data.unshift(item);
           }
 
-          return this.db.select(transactionTable.itemId, lf.fn.count(transactionTable.id).as('count'))
-            .from(transactionTable)
-            .where(
-              lf.op.and(
-                transactionTable.leaf.eq(true),
-                lf.op.and(
-                  lf.op.or(
-                    transactionTable.paymentStatus.eq(this.transactionService.PAYMENT_EQUAL),
-                    transactionTable.paymentStatus.eq(this.transactionService.PAYMENT_GREATER_THAN)
-                  ),
-                  lf.op.or(
-                    transactionTable.status.eq(this.transactionService.SETTLED),
-                    transactionTable.status.eq(this.transactionService.PENDING)
-                  )
-                )
-              )
-            )
-            .groupBy(transactionTable.itemId)
-            .exec()
-            .then(rows => {
-              const dataById = {};
-              data.forEach(datum => {
-                dataById[datum.Item.id] = datum;
-                datum.transactionCount = 0;
-              });
-              rows.forEach(row => dataById[row.itemId].transactionCount = row.count);
-
-              this.$scope.data = data;
-            });
+          this.$scope.data = data;
         }, (err) => {
           this.uiService.notify('Unable to retrieve data');
         });

@@ -85,7 +85,14 @@ export default class CreateTransactionController {
 
   query(search) {
     const terms = search.split(new this.$window.RegExp('\\s+', 'g')).join(' ');
-    const queryParts = ['user_metadata.given_name', 'user_metadata.family_name', 'family_name', 'given_name', 'email', 'name'].map(field => field + ':' + terms + '*');
+    const queryParts = [
+      'user_metadata.given_name',
+      'user_metadata.family_name',
+      'family_name',
+      'given_name',
+      'email',
+      'name'
+    ].map(field => field + ':' + terms + '*');
 
     let query = queryParts.join(' OR ');
 
@@ -124,6 +131,8 @@ export default class CreateTransactionController {
 
       return this.transactionService.create(this.storage.auth.idToken, item.id, transactionCopy).then(data => {
         this.uiService.notify('Transaction created');
+
+        this.$window.scrollTo(0, 0);
         return this.setDefaults();
       }, response => {
         let message = 'Unable to create transaction';

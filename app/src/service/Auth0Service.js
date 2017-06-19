@@ -11,9 +11,7 @@ export default class Auth0Service {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(function(response) {
-      return response.data;
-    });
+    }).then(response => response.data);
   }
 
   searchUsers(token, params) {
@@ -24,9 +22,7 @@ export default class Auth0Service {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(function(response) {
-      return response.data;
-    });
+    }).then(response => response.data);
   }
 
   getUser(token, user_id) {
@@ -36,9 +32,7 @@ export default class Auth0Service {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return response.data;
-    });
+    }).then((response) => response.data);
   }
 
   sendVerificationEmail(token, body) {
@@ -48,9 +42,7 @@ export default class Auth0Service {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then((response) => {
-      return response.data;
-    });
+    }).then((response) => response.data);
   }
 }
 
