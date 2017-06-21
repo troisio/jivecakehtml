@@ -134,9 +134,11 @@ builder.createTable('User')
   builder.createTable('PaypalPaymentProfile')
     .addColumn('id', lf.Type.STRING)
     .addColumn('organizationId', lf.Type.STRING)
-    .addColumn('name', lf.Type.STRING)
     .addColumn('email', lf.Type.STRING)
+    .addColumn('stripe_publishable_key', lf.Type.STRING)
+    .addColumn('stripe_user_id', lf.Type.STRING)
     .addColumn('timeCreated', lf.Type.INTEGER)
+    .addNullable(['stripe_publishable_key', 'stripe_publishable_key', 'email'])
     .addPrimaryKey(['id']);
 
 builder.createTable('EntityAsset')

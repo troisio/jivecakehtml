@@ -1,11 +1,11 @@
 export default class PaymentProfileService {
-  constructor($http, $q, settings, toolsService, PaymentProfile, PaypalPaymentProfile) {
+  constructor($http, $q, settings, toolsService, PaypalPaymentProfile, StripePaymentProfile) {
     this.$http = $http;
     this.$q = $q;
     this.settings = settings;
     this.toolsService = toolsService;
-    this.PaymentProfile = PaymentProfile;
     this.PaypalPaymentProfile = PaypalPaymentProfile;
+    this.StripePaymentProfile = StripePaymentProfile;
   }
 
   search(token, params) {
@@ -37,10 +37,20 @@ export default class PaymentProfileService {
     });
   }
 
-  create(token, profile) {
+  createPaypalPaymentProfile(token, profile) {
     const url = [this.settings.jivecakeapi.uri, 'organization', profile.organizationId, 'payment', 'profile', 'paypal'].join('/');
 
     return this.$http.post(url, profile, {
+      headers : {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => this.toObject(response.data));
+  }
+
+  createStripePaymentProfile(token, organizationId, body) {
+    const url = [this.settings.jivecakeapi.uri, 'organization', organizationId, 'payment', 'profile', 'stripe'].join('/');
+
+    return this.$http.post(url, body, {
       headers : {
         Authorization: 'Bearer ' + token
       }
@@ -58,7 +68,17 @@ export default class PaymentProfileService {
   }
 
   getImplementation(data) {
-    return 'email' in data ? this.PaypalPaymentProfile : null;
+    let result;
+
+    if (data.hasOwnProperty('email')) {
+      result = this.PaypalPaymentProfile;
+    } else if (data.hasOwnProperty('stripe_publishable_key')) {
+      result = this.StripePaymentProfile;
+    } else {
+      throw new Error('PaymentProfile has invalid implementation');
+    }
+
+    return result;
   }
 
   toObject(subject) {
@@ -67,4 +87,4 @@ export default class PaymentProfileService {
   }
 }
 
-PaymentProfileService.$inject = ['$http', '$q', 'settings', 'ToolsService', 'PaymentProfile', 'PaypalPaymentProfile'];
+PaymentProfileService.$inject = ['$http', '$q', 'settings', 'ToolsService', 'PaypalPaymentProfile', 'StripePaymentProfile'];

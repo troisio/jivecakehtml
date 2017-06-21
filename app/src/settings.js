@@ -1,22 +1,25 @@
 export default {
   oauth: {
     auth0: {
-      domain: '$AUTH0DOMAIN',
-      client_id: '$AUTH0CLIENTID'
+      domain: '',
+      client_id: ''
+    },
+    stripe: {
+      client_id: ''
     }
   },
   jivecakeapi: {
-    uri: '$APIURI'
+    uri: 'http://127.0.0.1:8080'
   },
   google: {
     analytics: {
-      enabled: $GA_ENABLED
+      enabled: false
     }
   },
   paypal: {
-    mock: $PAYPALMOCK
+    mock: true
   },
   stripe: {
-    pk: '$STRIPE_PK'
+    pk: ''
   }
 };

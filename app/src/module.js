@@ -2,6 +2,8 @@ import './polyfill/assign';
 import './polyfill/find';
 import './polyfill/from';
 
+import URLSearchParams from 'url-search-params';
+
 import settings from './settings';
 import builder from './database';
 
@@ -85,6 +87,7 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
   .constant('settings', settings)
   .constant('db', db)
+  .constant('URLSearchParams', URLSearchParams)
   .config(configuration)
   .run([
     'lock',

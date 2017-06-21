@@ -1,8 +1,7 @@
 export default class StripeService {
-  constructor($q, $http, $window, settings) {
+  constructor($q, $http, settings) {
     this.$q = $q;
     this.$http = $http;
-    this.$window = $window;
     this.settings = settings;
   }
 
@@ -29,7 +28,7 @@ export default class StripeService {
   showStripeMonthlySubscription() {
     const defer = this.$q.defer();
 
-    const checkout = this.$window.StripeCheckout.configure({
+    const checkout = StripeCheckout.configure({
       name: 'JiveCake',
       key: this.settings.stripe.pk,
       image: 'assets/safari/apple-touch-120x120.png',
@@ -63,4 +62,4 @@ export default class StripeService {
   }
 }
 
-StripeService.$inject = ['$q', '$http', '$window', 'settings'];
+StripeService.$inject = ['$q', '$http', 'settings'];

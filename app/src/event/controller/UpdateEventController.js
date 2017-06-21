@@ -117,6 +117,7 @@ export default class UpdateEventController {
     this.$mdDialog.show({
       controller: 'CreatePaymentProfileController',
       templateUrl: '/src/payment/profile/partial/create.html',
+      controllerAs: 'controller',
       clickOutsideToClose: true,
       locals: {
         organization: this.$scope.organization

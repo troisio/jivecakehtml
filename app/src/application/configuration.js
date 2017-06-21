@@ -60,7 +60,7 @@ export default [
       templateUrl: '/src/application/partial/internal.html'
     })
     .state('application.public.oauthRedirect', {
-      url: '/oauth/redirect',
+      url: '/oauth/redirect?scope&code&state',
       controller: 'OAuthRedirectController',
       template: '<div layout="row" layout-margin layout-align="center"><md-progress-circular md-mode="indeterminate"></md-progress-circular></div>'
     })

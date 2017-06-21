@@ -262,6 +262,7 @@ export default class UpdateOrganizationController {
       controller: 'CreatePaymentProfileController',
       templateUrl: '/src/payment/profile/partial/create.html',
       clickOutsideToClose: true,
+      controllerAs: 'controller',
       locals: {
         organization: organization
       }

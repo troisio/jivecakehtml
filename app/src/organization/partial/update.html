@@ -109,15 +109,19 @@
             <tbody md-body>
               <tr md-row md-auto-select ng-repeat="paymentProfile in controller.paymentProfiles track by paymentProfile.id">
                 <td md-cell>
-                  <span>{{paymentProfile.email}}</span>
-                  <i ng-show="paymentProfile.email !== null" class="fa fa-paypal" aria-hidden="true"></i>
+                  <span ng-show="paymentProfile.email">{{paymentProfile.email}}</span>
+                  <span ng-show="paymentProfile.stripe_user_id">{{paymentProfile.stripe_user_id}}</span>
+                </td>
+                <td md-cell>
+                  <i ng-show="paymentProfile.email" class="fa fa-2x fa-paypal" aria-hidden="true"></i>
+                  <i ng-show="paymentProfile.stripe_user_id" class="fa fa-2x fa-cc-stripe" aria-hidden="true"></i>
                 </td>
                 <td ng-click="controller.deletePaymentProfile($event, paymentProfile)" md-cell>
                   <ng-md-icon icon="delete"></ng-md-icon>
                 </td>
               </tr>
-              <tr  ng-show="controller.paymentProfiles.length === 0" md-row layout-padding>
-                <td md-cell>
+              <tr ng-show="controller.paymentProfiles.length === 0" md-row layout-padding>
+                <td colspan="3" md-cell>
                   <span class="md-subheader">No data found</span>
                 </td>
               </tr>

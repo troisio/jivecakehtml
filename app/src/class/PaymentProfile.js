@@ -1,7 +1,6 @@
 export default class PaymentProfile {
   constructor() {
     this.id = null;
-    this.name = null;
     this.organizationId = null;
     this.timeCreated = null;
   }

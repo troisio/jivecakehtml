@@ -54,8 +54,9 @@
         <md-select ng-if="paymentProfiles !== null" ng-show="paymentProfiles.length > 0" ng-model="event.paymentProfileId" ng-required="event.currency" aria-label="Payment Profile" name="paymentProfile">
           <md-option ng-value="null"></md-option>
           <md-option ng-repeat="profile in paymentProfiles track by profile.id" ng-value="profile.id">
-            {{profile.name}} ({{profile.email}})
-            <i class="fa fa-paypal" aria-hidden="true"></i>
+            {{profile.email || profile.stripe_publishable_key}}
+            <i ng-show="profile.hasOwnProperty('email')" class="fa fa-paypal" aria-hidden="true"></i>
+            <i ng-show="profile.hasOwnProperty('stripe_publishable_key')" class="fa fa-cc-stripe" aria-hidden="true"></i>
           </md-option>
         </md-select>
         <div ng-messages="form.paymentProfile.$error">
