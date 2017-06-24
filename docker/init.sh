@@ -15,7 +15,7 @@ if [ ! -d $SOURCE_DIRECTORY ]; then
   cp ~/settings.js $SOURCE_DIRECTORY/app/src/settings.js
   cp ~/server-settings.json $SOURCE_DIRECTORY/server-settings.json
 
-  $(npm bin)/gulp production
+  $(npm bin)/webpack
 fi
 
 cd $SOURCE_DIRECTORY

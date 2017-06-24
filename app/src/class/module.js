@@ -1,3 +1,6 @@
+import angular from 'angular';
+
+
 import Application from './Application';
 import ClientConnection from './ClientConnection';
 import Event from './Event';

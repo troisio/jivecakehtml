@@ -70,10 +70,10 @@ export default class PaymentProfileService {
   getImplementation(data) {
     let result;
 
-    if (data.hasOwnProperty('email')) {
-      result = this.PaypalPaymentProfile;
-    } else if (data.hasOwnProperty('stripe_publishable_key')) {
+    if (data.hasOwnProperty('stripe_publishable_key')) {
       result = this.StripePaymentProfile;
+    } else if (data.hasOwnProperty('email')) {
+      result = this.PaypalPaymentProfile;
     } else {
       throw new Error('PaymentProfile has invalid implementation');
     }

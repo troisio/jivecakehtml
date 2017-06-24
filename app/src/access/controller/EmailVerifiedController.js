@@ -35,7 +35,7 @@ export default class EmailVerifiedController {
 
     this.auth0Service.sendVerificationEmail(storage.auth.idToken, {
       user_id: storage.auth.idTokenPayload.sub
-    }).then((user) => {
+    }).then(() => {
       this.uiService.notify('Verification email sent');
     }, () => {
       this.uiService.notify('Unable to send verification email');

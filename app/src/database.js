@@ -1,3 +1,5 @@
+import lf from 'lovefield';
+
 const builder = lf.schema.create('jivecake', 1);
 
 builder.createTable('Permission')

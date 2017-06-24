@@ -1,3 +1,5 @@
+import angular from 'angular';
+
 import AccessService from './AccessService';
 import ApplicationService from './ApplicationService';
 import AssetService from './AssetService';

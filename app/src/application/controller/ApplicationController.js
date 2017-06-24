@@ -80,7 +80,7 @@ export default class ApplicationController {
       }
     }
 
-    ready.then(resolve => {
+    ready.then(() => {
       const hasPermission = new this.Permission().has;
       const permissionTable = this.db.getSchema().table('Permission');
 

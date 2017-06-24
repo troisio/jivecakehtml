@@ -1,6 +1,7 @@
+import angular from 'angular';
+
 export default class UpdateEventController {
   constructor(
-    angular,
     $window,
     $q,
     $scope,
@@ -16,7 +17,6 @@ export default class UpdateEventController {
     db,
     Permission
   ) {
-    this.angular = angular;
     this.$window = $window;
     this.$q = $q;
     this.$scope = $scope;
@@ -41,6 +41,16 @@ export default class UpdateEventController {
 
     this.storage = storageService.read();
     this.timeSelections = this.uiService.getTimeSelections();
+
+    [
+      'paymentprofile.delete',
+      'paymentprofile.create'
+    ].forEach((event) => {
+      this.$scope.$on(event, () => {
+        this.run();
+      });
+    });
+
     this.run();
   }
 
@@ -123,7 +133,7 @@ export default class UpdateEventController {
         organization: this.$scope.organization
       }
     }).finally(() => {
-      this.$scope.ready.then((resolve) => {
+      this.$scope.ready.then(() => {
         const readOrganizationIds = this.$scope.organizationIds;
 
         this.paymentProfileService.search(this.storage.auth.idToken, {
@@ -141,7 +151,7 @@ export default class UpdateEventController {
 
   submit(event, timeStart, timeEnd) {
     this.$scope.loading = true;
-    const eventCopy = this.angular.copy(event);
+    const eventCopy = angular.copy(event);
 
     const invalidPaymentDetails = (eventCopy.currency === null && eventCopy.paymentProfileId !== null) ||
       (eventCopy.currency !== null && eventCopy.paymentProfileId === null);
@@ -193,7 +203,7 @@ export default class UpdateEventController {
       this.uiService.notify('Start Date / Time must be before End Date / Time');
       this.$scope.loading = false;
     } else {
-      this.eventService.update(this.storage.auth.idToken, eventCopy).then((event) => {
+      this.eventService.update(this.storage.auth.idToken, eventCopy).then(() => {
         this.$state.go('application.internal.event.read');
         this.uiService.notify('Event updated');
       }, (response) => {
@@ -214,7 +224,6 @@ export default class UpdateEventController {
 }
 
 UpdateEventController.$inject = [
-  'angular',
   '$window',
   '$q',
   '$scope',

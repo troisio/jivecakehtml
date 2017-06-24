@@ -1,3 +1,5 @@
+import lf from 'lovefield';
+
 export default class ReadTransactionController {
   constructor(
     $scope,
@@ -119,7 +121,7 @@ export default class ReadTransactionController {
         });
 
         if (typeof text !== 'undefined' && text.length > 0) {
-          const escapedPattern= text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const escapedPattern= text.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
           const regex = new RegExp(escapedPattern, 'i');
           ands.push(
             lf.op.or(
@@ -227,7 +229,7 @@ export default class ReadTransactionController {
       const storage = this.storageService.read();
       this.transactionService.delete(storage.auth.idToken, transactionData.Transaction.id).then(() => {
         this.uiService.notify(successMessage);
-      }, (response) => {
+      }, () => {
         this.uiService.notify(failureMessage);
       });
     });

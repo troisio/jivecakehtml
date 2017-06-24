@@ -1,3 +1,6 @@
+import lf from 'lovefield';
+import angular from 'angular';
+
 export default class ReadEventController {
   constructor(
     $scope,
@@ -80,7 +83,7 @@ export default class ReadEventController {
           }
 
           this.$scope.data = data;
-        }, (err) => {
+        }, () => {
           this.uiService.notify('Unable to retrieve data');
         });
     }).finally(() => {
@@ -88,7 +91,7 @@ export default class ReadEventController {
     });
   }
 
-  toggleStatus(eventData, $event) {
+  toggleStatus(eventData) {
     const promise = this.uiService.load();
 
     this.eventService.fieldUpdate(this.storage.auth.idToken, eventData.Event.id, {

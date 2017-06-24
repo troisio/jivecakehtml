@@ -1,3 +1,5 @@
+import lf from 'lovefield';
+
 export default class CreateItemController {
   constructor(
     $scope,
@@ -54,7 +56,7 @@ export default class CreateItemController {
     item.amount = 0;
     item.status = this.itemService.getInactiveStatus();
 
-    this.itemService.create(this.storage.auth.idToken, item).then(item => {
+    this.itemService.create(this.storage.auth.idToken, item).then(() => {
       this.$mdDialog.cancel();
       this.uiService.notify('Item created');
     }, () => {

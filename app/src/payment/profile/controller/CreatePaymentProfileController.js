@@ -1,3 +1,5 @@
+import URLSearchParams from 'url-search-params';
+
 export default class CreatePaymentProfileController {
   constructor(
     $state,
@@ -8,8 +10,7 @@ export default class CreatePaymentProfileController {
     storageService,
     uiService,
     PaypalPaymentProfile,
-    organization,
-    URLSearchParams
+    organization
   ) {
     this.$state = $state;
     this.$scope = $scope;
@@ -20,10 +21,9 @@ export default class CreatePaymentProfileController {
     this.uiService = uiService;
     this.PaypalPaymentProfile = PaypalPaymentProfile;
     this.organization = organization;
-    this.URLSearchParams = URLSearchParams;
 
     this.$scope.type = 'stripe';
-    this.$scope.hasStripeAccount = false;
+    this.$scope.hasStripeAccount = true;
     this.$scope.loading = false;
     this.run();
   }
@@ -35,14 +35,14 @@ export default class CreatePaymentProfileController {
     this.$scope.close = this.$mdDialog.hide;
   }
 
-  submit(type, profile) {
+  submit(type) {
     this.$scope.loading = true;
 
     if (type === 'paypal') {
       this.$scope.loading = true;
 
       const storage = this.storageService.read();
-      this.paymentProfileService.createPaypalPaymentProfile(storage.auth.idToken, profile).then((profile) => {
+      this.paymentProfileService.createPaypalPaymentProfile(storage.auth.idToken).then(() => {
         this.uiService.notify('Payment Profile created');
         this.$mdDialog.hide();
       }, () => {
@@ -67,6 +67,8 @@ export default class CreatePaymentProfileController {
       if (this.$scope.hasStripeAccount) {
         params.append('stripe_landing', 'login');
       } else {
+        const storage = this.storageService.read();
+
         params.append('stripe_landing', 'register');
         params.append('stripe_user[email]', storage.profile.email);
       }

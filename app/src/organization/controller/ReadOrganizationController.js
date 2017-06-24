@@ -1,3 +1,6 @@
+import angular from 'angular';
+import lf from 'lovefield';
+
 export default class ReadOrganizationController {
   constructor(
     $scope,
@@ -32,7 +35,7 @@ export default class ReadOrganizationController {
   }
 
   run() {
-    this.$scope.$parent.ready.then(resolve => {
+    this.$scope.$parent.ready.then(() => {
       const organizationTable = this.db.getSchema().table('Organization');
       const permissionTable = this.db.getSchema().table('Permission');
 

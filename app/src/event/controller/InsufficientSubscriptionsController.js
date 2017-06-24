@@ -18,7 +18,7 @@ export default class InsufficientSubscriptionsController {
       this.stripeService.subscribe(storage.auth.idToken, organization.id, {
         email: token.email,
         source: token.id
-      }).then((response) => {
+      }).then(() => {
         this.uiService.notify('Sucessfully added subscription');
       }, () => {
         this.uiService.notify('Unable to subcribe');

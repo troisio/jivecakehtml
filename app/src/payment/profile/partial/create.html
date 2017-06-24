@@ -13,10 +13,6 @@
           </md-option>
         </md-select>
       </md-input-container>
-      <div>
-        <a ng-show="type === 'paypal'" href="https://www.paypal.com/en/webapps/mpp/paypal-fees">Paypal fee policy</a>
-        <a ng-show="type === 'stripe'" href="https://stripe.com/us/pricing">Stripe pricing policy</a>
-      </div>
       <md-input-container class="md-block" ng-show="type === 'paypal'">
         <label>Paypal Email</label>
         <input autocomplete="off" type="email" ng-model="profile.email" maxlength="255" ng-required="type === 'paypal'">
@@ -26,17 +22,21 @@
           <md-checkbox ng-model="hasStripeAccount" aria-label="Has stripe account">I have a Stripe account</md-checkbox>
         </md-input-container>
       </div>
+      <div>
+        <a ng-show="type === 'paypal'" href="https://www.paypal.com/en/webapps/mpp/paypal-fees">Paypal fee policy</a>
+        <a ng-show="type === 'stripe'" href="https://stripe.com/us/pricing">Stripe pricing policy</a>
+      </div>
       <div layout layout-sm="row">
-        <md-input-container ng-show="!loading" class="md-block">
+        <md-input-container class="md-block">
           <md-button type="button" ng-click="close()" class="md-raised">Cancel</md-button>
         </md-input-container>
-        <md-input-container ng-show="!loading" class="md-block">
+        <md-input-container class="md-block">
           <md-button type="submit" ng-disabled="" class="md-raised md-primary">Create</md-button>
         </md-input-container>
+        <md-input-container ng-show="loading">
+          <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+        </md-input-container>
       </div>
-      <md-input-container layout-align="center center" ng-show="loading" class="md-block">
-        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-      </md-input-container>
     </form>
   </div>
 </md-dialog>

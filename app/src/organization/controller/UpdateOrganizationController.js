@@ -72,10 +72,10 @@ export default class UpdateOrganizationController {
     [
       'ORGANIZATION.PERMISSION.WRITE',
       'SUBSCRIPTION.CREATED',
-      'PAYMENT.PROFILE.CREATED',
-      'PAYMENT.PROFILE.DELETED'
+      'paymentprofile.delete',
+      'paymentprofile.create'
     ].forEach((event) => {
-      this.$scope.$on(event, (argument) => {
+      this.$scope.$on(event, () => {
         this.loadUI(this.$stateParams.organizationId);
       });
     });
@@ -158,8 +158,6 @@ export default class UpdateOrganizationController {
   }
 
   loadUI(organizationId) {
-    const date = new Date();
-
     return this.organizationService.read(this.storage.auth.idToken, organizationId).then((organization) => {
       this.$scope.organization = organization;
 
@@ -231,7 +229,7 @@ export default class UpdateOrganizationController {
       this.stripeService.subscribe(storage.auth.idToken, organization.id, {
         email: token.email,
         source: token.id
-      }).then((response) => {
+      }).then(() => {
         return this.stripeService.getSubscriptions(storage.auth.idToken, organization.id).then((subscriptions) => {
           this.$scope.subscriptions = subscriptions;
         }).finally(() => {
@@ -279,7 +277,6 @@ export default class UpdateOrganizationController {
 
     this.$mdDialog.show(confirm).then(() => {
       this.paymentProfileService.delete(this.storage.auth.idToken, paymentProfile.id).then(() => {
-        this.$rootScope.$broadcast('PAYMENT.PROFILE.DELETED');
       }, (response) => {
         let text;
 

@@ -31,7 +31,7 @@ export default class MyTransactionController {
     this.selected = [];
     this.pagingService = new this.Paging(
       (data) => this.$q.resolve(data.count),
-      (limit, offset) => {
+      () => {
         return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, {
           status: [transactionService.SETTLED, transactionService.PENDING],
           paymentStatus: [transactionService.PAYMENT_EQUAL, transactionService.PAYMENT_GREATER_THAN],
@@ -51,7 +51,7 @@ export default class MyTransactionController {
     this.$scope.paging = new this.Page();
     this.$scope.paging.data = {entity: []};
 
-    this.$scope.$parent.ready.then((resolve) => {
+    this.$scope.$parent.ready.then(() => {
       this.loadPage(
         this.$window.parseInt(this.$state.params.page),
         this.$window.parseInt(this.$state.params.pageSize)

@@ -1,6 +1,7 @@
+import angular from 'angular';
+
 export default class CreateTransactionController {
   constructor(
-    angular,
     $window,
     $q,
     $rootScope,
@@ -17,7 +18,6 @@ export default class CreateTransactionController {
     storageService,
     uiService
   ) {
-    this.angular = angular;
     this.$window = $window;
     this.$q = $q;
     this.$rootScope = $rootScope;
@@ -110,13 +110,13 @@ export default class CreateTransactionController {
     }
   }
 
-  submit(transaction, item, selectedUser, event, form) {
+  submit(transaction, item, selectedUser, event) {
     this.$scope.loading = true;
-    const transactionCopy = this.angular.copy(transaction);
+    const transactionCopy = angular.copy(transaction);
 
     this.transactionService.search(this.storage.auth.idToken, {
       itemId: item.id
-    }).then((searchEntity) => {
+    }).then(() => {
       if (selectedUser !== null) {
         transactionCopy.user_id = selectedUser.user_id;
         transactionCopy.given_name = null;
@@ -129,7 +129,7 @@ export default class CreateTransactionController {
         transactionCopy.currency = event.currency;
       }
 
-      return this.transactionService.create(this.storage.auth.idToken, item.id, transactionCopy).then(data => {
+      return this.transactionService.create(this.storage.auth.idToken, item.id, transactionCopy).then(() => {
         this.uiService.notify('Transaction created');
 
         this.$window.scrollTo(0, 0);
@@ -156,7 +156,6 @@ export default class CreateTransactionController {
 }
 
 CreateTransactionController.$inject = [
-  'angular',
   '$window',
   '$q',
   '$rootScope',

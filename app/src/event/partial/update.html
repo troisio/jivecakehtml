@@ -55,7 +55,7 @@
           <md-option ng-value="null"></md-option>
           <md-option ng-repeat="profile in paymentProfiles track by profile.id" ng-value="profile.id">
             {{profile.email || profile.stripe_publishable_key}}
-            <i ng-show="profile.hasOwnProperty('email')" class="fa fa-paypal" aria-hidden="true"></i>
+            <i ng-show="!profile.hasOwnProperty('stripe_publishable_key')" class="fa fa-paypal" aria-hidden="true"></i>
             <i ng-show="profile.hasOwnProperty('stripe_publishable_key')" class="fa fa-cc-stripe" aria-hidden="true"></i>
           </md-option>
         </md-select>

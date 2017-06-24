@@ -5,6 +5,16 @@ export default class StripeService {
     this.settings = settings;
   }
 
+  order(token, eventId, body) {
+    const url = [this.settings.jivecakeapi.uri, 'stripe', eventId, 'order'].join('/');
+
+    return this.$http.post(url, body, {
+      headers: {
+        Authorization : 'Bearer ' + token
+      }
+    }).then(response => response.data);
+  }
+
   subscribe(token, organizationId, body) {
     const url = [this.settings.jivecakeapi.uri, 'stripe', organizationId, 'subscribe'].join('/');
 

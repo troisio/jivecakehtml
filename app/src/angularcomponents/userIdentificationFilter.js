@@ -1,10 +1,9 @@
 export default function() {
-  return function(user, appendEmail, appendAccount) {
+  return function(user, appendEmail) {
     let result = '';
     let emailAppended = false;
 
     if (typeof user === 'object' && user !== null) {
-
       if ('user_metadata' in user && user.user_metadata !== null && typeof user.user_metadata !== 'undefined' && (user.user_metadata.family_name || user.user_metadata.given_name)) {
         result = user.user_metadata.given_name + ' ' + user.user_metadata.family_name;
       } else if (user.given_name || user.family_name) {

@@ -1,10 +1,12 @@
 export default class OAuthRedirectController {
-  constructor($state, $q, paymentProfileService, storageService) {
+  constructor($scope, $state, $q, paymentProfileService, storageService) {
+    this.$scope = $scope;
     this.$state = $state;
     this.$q = $q;
     this.paymentProfileService = paymentProfileService;
     this.storageService = storageService;
-    this.run();
+
+    this.$scope.$parent.$parent.ready.then(() => this.run());
   }
 
   run() {
@@ -17,13 +19,11 @@ export default class OAuthRedirectController {
     }
 
     if (state !== null && state.flow === 'stripe') {
-      let future;
-
       if (this.$state.params.code === null) {
-        future = this.$q.resolve();
+        this.$q.resolve();
       } else {
         const storage = this.storageService.read();
-        future = this.paymentProfileService.createStripePaymentProfile(storage.auth.idToken, state.subject, {
+        this.paymentProfileService.createStripePaymentProfile(storage.auth.idToken, state.subject, {
           code: this.$state.params.code
         });
       }
@@ -33,4 +33,4 @@ export default class OAuthRedirectController {
   }
 }
 
-OAuthRedirectController.$inject = ['$state', '$q', 'PaymentProfileService', 'StorageService'];
+OAuthRedirectController.$inject = ['$scope', '$state', '$q', 'PaymentProfileService', 'StorageService'];

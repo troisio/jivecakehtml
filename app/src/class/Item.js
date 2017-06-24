@@ -24,7 +24,7 @@ export default class Item {
      for (let index = this.countAmounts.length - 1; index > -1; index--) {
        const countAmount = this.countAmounts[index];
 
-       if (time > countAmount.count) {
+       if (count > countAmount.count) {
          result = countAmount.amount;
          break;
        }

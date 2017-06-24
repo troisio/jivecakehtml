@@ -2,6 +2,25 @@ import './polyfill/assign';
 import './polyfill/find';
 import './polyfill/from';
 
+import angular from 'angular';
+
+import 'event-source-polyfill';
+import 'angular-lock';
+import 'ui-cropper';
+
+import 'script-loader!ui-cropper/compile/minified/ui-cropper.js';
+
+import lf from 'lovefield';
+import angularMaterialDataTable from 'angular-material-data-table';
+import angularAnimate from 'angular-animate';
+import angularAria from 'angular-aria';
+import angularMessages from 'angular-messages';
+import angularSanitize from 'angular-sanitize';
+import uiRouter from '@uirouter/angularjs';
+import angularJwt from 'angular-jwt';
+import ngMessages from 'angular-messages';
+import ngMaterial from 'angular-material';
+import ngIcons from 'angular-material-icons';
 import URLSearchParams from 'url-search-params';
 
 import settings from './settings';
@@ -68,16 +87,18 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   angular.module('jivecakeweb', [
     jiveCakeClassModule.name,
     jiveCakeServiceModule.name,
-    'ngMessages',
-    'ngMaterial',
-    'ngMdIcons',
-    'ngSanitize',
-    'ui.router',
-    'auth0.lock',
-    'angular-jwt',
-    'md.data.table',
-    'monospaced.qrcode',
-    'uiCropper'
+    ngMessages,
+    ngMaterial,
+    ngIcons,
+    angularSanitize,
+    uiRouter,
+    angularMaterialDataTable,
+    angularAnimate,
+    angularAria,
+    angularMessages,
+    angularJwt,
+    'uiCropper',
+    'auth0.lock'
   ])
   .filter('featureTypeFilter', featureTypeFilter)
   .service('HTTPInterceptor', HTTPInterceptor)
@@ -128,19 +149,13 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
         ga('create', 'UA-81919203-1', 'auto');
       }
 
-      $transitions.onSuccess({}, function(e) {
+      $transitions.onSuccess({}, function() {
         if (settings.google.analytics.enabled) {
           ga('send', 'pageview', $location.path());
         }
-
-        const storage = storageService.read();
-        const token = storage.auth === null ? null : storage.auth.idToken;
-        const event = new UserInterfaceEvent();
-        event.event = e.to().name;
-        uiService.logInteraction(token, event);
       });
 
-      document.addEventListener('visibilitychange', function(e) {
+      document.addEventListener('visibilitychange', function() {
         const storage = storageService.read();
         const token = storage.auth === null ? null : storage.auth.idToken;
         const event = new UserInterfaceEvent();
@@ -199,7 +214,6 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
               });
             });
           } else {
-            console.log(error);
             uiService.notify('Unable to login');
           }
         });
@@ -246,8 +260,7 @@ builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
   .controller('TransactionController', TransactionController)
   .controller('ReadTransactionController', ReadTransactionController)
 
-  .controller('UpdateAccountController', UpdateAccountController)
-  .constant('angular', angular);
+  .controller('UpdateAccountController', UpdateAccountController);
 
   angular.element(document).ready(() => {
     angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});

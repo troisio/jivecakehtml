@@ -1,3 +1,5 @@
+import lf from 'lovefield';
+
 export default class CreateEventController {
   constructor(
     $scope,

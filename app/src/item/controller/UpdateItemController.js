@@ -1,3 +1,5 @@
+import angular from 'angular';
+
 export default class UpdateItemController {
   constructor(
     $q,
@@ -8,8 +10,7 @@ export default class UpdateItemController {
     eventService,
     paymentProfileService,
     itemService,
-    uiService,
-    toolsService
+    uiService
   ) {
     this.$q = $q;
     this.$rootScope = $rootScope;
@@ -200,6 +201,5 @@ UpdateItemController.$inject = [
   'EventService',
   'PaymentProfileService',
   'ItemService',
-  'UIService',
-  'ToolsService'
+  'UIService'
 ];

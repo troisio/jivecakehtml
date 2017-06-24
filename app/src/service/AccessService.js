@@ -1,22 +1,21 @@
+import angular from 'angular';
+
 export default class AccessService {
-  constructor(angular, lock, $state, $window, storageService, connectionService, settings) {
-    this.angular = angular;
-    this.lock = lock;
+  constructor($state, storageService, connectionService, settings) {
     this.$state = $state;
-    this.$window = $window;
     this.storageService = storageService;
     this.connectionService = connectionService;
     this.settings = settings;
   }
 
   oauthSignIn() {
-    const redirectUrl = this.$window.location.origin + '/oauth/redirect';
-    const state = this.angular.toJson({
+    const redirectUrl = location.origin + '/oauth/redirect';
+    const state = angular.toJson({
       name: this.$state.current.name,
       stateParams: this.$state.params
     });
 
-    const lock = new this.$window.Auth0Lock(this.settings.oauth.auth0.client_id, this.settings.oauth.auth0.domain, {
+    const lock = new Auth0Lock(this.settings.oauth.auth0.client_id, this.settings.oauth.auth0.domain, {
       auth: {
         redirectUrl: redirectUrl,
         responseType: 'token',
@@ -45,9 +44,9 @@ export default class AccessService {
      let returnTo;
 
      if (storage.auth !== null && storage.auth.idTokenPayload.sub.startsWith('facebook')) {
-       returnTo = this.$window.encodeURIComponent(this.$window.location.origin);
+       returnTo = encodeURIComponent(location.origin);
      } else {
-       returnTo = this.$window.location.origin;
+       returnTo = location.origin;
      }
 
      let href = 'https://' + this.settings.oauth.auth0.domain + '/v2/logout' +
@@ -58,8 +57,8 @@ export default class AccessService {
       href += '&access_token=' + storage.auth.idToken;
     }
 
-     this.$window.location.href = href;
+     location.href = href;
   }
 }
 
-AccessService.$inject = ['angular', 'lock', '$state', '$window', 'StorageService', 'ConnectionService', 'settings'];
+AccessService.$inject = ['$state', 'StorageService', 'ConnectionService', 'settings'];

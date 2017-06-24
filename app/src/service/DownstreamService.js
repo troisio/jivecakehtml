@@ -1,3 +1,5 @@
+import lf from 'lovefield';
+
 export default class DownstreamService {
   constructor(
     $q,
@@ -8,7 +10,8 @@ export default class DownstreamService {
     itemService,
     transactionService,
     storageService,
-    db
+    db,
+    SearchEntity
   ) {
     this.$q = $q;
     this.$rootScope = $rootScope;
@@ -19,17 +22,18 @@ export default class DownstreamService {
     this.transactionService = transactionService;
     this.storageService = storageService;
     this.db = db;
+    this.SearchEntity = SearchEntity;
   }
 
   bootstrapEventSource(source) {
     source.addEventListener('permission.delete', (sse) => {
       const permissions = JSON.parse(sse.data);
-      const ids = permissions.map(permisison => permissions.id);
+      const ids = permissions.map(permission => permission.id);
       const permissionTable = this.db.getSchema().table('Permission');
 
       this.db.delete()
         .from(permissionTable)
-        .where(table.id.in(ids))
+        .where(permissionTable.id.in(ids))
         .exec()
         .then(() => {
           this.$rootScope.$broadcast('permission.delete', permissions);
@@ -64,7 +68,8 @@ export default class DownstreamService {
               return this.organizationService.getOrganizationsByUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, {}).then((organizations) => {
                 const organizationTable = this.db.getSchema().table('Organization');
                 const organizationRows = organizations.map(organizationTable.createRow, organizationTable);
-                const organizationFuture = this.db.insertOrReplace()
+
+                return this.db.insertOrReplace()
                   .into(organizationTable)
                   .values(organizationRows)
                   .exec();
@@ -199,7 +204,7 @@ export default class DownstreamService {
         .into(table)
         .values(rows)
         .exec()
-        .then(res => {
+        .then(() => {
           this.$rootScope.$broadcast('item.update', items);
         });
     });
@@ -263,7 +268,8 @@ export default class DownstreamService {
       const transactions = JSON.parse(sse.data);
       const table = this.db.getSchema().table('Transaction');
       const ids = transactions.map(transaction => transaction.id);
-      const deleteFuture = this.db.delete()
+
+      this.db.delete()
         .from(table)
         .where(table.id.in(ids))
         .exec()
@@ -276,7 +282,8 @@ export default class DownstreamService {
       const profiles = JSON.parse(sse.data);
       const table = this.db.getSchema().table('PaypalPaymentProfile');
       const ids = profiles.map(profile => profile.id);
-      const deleteFuture = this.db.delete()
+
+      this.db.delete()
         .from(table)
         .where(table.id.in(ids))
         .exec()
@@ -309,7 +316,7 @@ export default class DownstreamService {
         .values(rows)
         .exec()
         .then(() => {
-          this.$rootScope.$broadcast('asset.create', profiles);
+          this.$rootScope.$broadcast('asset.create', assets);
         });
     });
   }
@@ -341,79 +348,84 @@ export default class DownstreamService {
           const eventIds = events.map(event => event.id);
           const eventTable = this.db.getSchema().table('Event');
           const rows = events.map(eventTable.createRow, eventTable);
-          const eventFuture = this.db.insertOrReplace().into(eventTable).values(rows).exec();
 
           let itemFuture;
 
           if (eventIds.length === 0) {
-            itemFuture = Promise.resolve();
+            itemFuture = Promise.resolve(new this.SearchEntity());
           } else {
             itemFuture = this.itemService.search(auth.idToken, {
               order: '-lastActivity',
               eventId: eventIds,
               limit: 40
-            }).then(search => {
-              const items = search.entity;
-              const itemTable = this.db.getSchema().table('Item');
-              const rows = items.map(itemTable.createRow, itemTable);
-
-              return this.db.insertOrReplace()
-                .into(itemTable)
-                .values(rows)
-                .exec()
-                .then(() => {
-                  const itemIds = items.map(item => item.id);
-
-                  let transactionFuture;
-
-                  if (itemIds.length > 0) {
-                    transactionFuture = this.transactionService.search(auth.idToken, {
-                      itemId: itemIds,
-                      leaf: true
-                    }).then(search => {
-                      const transactions = search.entity;
-                      const transactionTable = this.db.getSchema().table('Transaction');
-                      const rows = transactions.map(transactionTable.createRow, transactionTable);
-                      const insertFuture = this.db.insertOrReplace().into(transactionTable).values(rows).exec();
-
-                      let userFuture;
-                      let assetFuture;
-
-                      if (transactions.length > 0) {
-                        const transactionIds = transactions.map(transaction => transaction.id);
-
-                        assetFuture = this.transactionService.getUserAssets(auth.idToken, {
-                          id: transactionIds
-                        }).then((assets) => {
-                          const assetTable = this.db.getSchema().table('EntityAsset');
-                          const rows = assets.map(assetTable.createRow, assetTable);
-                          return this.db.insertOrReplace().into(assetTable).values(rows).exec();
-                        });
-
-                        userFuture = this.transactionService.searchUsers(auth.idToken, {
-                          id: transactionIds
-                        }).then((users) => {
-                          const userTable = this.db.getSchema().table('User');
-                          const rows = users.map(userTable.createRow, userTable);
-                          return this.db.insertOrReplace().into(userTable).values(rows).exec();
-                        });
-                      } else {
-                        userFuture = Promise.resolve();
-                        assetFuture = Promise.resolve();
-                      }
-
-                      return Promise.all([insertFuture, userFuture, assetFuture]);
-                    });
-                  } else {
-                    transactionFuture = Promise.resolve();
-                  }
-
-                  return transactionFuture;
-                });
             });
           }
 
-          return itemFuture;
+          return this.db.insertOrReplace()
+            .into(eventTable)
+            .values(rows)
+            .exec()
+            .then(() => {
+              return itemFuture.then(search => {
+                const items = search.entity;
+                const itemTable = this.db.getSchema().table('Item');
+                const rows = items.map(itemTable.createRow, itemTable);
+
+                return this.db.insertOrReplace()
+                  .into(itemTable)
+                  .values(rows)
+                  .exec()
+                  .then(() => {
+                    const itemIds = items.map(item => item.id);
+
+                    let transactionFuture;
+
+                    if (itemIds.length > 0) {
+                      transactionFuture = this.transactionService.search(auth.idToken, {
+                        itemId: itemIds,
+                        leaf: true
+                      }).then(search => {
+                        const transactions = search.entity;
+                        const transactionTable = this.db.getSchema().table('Transaction');
+                        const rows = transactions.map(transactionTable.createRow, transactionTable);
+                        const insertFuture = this.db.insertOrReplace().into(transactionTable).values(rows).exec();
+
+                        let userFuture;
+                        let assetFuture;
+
+                        if (transactions.length > 0) {
+                          const transactionIds = transactions.map(transaction => transaction.id);
+
+                          assetFuture = this.transactionService.getUserAssets(auth.idToken, {
+                            id: transactionIds
+                          }).then((assets) => {
+                            const assetTable = this.db.getSchema().table('EntityAsset');
+                            const rows = assets.map(assetTable.createRow, assetTable);
+                            return this.db.insertOrReplace().into(assetTable).values(rows).exec();
+                          });
+
+                          userFuture = this.transactionService.searchUsers(auth.idToken, {
+                            id: transactionIds
+                          }).then((users) => {
+                            const userTable = this.db.getSchema().table('User');
+                            const rows = users.map(userTable.createRow, userTable);
+                            return this.db.insertOrReplace().into(userTable).values(rows).exec();
+                          });
+                        } else {
+                          userFuture = Promise.resolve();
+                          assetFuture = Promise.resolve();
+                        }
+
+                        return Promise.all([insertFuture, userFuture, assetFuture]);
+                      });
+                    } else {
+                      transactionFuture = Promise.resolve();
+                    }
+
+                    return transactionFuture;
+                  });
+              });
+            });
         });
 
         const organizationFuture = this.organizationService.getOrganizationsByUser(
@@ -445,5 +457,6 @@ DownstreamService.$inject = [
   'ItemService',
   'TransactionService',
   'StorageService',
-  'db'
+  'db',
+  'SearchEntity'
 ];

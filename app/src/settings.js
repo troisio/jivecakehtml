@@ -20,6 +20,7 @@ export default {
     mock: true
   },
   stripe: {
-    pk: ''
+    pk: '',
+    useAsMock: true
   }
 };

@@ -1,3 +1,5 @@
+import angular from 'angular';
+
 export default class PublicEventController {
   constructor(
     $q,
@@ -15,6 +17,9 @@ export default class PublicEventController {
     uiService,
     storageService,
     paypalService,
+    stripeService,
+    StripePaymentProfile,
+    PaypalPaymentProfile,
     settings
   ) {
     this.$q = $q;
@@ -32,6 +37,9 @@ export default class PublicEventController {
     this.uiService = uiService;
     this.storageService = storageService;
     this.paypalService = paypalService;
+    this.stripeService = stripeService;
+    this.StripePaymentProfile = StripePaymentProfile;
+    this.PaypalPaymentProfile = PaypalPaymentProfile;
     this.settings = settings;
 
     this.$scope.ready = this.$scope.$parent.ready;
@@ -65,10 +73,8 @@ export default class PublicEventController {
 
       const paymentProfilePromise = this.paymentProfileService.publicSearch({
         id: groupData.event.paymentProfileId
-      }).then((search) => {
-        if (search.entity.length > 0) {
-          this.$scope.paymentProfile = search.entity[0];
-        }
+      }).then(search => {
+        this.$scope.paymentProfile = search.entity.length > 0 ? search.entity[0] : null;
       });
 
       groupData.itemData.forEach((itemData) => {
@@ -181,15 +187,156 @@ export default class PublicEventController {
     });
   }
 
+  processStripe(group, paidSelections, itemFormData) {
+    const defer = this.$q.defer();
+
+    const profile = this.$scope.paymentProfile;
+    const pk = this.settings.stripe.useAsMock ? this.settings.stripe.pk : profile.stripe_publishable_key;
+
+    const total = this.getTotalFromSelections(paidSelections, itemFormData);
+
+    const checkout = StripeCheckout.configure({
+      name: 'JiveCake',
+      key: pk,
+      image: 'https://jivecake.com/assets/safari/apple-touch-120x120.png',
+      locale: 'auto',
+      currency: this.$scope.groupData.event.currency,
+      token: (token) => {
+        const storage = this.storageService.read();
+        const itemData = paidSelections.map((selection) => ({
+          quantity: selection.selection.amount,
+          entity: selection.itemData.item.id
+        }));
+
+        this.stripeService.order(storage.auth.idToken, group.event.id, {
+          token: token,
+          itemData: itemData,
+          currency: this.$scope.groupData.event.currency
+        }).then(() => {
+          defer.resolve('Order placed');
+          this.$state.go('application.internal.myTransaction', {
+            user_id: storage.auth.idTokenPayload.sub
+          });
+        }, () => {
+          defer.reject('Sorry, unable to process your order');
+        });
+      },
+      closed: function () {
+        defer.reject('');
+      }
+    });
+
+    checkout.open({
+      name: 'JiveCake',
+      description: 'Checkout',
+      amount: total * 100
+    });
+
+    return defer.promise;
+  }
+
+  getTotalFromSelections(selections) {
+    return selections.reduce((sum, selection) => selection.selection.amount * selection.itemData.amount, 0);
+  }
+
+  processPaypal(group, paidSelections, itemFormData) {
+    const storage = this.storageService.read();
+    const promise = storage.auth === null ? this.paypalService.createPaymentDetails() : this.paypalService.createPaymentDetails(storage.auth.idToken);
+    const close = this.uiService.load().close;
+    const mockIpn = this.settings.paypal.mock;
+
+    return promise.then((detail) => {
+      let future;
+
+      if (mockIpn) {
+        const timestamp = new Date().getTime();
+
+        const itemQuantities = group.itemData.filter(data => data.amount > 0).map(data => new Object({
+          quantity: itemFormData[data.item.id].amount,
+          item: data.item
+        })).filter(itemQuantity => itemQuantity.quantity > 0);
+
+        if (itemQuantities.length > 0) {
+          future = this.paypalService.getCartIpn(
+            itemQuantities,
+            timestamp,
+            group.event.currency,
+            timestamp,
+            'Completed',
+            '',
+            detail.custom
+          ).then((ipn) => {
+            let future;
+
+            if (storage.auth === null) {
+              future = this.$q.resolve('Unable to mock Paypal IPN while not logged in');
+            } else {
+              future = this.paypalService.submitIpn(storage.auth.idToken, ipn, this.paypalService.getVerified()).then(() => {
+                this.$state.go('application.public.checkoutConfirmation');
+                return 'Test Paypal IPNs submitted';
+              }, function() {
+                return 'Unable to create test transaction';
+              });
+            }
+
+            return future;
+          });
+        } else {
+          future = this.$q.resolve('Item succesfully processed');
+        }
+      } else {
+        const returnUrl = location.origin + '/confirmation';
+        const notifyUrl = [this.settings.jivecakeapi.uri, 'paypal', 'ipn'].join('/');
+        const business = this.$scope.paymentProfile.email;
+        const form = angular.element(`
+          <form action="https://www.paypal.com/cgi-bin/webscr" method="POST">
+            <input type="hidden" name="cmd" value="_cart">
+            <input type="hidden" name="upload" value="1">
+            <input type="hidden" name="business" value="${business}">
+            <input type="hidden" name="currency_code" value="${group.event.currency}">
+            <input type="hidden" name="notify_url" value="${notifyUrl}">
+            <input type="hidden" name="custom" value="${detail.custom}">
+            <input type="hidden" name="return" value="${returnUrl}">
+          </form>`
+        )[0];
+
+        if (paidSelections.length > 0) {
+          paidSelections.forEach((data, index) => {
+            const elements = angular.element(`
+              <input type="hidden" name="item_name_${index + 1}" value="${data.itemData.item.name}">
+              <input type="hidden" name="amount_${index + 1}" value="${data.itemData.amount}">
+              <input type="hidden" name="item_number_${index + 1}" value="${data.itemData.item.id}">
+              <input type="hidden" name="quantity_${index + 1}" value="${data.selection.amount}">`
+            );
+
+            for (let index = 0; index < elements.length; index++) {
+              form.appendChild(elements[index]);
+            }
+          });
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+
+        future = this.$q.resolve('');
+      }
+
+      return future;
+    }, () => {
+      return 'Unable to create payment details';
+    }).finally(() => {
+      if (this.settings.paypal.mock) {
+        close.resolve();
+      }
+    });
+  }
+
   checkout(group, itemFormData) {
     const totalSelected = Object.keys(itemFormData)
       .reduce((previous, key) => previous + itemFormData[key].amount, 0);
 
     if (totalSelected > 0) {
-      const mockIpn = this.settings.paypal.mock;
       const storage = this.storageService.read();
-      const items = group.itemData.map(itemData => itemData.item);
-      const close = this.uiService.load().close;
       const selectionAndItemData = Object.keys(itemFormData).map((itemId) => {
         const selection = itemFormData[itemId];
         const itemData = group.itemData.find((datum) => datum.item.id === itemId);
@@ -210,92 +357,15 @@ export default class PublicEventController {
         });
 
       this.$q.all(unpaidFutures).then(() => {
-        const promise = storage.auth === null ? this.paypalService.createPaymentDetails() : this.paypalService.createPaymentDetails(storage.auth.idToken);
+        const paidSelections = selectionAndItemData.filter(data => data.itemData.amount > 0);
 
-        return promise.then((detail) => {
-          let future;
-
-          if (mockIpn) {
-            const timestamp = new Date().getTime();
-
-            const itemQuantities = group.itemData.filter(data => data.amount > 0).map(data => new Object({
-                quantity: itemFormData[data.item.id].amount,
-                item: data.item
-              })).filter(itemQuantity => itemQuantity.quantity > 0);
-
-            if (itemQuantities.length > 0) {
-              future = this.paypalService.getCartIpn(
-                itemQuantities,
-                timestamp,
-                group.event.currency,
-                timestamp,
-                'Completed',
-                '',
-                detail.custom
-              ).then((ipn) => {
-                let future;
-
-                if (storage.auth === null) {
-                  future = this.$q.resolve('Unable to mock Paypal IPN while not logged in');
-                } else {
-                  future = this.paypalService.submitIpn(storage.auth.idToken, ipn, this.paypalService.getVerified()).then(() => {
-                    this.$state.go('application.public.checkoutConfirmation');
-                    return 'Test Paypal IPNs submitted';
-                  }, function() {
-                    return 'Unable to create test transaction';
-                  });
-                }
-
-                return future;
-              });
-            } else {
-              future = this.$q.resolve('Item succesfully processed');
-            }
-          } else {
-            const returnUrl = this.$location.$$protocol + '://' + this.$location.$$host + (this.$location.port() === 80 || this.$location.port() === 443 ? '' : ':' + this.$location.port()) + '/confirmation';
-            const notifyUrl = [this.settings.jivecakeapi.uri, 'paypal', 'ipn'].join('/');
-            const business = this.$scope.paymentProfile.email;
-            const form = angular.element(`
-              <form action="https://www.paypal.com/cgi-bin/webscr" method="POST">
-              <input type="hidden" name="cmd" value="_cart">
-              <input type="hidden" name="upload" value="1">
-              <input type="hidden" name="business" value="${business}">
-              <input type="hidden" name="currency_code" value="${group.event.currency}">
-              <input type="hidden" name="notify_url" value="${notifyUrl}">
-              <input type="hidden" name="custom" value="${detail.custom}">
-              <input type="hidden" name="return" value="${returnUrl}">
-              </form>`
-            )[0];
-
-            let index = 1;
-
-            const paidSelections = selectionAndItemData.filter(data => data.itemData.amount > 0);
-
-            if (paidSelections.length > 0) {
-              paidSelections.forEach((data, index) => {
-                const elements = angular.element(`
-                  <input type="hidden" name="item_name_${index + 1}" value="${data.itemData.item.name}">
-                  <input type="hidden" name="amount_${index + 1}" value="${data.itemData.amount}">
-                  <input type="hidden" name="item_number_${index + 1}" value="${data.itemData.item.id}">
-                  <input type="hidden" name="quantity_${index + 1}" value="${data.selection.amount}">`
-                );
-
-                for (let index = 0; index < elements.length; index++) {
-                  form.appendChild(elements[index]);
-                }
-              });
-
-              document.body.appendChild(form);
-              form.submit();
-            }
-
-            future = this.$q.resolve('');
-          }
-
-          return future;
-        }, () => {
-          return 'Unable to create payment details';
-        });
+        if (this.$scope.paymentProfile instanceof this.StripePaymentProfile) {
+          return this.processStripe(group, paidSelections, itemFormData);
+        } else if (this.$scope.paymentProfile instanceof this.PaypalPaymentProfile) {
+          return this.processPaypal(group, paidSelections, itemFormData);
+        } else {
+          throw new Error('invalid payment profile implementation');
+        }
       }, () => {
         return 'Unable to purchase free items';
       }).then((message) => {
@@ -309,7 +379,6 @@ export default class PublicEventController {
       }).finally(() => {
         if (this.settings.paypal.mock) {
           this.run();
-          close.resolve();
         }
       });
     } else {
@@ -353,5 +422,8 @@ PublicEventController.$inject = [
   'UIService',
   'StorageService',
   'PaypalService',
+  'StripeService',
+  'StripePaymentProfile',
+  'PaypalPaymentProfile',
   'settings'
 ];

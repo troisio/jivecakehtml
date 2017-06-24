@@ -1,14 +1,11 @@
-export default class ToolsService {
-  constructor(angular, $window) {
-    this.angular = angular;
-    this.$window = $window;
-  }
+import angular from 'angular';
 
+export default class ToolsService {
   stateParamsToQuery(subject) {
-    return this.$window.Object.keys(subject).reduce((previousValue, key) => {
+    return Object.keys(subject).reduce((previousValue, key) => {
       const value = subject[key];
 
-      if (this.$window.Array.isArray(value)) {
+      if (Array.isArray(value)) {
         previousValue[key] = value;
       } else if (typeof value !== 'undefined') {
         previousValue[key] = [value];
@@ -31,7 +28,7 @@ export default class ToolsService {
   }
 
   overWrite(subject, destination) {
-    const destinationProperties = this.$window.Object.getOwnPropertyNames(destination);
+    const destinationProperties = Object.getOwnPropertyNames(destination);
 
     destinationProperties.forEach(function(property) {
       if (property in subject) {
@@ -41,8 +38,8 @@ export default class ToolsService {
   }
 
   maintainKeys(subject, keys) {
-    const result = this.angular.copy(subject);
-    const set = new this.$window.Set();
+    const result = angular.copy(subject);
+    const set = new Set();
     keys.forEach(set.add, set);
 
     for (let property in result) {
@@ -54,5 +51,3 @@ export default class ToolsService {
     return result;
   }
 }
-
-ToolsService.$inject = ['angular', '$window'];

@@ -1,3 +1,5 @@
+import angular from 'angular';
+
 export default class UpdateAccountController {
   constructor($q, $scope, auth0Service, storageService, userService, uiService, assetService) {
     this.$q = $q;
@@ -129,7 +131,7 @@ export default class UpdateAccountController {
 
     this.$scope.loading = true;
 
-    this.$q.all([imageFuture, userUpdateFuture]).then(responses => {
+    this.$q.all([imageFuture, userUpdateFuture]).then(() => {
       this.uiService.notify('Successfully updated');
       this.run();
     }, (response) => {

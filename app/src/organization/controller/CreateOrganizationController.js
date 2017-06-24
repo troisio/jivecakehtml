@@ -23,10 +23,10 @@ export default class CreateOrganizationController {
     this.$scope.organization.parentId = this.organizationService.rootOrganization.id;
   }
 
-  submit(organization) {
+  submit() {
     this.$scope.loading = true;
 
-    return this.organizationService.create(this.storage.auth.idToken, organization).then(organization => {
+    return this.organizationService.create(this.storage.auth.idToken).then(() => {
       this.$state.go('application.internal.organization.read');
       this.$mdDialog.hide();
 

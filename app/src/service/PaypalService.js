@@ -1,6 +1,5 @@
 export default class PaypalService {
-  constructor($window, $http, settings, itemService, transactionService) {
-    this.$window = $window;
+  constructor($http, settings, itemService, transactionService) {
     this.$http = $http;
     this.settings = settings;
     this.itemService = itemService;
@@ -12,12 +11,12 @@ export default class PaypalService {
 
     for(let key in ipn) {
       const value = ipn[key];
-      let part = this.$window.encodeURIComponent(key) + '=';
+      let part = encodeURIComponent(key) + '=';
 
       const validValue = typeof value !== 'undefined' && value !== null;
 
       if (validValue) {
-        part += this.$window.encodeURIComponent(value);
+        part += encodeURIComponent(value);
       }
 
       parts.push(part);
@@ -56,7 +55,6 @@ export default class PaypalService {
   }
 
   getCartIpn(itemQuantities, time, currency, txn_id, payment_status, pending_reason, custom) {
-    const timestamp = new this.$window.Date(time).getTime();
     const components = new Date(time).toGMTString().split(' ');
     const day = components[1],
       month = components[2],
@@ -122,7 +120,7 @@ export default class PaypalService {
 
         mc_gross += amount;
 
-        ipn['mc_gross_' + itemIndex] = this.$window.parseFloat(Math.round(amount * 100) / 100).toFixed(2) * itemQuantity.quantity;
+        ipn['mc_gross_' + itemIndex] = parseFloat(Math.round(amount * 100) / 100).toFixed(2) * itemQuantity.quantity;
         ipn['item_name' + itemIndex] = itemQuantity.item.name;
         ipn['mc_shipping' + itemIndex] = 0.0;
         ipn['mc_handling' + itemIndex] = 0.0;
@@ -142,4 +140,4 @@ export default class PaypalService {
   }
 }
 
-PaypalService.$inject = ['$window', '$http', 'settings', 'ItemService', 'TransactionService'];
+PaypalService.$inject = ['$http', 'settings', 'ItemService', 'TransactionService'];

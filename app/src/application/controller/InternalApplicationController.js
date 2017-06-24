@@ -16,7 +16,7 @@ export default class InterneralApplicationController {
 
   run() {
     this.$scope.ready.then(() => {
-      this.$scope.$on('jivecakeapi.oauth.invalid_grant', (event, error) => {
+      this.$scope.$on('jivecakeapi.oauth.invalid_grant', () => {
         this.$mdDialog.show({
           templateUrl: '/src/access/partial/sessionWarning.html',
           controller: 'SessionWarningController',
