@@ -1,11 +1,11 @@
 export default {
   oauth: {
     auth0: {
-      domain: 'jivecake.auth0.com',
-      client_id: 'XUoSMI9WREWpgWAetI7bE4agoELNi66m'
+      domain: '',
+      client_id: ''
     },
     stripe: {
-      client_id: 'ca_AsNEgpmAGg4bKXtHG56Zw520oXObjDyE'
+      client_id: ''
     }
   },
   jivecakeapi: {
@@ -17,12 +17,12 @@ export default {
     }
   },
   paypal: {
-    mock: true,
+    env: '',
     clientIdSandbox: '',
     clientIdProduction: ''
   },
   stripe: {
-    pk: 'pk_test_ZwNXbsRcM9HAaEjY1gkPhQEM',
+    pk: '',
     useAsMock: true
   }
 };

@@ -244,7 +244,7 @@ export default class PublicEventController {
     const token = storage.auth === null ? null : storage.auth.idToken;
 
     paypal.Button.render({
-      env: 'sandbox',
+      env: this.settings.paypal.env,
       commit: true,
       payment: () => {
         return new Promise((resolve, reject) => {
@@ -263,8 +263,7 @@ export default class PublicEventController {
         });
       },
       onAuthorize: (authorization) => {
-        this.paypalService.execute(token, authorization).then(data => {
-          console.log(data);
+        this.paypalService.execute(token, authorization).then(() => {
           this.uiService.notify('Payment complete');
           this.$state.go('application.internal.myTransaction', {
             user_id: storage.auth.idTokenPayload.sub
