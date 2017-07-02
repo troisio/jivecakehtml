@@ -1,15 +1,15 @@
 export default {
   oauth: {
     auth0: {
-      domain: '',
-      client_id: ''
+      domain: 'jivecake.auth0.com',
+      client_id: 'XUoSMI9WREWpgWAetI7bE4agoELNi66m'
     },
     stripe: {
-      client_id: ''
+      client_id: 'ca_AsNEgpmAGg4bKXtHG56Zw520oXObjDyE'
     }
   },
   jivecakeapi: {
-    uri: 'http://127.0.0.1:8080'
+    uri: ''
   },
   google: {
     analytics: {
@@ -17,10 +17,12 @@ export default {
     }
   },
   paypal: {
-    mock: true
+    mock: true,
+    clientIdSandbox: '',
+    clientIdProduction: ''
   },
   stripe: {
-    pk: '',
+    pk: 'pk_test_ZwNXbsRcM9HAaEjY1gkPhQEM',
     useAsMock: true
   }
 };

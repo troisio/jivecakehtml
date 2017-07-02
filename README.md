@@ -11,7 +11,7 @@ docker build -t jivecakehtml .
 #### Watch your files for changes
 
 ```sh
-$(npm bin)/gulp
+$(npm bin)/webpack --env.sourceMap --watch
 ```
 
 #### Run the nginx / go server
@@ -41,8 +41,6 @@ Create a `single page application` web client.
 Under that client set the following:
 
 - Allowed Logout URLs: `{yourOrigin}`
-- Allowed callback URLs: `{yourOrigin}/oauth/redirect, {yourOrigin}oauth/redirect`, e.g., `http://127.0.0.1/oauth/redirect, https://localhost/oauth/redirect`
-
-We only use Google and FaceBook for social identity logins
+- Allowed callback URLs: `{yourOrigin}/oauth/redirect`, e.g., `http://127.0.0.1/oauth/redirect, https://localhost/oauth/redirect`
 
 In your auth0 account, go to Connection -> Social -> FaceBook and enable the `email` attribute

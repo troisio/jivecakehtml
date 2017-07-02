@@ -26,11 +26,6 @@
                     <span md-menu-align-target>update</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-item ng-show="hasApplicationWrite && itemData.Item.amount !== 0">
-                  <md-button ng-click="controller.createPaypalTransaction(itemData.Item)">
-                    <span md-menu-align-target>create paypal transaction</span>
-                  </md-button>
-                </md-menu-item>
                 <md-menu-item>
                   <md-button ng-href="{{apiUrl + '/transaction/excel?itemId=' + itemData.item.id + '&Authorization=Bearer ' + token}}">
                     <span md-menu-align-target>download transactions</span>

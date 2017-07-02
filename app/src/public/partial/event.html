@@ -47,6 +47,7 @@
     </section>
     <div ng-show="groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections" class="checkout">
       <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
+      <div id="paypal-button"></div>
     </div>
     <div ng-show="groupData.itemData.length === 0" layout-padding>
       <p>Sorry, this event does not have any items to display</p>

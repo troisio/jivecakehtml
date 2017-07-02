@@ -6,6 +6,34 @@ export default class PaypalService {
     this.transactionService = transactionService;
   }
 
+  execute(token, body) {
+    const url = [this.settings.jivecakeapi.uri, 'paypal', 'payment', 'execute'].join('/');
+
+    const options = {};
+
+    if (token !== null) {
+      options.headers = {
+        Authorization: 'Bearer ' + token
+      };
+    }
+
+    return this.$http.post(url, body, options).then(response => response.data);
+  }
+
+  getPayment(token, eventId, body) {
+    const url = [this.settings.jivecakeapi.uri, 'paypal', eventId, 'order'].join('/');
+
+    const options = {};
+
+    if (token !== null) {
+      options.headers = {
+        Authorization: 'Bearer ' + token
+      };
+    }
+
+    return this.$http.post(url, body, options).then(response => response.data);
+  }
+
   submitIpn(token, ipn, type) {
     const parts = [];
 

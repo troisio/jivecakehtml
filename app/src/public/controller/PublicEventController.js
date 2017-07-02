@@ -1,5 +1,3 @@
-import angular from 'angular';
-
 export default class PublicEventController {
   constructor(
     $q,
@@ -208,7 +206,9 @@ export default class PublicEventController {
           entity: selection.itemData.item.id
         }));
 
-        this.stripeService.order(storage.auth.idToken, group.event.id, {
+        const idToken = storage.auth === null ? null : storage.auth.idToken;
+
+        this.stripeService.order(idToken, group.event.id, {
           token: token,
           itemData: itemData,
           currency: this.$scope.groupData.event.currency
@@ -239,96 +239,41 @@ export default class PublicEventController {
     return selections.reduce((sum, selection) => selection.selection.amount * selection.itemData.amount, 0);
   }
 
-  processPaypal(group, paidSelections, itemFormData) {
+  processPaypal(group, paidSelections) {
     const storage = this.storageService.read();
-    const promise = storage.auth === null ? this.paypalService.createPaymentDetails() : this.paypalService.createPaymentDetails(storage.auth.idToken);
-    const close = this.uiService.load().close;
-    const mockIpn = this.settings.paypal.mock;
+    const token = storage.auth === null ? null : storage.auth.idToken;
 
-    return promise.then((detail) => {
-      let future;
+    paypal.Button.render({
+      env: 'sandbox',
+      commit: true,
+      payment: () => {
+        return new Promise((resolve, reject) => {
+          const itemData = paidSelections.map(selection => ({
+            quantity: selection.selection.amount,
+            entity: selection.itemData.item.id
+          }));
 
-      if (mockIpn) {
-        const timestamp = new Date().getTime();
-
-        const itemQuantities = group.itemData.filter(data => data.amount > 0).map(data => new Object({
-          quantity: itemFormData[data.item.id].amount,
-          item: data.item
-        })).filter(itemQuantity => itemQuantity.quantity > 0);
-
-        if (itemQuantities.length > 0) {
-          future = this.paypalService.getCartIpn(
-            itemQuantities,
-            timestamp,
-            group.event.currency,
-            timestamp,
-            'Completed',
-            '',
-            detail.custom
-          ).then((ipn) => {
-            let future;
-
-            if (storage.auth === null) {
-              future = this.$q.resolve('Unable to mock Paypal IPN while not logged in');
-            } else {
-              future = this.paypalService.submitIpn(storage.auth.idToken, ipn, this.paypalService.getVerified()).then(() => {
-                this.$state.go('application.public.checkoutConfirmation');
-                return 'Test Paypal IPNs submitted';
-              }, function() {
-                return 'Unable to create test transaction';
-              });
-            }
-
-            return future;
+          this.paypalService.getPayment(token, group.event.id, {
+            itemData: itemData
+          }).then(data => {
+            resolve(data.id);
+          }, (response) => {
+            reject(response);
           });
-        } else {
-          future = this.$q.resolve('Item succesfully processed');
-        }
-      } else {
-        const returnUrl = location.origin + '/confirmation';
-        const notifyUrl = [this.settings.jivecakeapi.uri, 'paypal', 'ipn'].join('/');
-        const business = this.$scope.paymentProfile.email;
-        const form = angular.element(`
-          <form action="https://www.paypal.com/cgi-bin/webscr" method="POST">
-            <input type="hidden" name="cmd" value="_cart">
-            <input type="hidden" name="upload" value="1">
-            <input type="hidden" name="business" value="${business}">
-            <input type="hidden" name="currency_code" value="${group.event.currency}">
-            <input type="hidden" name="notify_url" value="${notifyUrl}">
-            <input type="hidden" name="custom" value="${detail.custom}">
-            <input type="hidden" name="return" value="${returnUrl}">
-          </form>`
-        )[0];
-
-        if (paidSelections.length > 0) {
-          paidSelections.forEach((data, index) => {
-            const elements = angular.element(`
-              <input type="hidden" name="item_name_${index + 1}" value="${data.itemData.item.name}">
-              <input type="hidden" name="amount_${index + 1}" value="${data.itemData.amount}">
-              <input type="hidden" name="item_number_${index + 1}" value="${data.itemData.item.id}">
-              <input type="hidden" name="quantity_${index + 1}" value="${data.selection.amount}">`
-            );
-
-            for (let index = 0; index < elements.length; index++) {
-              form.appendChild(elements[index]);
-            }
+        });
+      },
+      onAuthorize: (authorization) => {
+        this.paypalService.execute(token, authorization).then(data => {
+          console.log(data);
+          this.uiService.notify('Payment complete');
+          this.$state.go('application.internal.myTransaction', {
+            user_id: storage.auth.idTokenPayload.sub
           });
-
-          document.body.appendChild(form);
-          form.submit();
-        }
-
-        future = this.$q.resolve('');
+        }, () => {
+          this.uiService.notify('Unable to complete payment');
+        });
       }
-
-      return future;
-    }, () => {
-      return 'Unable to create payment details';
-    }).finally(() => {
-      if (this.settings.paypal.mock) {
-        close.resolve();
-      }
-    });
+    }, '#paypal-button');
   }
 
   checkout(group, itemFormData) {
@@ -362,24 +307,12 @@ export default class PublicEventController {
         if (this.$scope.paymentProfile instanceof this.StripePaymentProfile) {
           return this.processStripe(group, paidSelections, itemFormData);
         } else if (this.$scope.paymentProfile instanceof this.PaypalPaymentProfile) {
-          return this.processPaypal(group, paidSelections, itemFormData);
+          return this.processPaypal(group, paidSelections, this.$scope.paymentProfile);
         } else {
           throw new Error('invalid payment profile implementation');
         }
       }, () => {
-        return 'Unable to purchase free items';
-      }).then((message) => {
-        if (message.length > 0) {
-          this.uiService.notify(message);
-        }
-      }, (message) => {
-        if (message.length > 0) {
-          this.uiService.notify(message);
-        }
-      }).finally(() => {
-        if (this.settings.paypal.mock) {
-          this.run();
-        }
+        this.uiService.notify('Unable to purchase free items');
       });
     } else {
       this.uiService.notify('No item selection made');

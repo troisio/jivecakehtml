@@ -37,8 +37,8 @@ export default class PaymentProfileService {
     });
   }
 
-  createPaypalPaymentProfile(token, profile) {
-    const url = [this.settings.jivecakeapi.uri, 'organization', profile.organizationId, 'payment', 'profile', 'paypal'].join('/');
+  createPaypalPaymentProfile(token, organizationId, profile) {
+    const url = [this.settings.jivecakeapi.uri, 'organization', organizationId, 'payment', 'profile', 'paypal'].join('/');
 
     return this.$http.post(url, profile, {
       headers : {

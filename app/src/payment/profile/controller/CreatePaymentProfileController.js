@@ -31,7 +31,6 @@ export default class CreatePaymentProfileController {
   run() {
     this.$scope.organization = this.organization;
     this.$scope.profile = new this.PaypalPaymentProfile();
-    this.$scope.profile.organizationId = this.organization.id;
     this.$scope.close = this.$mdDialog.hide;
   }
 
@@ -42,7 +41,11 @@ export default class CreatePaymentProfileController {
       this.$scope.loading = true;
 
       const storage = this.storageService.read();
-      this.paymentProfileService.createPaypalPaymentProfile(storage.auth.idToken).then(() => {
+      this.paymentProfileService.createPaypalPaymentProfile(
+        storage.auth.idToken,
+        this.organization.id,
+        this.$scope.profile
+      ).then(() => {
         this.uiService.notify('Payment Profile created');
         this.$mdDialog.hide();
       }, () => {
@@ -74,6 +77,8 @@ export default class CreatePaymentProfileController {
       }
 
       location.href = 'https://connect.stripe.com/oauth/authorize?' + params.toString();
+    } else {
+      throw new Error('type is not stripe or paypal');
     }
   }
 }

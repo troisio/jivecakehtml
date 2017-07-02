@@ -28,7 +28,8 @@
     "ArrayBuffer": true,
     "atob": true,
     "FileReader": true,
-    "ga": true
+    "ga": true,
+    "paypal": true
   },
   "extends": ["eslint:recommended"]
 }

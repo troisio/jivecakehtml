@@ -7,6 +7,7 @@ export default class Transaction {
     this.organizationId = null;
     this.user_id = null;
     this.linkedId = null;
+    this.linkedIdString = null;
     this.linkedObjectClass = null;
     this.status = null;
     this.paymentStatus = null;
@@ -22,6 +23,8 @@ export default class Transaction {
   }
 
   isVendorTransaction() {
-    return this.linkedObjectClass === 'PaypalIPN';
+    return this.linkedObjectClass === 'PaypalIPN' ||
+      this.linkedObjectClass === 'StripeCharge' ||
+      this.linkedObjectClass === 'PaypalPayment';
   }
 }
