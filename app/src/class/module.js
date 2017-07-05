@@ -12,7 +12,6 @@ import OrganizationFeature from './OrganizationFeature';
 import Page from './Page';
 import PaymentDetail from './PaymentDetail';
 import PaymentProfile from './PaymentProfile';
-import PaypalIpn from './PaypalIpn';
 import PaypalPaymentProfile from './PaypalPaymentProfile';
 import Permission from './Permission';
 import SearchEntity from './SearchEntity';
@@ -33,7 +32,6 @@ export default angular.module('jivecakeclass', [])
   .constant('Page', Page)
   .constant('PaymentDetail', PaymentDetail)
   .constant('PaymentProfile', PaymentProfile)
-  .constant('PaypalIpn', PaypalIpn)
   .constant('PaypalPaymentProfile', PaypalPaymentProfile)
   .constant('Permission', Permission)
   .constant('SearchEntity', SearchEntity)

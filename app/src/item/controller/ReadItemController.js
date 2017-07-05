@@ -194,42 +194,6 @@ export default class ReadItemController {
       });
   }
 
-  createPaypalTransaction(item) {
-    this.$q.all({
-      event: this.eventService.read(this.storage.auth.idToken, item.eventId),
-      detail: this.paypalService.createPaymentDetails(this.storage.auth.idToken)
-    }).then(resolve => {
-      const details = resolve.detail;
-      const event = resolve.event;
-      const time = new Date().getTime();
-      const txn_id = time.toString();
-
-      const itemInstance = this.toolsService.toObject(item, this.Item);
-
-      this.paypalService.getCartIpn(
-        [{
-          quantity: 3,
-          item: itemInstance
-        }],
-        new Date().getTime(),
-        event.currency,
-        txn_id,
-        'Completed',
-        '',
-        details.custom
-      ).then(ipn => {
-        this.paypalService.submitIpn(this.storage.auth.idToken, ipn, 'VERIFIED').then(() => {
-          this.uiService.notify('Transaction created');
-        }, () => {
-          this.uiService.notify('Unable to submit IPN');
-        });
-      });
-    }).then(function() {
-    }, () => {
-      this.uiService.notify('Unable to create Test Instant Payment Notification');
-    });
-  }
-
   delete(itemData, $event) {
     const confirm = this.$mdDialog.confirm()
       .title('Are you sure you want to delete this item?')

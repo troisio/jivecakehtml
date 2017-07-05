@@ -3,20 +3,26 @@ import lf from 'lovefield';
 export default class ReadTransactionController {
   constructor(
     $scope,
+    $q,
     $state,
     $mdDialog,
     storageService,
     transactionService,
+    paypalService,
+    stripeService,
     userService,
     uiService,
     db,
     Transaction
   ) {
     this.$scope = $scope;
+    this.$q = $q;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.storageService = storageService;
     this.transactionService = transactionService;
+    this.paypalService = paypalService;
+    this.stripeService = stripeService;
     this.userService = userService;
     this.uiService = uiService;
     this.db = db;
@@ -26,6 +32,11 @@ export default class ReadTransactionController {
     this.$scope.data = [];
 
     $scope.$parent.selectedTab = 3;
+
+    const canRefund = new Transaction().canRefund;
+    $scope.canRefund = function(transaction) {
+      return canRefund.call(transaction);
+    };
 
     [
       'transaction.create',
@@ -177,6 +188,43 @@ export default class ReadTransactionController {
     });
   }
 
+  refund(transaction, $event) {
+    const confirm = this.$mdDialog.confirm()
+      .title('Are you sure you refund this transaction?')
+      .ariaLabel('Refund Transaction')
+      .clickOutsideToClose(true)
+      .targetEvent($event)
+      .ok('Yes')
+      .cancel('Cancel');
+
+      this.$mdDialog.show(confirm).then(() => {
+        const storage = this.storageService.read();
+
+        const promise = this.uiService.load();
+        let future;
+
+        if (transaction.linkedObjectClass === 'PaypalPayment') {
+          future = this.paypalService.refund(storage.auth.idToken, transaction.id).then(() => {
+            this.uiService.notify('Transaction refunded');
+          }, () => {
+            this.uiService.notify('Unable to refund');
+          });
+        } else if (transaction.linkedObjectClass === 'StripeCharge') {
+          future = this.stripeService.refund(storage.auth.idToken, transaction.id).then(() => {
+            this.uiService.notify('Transaction refunded');
+          }, () => {
+            this.uiService.notify('Unable to refund');
+          });
+        } else {
+          future = this.$q.resolve();
+        }
+
+        future.finally(() => {
+          promise.close.resolve();
+        });
+      });
+  }
+
   readTransaction(transaction, user, item) {
     this.$mdDialog.show({
       controller: ['$scope', 'transaction', 'user', 'item', function($scope, transaction, user, item) {
@@ -257,10 +305,13 @@ export default class ReadTransactionController {
 
 ReadTransactionController.$inject = [
   '$scope',
+  '$q',
   '$state',
   '$mdDialog',
   'StorageService',
   'TransactionService',
+  'PaypalService',
+  'StripeService',
   'UserService',
   'UIService',
   'db',

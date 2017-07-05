@@ -34,7 +34,7 @@ You also need to run [jivecakeapi](https://github.com/troisio/jivecakeapi). That
 
 ### Things You Should Know
 
-Before working on this project, you should be familiar with [docker](https://www.docker.com), [javascript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [angularJS 1](https://angularjs.org), [gulp](http://gulpjs.com/), [git](https://git-scm.com/doc), [OAuth 2.0](https://oauth.net/2), HTTP, and using a linux terminal
+Before working on this project, you should be familiar with [docker](https://www.docker.com), [javascript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [angularJS 1](https://angularjs.org), [webpack](https://webpack.js.org), [git](https://git-scm.com/doc), [OAuth 2.0](https://oauth.net/2), HTTP, and using a linux terminal
 
 You will also need an [auth0](https://auth0.com) account and will need to configure a web client.
 Create a `single page application` web client.

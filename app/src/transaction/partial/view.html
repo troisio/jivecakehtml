@@ -31,20 +31,15 @@
           <span ng-show="transaction.status === 4">Unknown</span>
         </div>
       </md-list-item>
-      <md-list-item ng-show="transaction.paymentStatus !== 0" class="layout-padding md-1-line">
+      <md-list-item class="layout-padding md-1-line">
         <div class="md-list-item-text" layout="column">
-          <h3>Payment Status</h3>
-          <span ng-show="transaction.paymentStatus === 1">Insufficient Payment</span>
-          <span ng-show="transaction.paymentStatus === 2">Overpaid</span>
-            <span ng-show="transaction.paymentStatus === 3">Unknown</span>
-        </div>
-      </md-list-item>
-      <md-list-item ng-show="transaction.amount >= 0" class="layout-padding md-1-line">
-        <div class="md-list-item-text" layout="column">
-          <h3>Total Paid</h3>
-          <p>
-            <span ng-show="transaction.currency === 'USD'">&#36;</span><span ng-show="transaction.currency === 'EUR'">&#128;</span><span>{{transaction.amount| number: 2}}</span>
-          </p>
+          <h3 ng-show="transaction.status !== 3">Total Paid</h3>
+          <h3 ng-show="transaction.status === 3">Amount Refunded</h3>
+          <div>
+            <span ng-show="transaction.currency === 'USD'">&#36;</span>
+            <span ng-show="transaction.currency === 'EUR'">&#128;</span>
+            <span>{{transaction.amount * -1| number: 2}}</span>
+          </div>
         </div>
       </md-list-item>
       <md-list-item class="layout-padding md-1-line">
@@ -53,7 +48,7 @@
           <span>{{transaction.timeCreated | date:'yyyy-MM-dd HH:mm:s'}} {{time| browserTimeZoneAbbreviation}}</span>
         </div>
       </md-list-item>
-      <md-list-item ng-show="transaction.linkedObjectClass === 'PaypalIPN' || transaction.linkedObjectClass === 'PaypalPayment'" class="layout-padding md-1-line">
+      <md-list-item ng-show="transaction.linkedObjectClass === 'PaypalPayment'" class="layout-padding md-1-line">
         <div class="md-list-item-text" layout="column">
           <h3>Payment Method</h3>
           <p>

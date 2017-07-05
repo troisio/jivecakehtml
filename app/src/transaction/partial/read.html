@@ -16,7 +16,7 @@
                 <span ng-show="transactionData.User.user_id !== null">{{transactionData.User | userIdentificationFilter: false}}</span>
               </div>
               <div>
-                <a href="" ui-sref="application.internal.item.read({id: transactionData.Item.id})">{{transactionData.Item.name}}</a>
+                <a href="" ui-sref="application.internal.item.read({highlight: transactionData.Item.id})">{{transactionData.Item.name}}</a>
               </div>
             </div>
             <div ng-click="controller.showImage('https://storage.googleapis.com/' + transactionData.EntityAsset.assetId)" ng-if="transactionData.EntityAsset.assetId !== null">
@@ -57,6 +57,11 @@
                   <md-button ng-click="controller.deleteTransaction(transactionData, $event)">
                     <span ng-show="transactionData.Transaction.status !== 2" md-menu-align-target>delete transaction</span>
                     <span ng-show="transactionData.Transaction.status === 2" md-menu-align-target>undo revocation</span>
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-show="canRefund(transactionData.Transaction)">
+                  <md-button ng-click="controller.refund(transactionData.Transaction, $event)">
+                    <span md-menu-align-target>refund transaction</span>
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-show="transactionData.Transaction.status === 0">

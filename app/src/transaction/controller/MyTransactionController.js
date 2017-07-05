@@ -34,7 +34,6 @@ export default class MyTransactionController {
       () => {
         return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, {
           status: [transactionService.SETTLED, transactionService.PENDING],
-          paymentStatus: [transactionService.PAYMENT_EQUAL, transactionService.PAYMENT_GREATER_THAN],
           limit: 100,
           leaf: true,
           order: '-timeCreated',

@@ -9,25 +9,15 @@ export default class TransactionService {
     this.SearchEntity = SearchEntity;
 
     this.PAYMENT_EQUAL = 0;
-    this.PAYMENT_LESS_THAN = 1;
-    this.PAYMENT_GREATER_THAN = 2;
-    this.PAYMENT_UNKNOWN = 3;
 
     this.SETTLED = 0;
     this.PENDING = 1;
     this.USER_REVOKED = 2;
     this.REFUNDED = 3;
-    this.UNKNOWN = 3;
+    this.UNKNOWN = 4;
 
     this.settings = settings;
-
-    this.countingFilter = (transaction) => (
-      transaction.paymentStatus == this.PAYMENT_EQUAL ||
-      transaction.paymentStatus == this.PAYMENT_GREATER_THAN
-    ) && (
-      transaction.status == this.SETTLED ||
-      transaction.status == this.PENDING
-    );
+    this.countingFilter = transaction => transaction.leaf && (transaction.status === this.SETTLED || transaction.status === this.PENDING);
   }
 
   create(token, itemId, body) {

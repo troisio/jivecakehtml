@@ -23,8 +23,11 @@ export default class Transaction {
   }
 
   isVendorTransaction() {
-    return this.linkedObjectClass === 'PaypalIPN' ||
-      this.linkedObjectClass === 'StripeCharge' ||
+    return this.linkedObjectClass === 'StripeCharge' ||
       this.linkedObjectClass === 'PaypalPayment';
+  }
+
+  canRefund() {
+    return this.status === 0 && this.leaf;
   }
 }
