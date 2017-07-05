@@ -10,6 +10,7 @@ export default class DownstreamService {
     itemService,
     transactionService,
     storageService,
+    assetService,
     db,
     SearchEntity
   ) {
@@ -21,6 +22,7 @@ export default class DownstreamService {
     this.itemService = itemService;
     this.transactionService = transactionService;
     this.storageService = storageService;
+    this.assetService = assetService;
     this.db = db;
     this.SearchEntity = SearchEntity;
   }
@@ -309,15 +311,36 @@ export default class DownstreamService {
     source.addEventListener('asset.create', (sse) => {
       const assets = JSON.parse(sse.data);
       const table = this.db.getSchema().table('EntityAsset');
-      const rows = assets.map(table.createRow, table);
 
-      this.db.insertOrReplace()
-        .into(table)
-        .values(rows)
-        .exec()
-        .then(() => {
-          this.$rootScope.$broadcast('asset.create', assets);
-        });
+      const futures = assets.map(asset => {
+        let future;
+
+        if (asset.assetType === this.assetService.GOOGLE_CLOUD_STORAGE_BLOB_FACE) {
+          future = this.db.delete().from(table)
+            .where(
+              table.assetType.eq(this.assetService.GOOGLE_CLOUD_STORAGE_BLOB_FACE),
+              table.entityType.eq(this.assetService.USER_TYPE),
+              table.entityId.eq(asset.entityId)
+            )
+            .exec();
+        } else {
+          future = Promise.resolve();
+        }
+
+        return future;
+      });
+
+      Promise.all(futures).then(() => {
+        const rows = assets.map(table.createRow, table);
+
+        return this.db.insertOrReplace()
+          .into(table)
+          .values(rows)
+          .exec()
+          .then(() => {
+            this.$rootScope.$broadcast('asset.create', assets);
+          });
+      });
     });
   }
 
@@ -457,6 +480,7 @@ DownstreamService.$inject = [
   'ItemService',
   'TransactionService',
   'StorageService',
+  'AssetService',
   'db',
   'SearchEntity'
 ];
