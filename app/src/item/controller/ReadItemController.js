@@ -1,3 +1,5 @@
+import lf from 'lovefield';
+
 export default class ReadItemController {
   constructor(
     $q,
@@ -103,15 +105,25 @@ export default class ReadItemController {
 
       const userId = this.storage.auth.idTokenPayload.sub;
 
+      const ands = [
+        permissionTable.objectClass.eq('Organization'),
+        permissionTable.user_id.eq(userId)
+      ];
+
+      if (typeof this.$state.params.eventId !== 'undefined') {
+        if (Array.isArray(this.$state.params.eventId)) {
+          ands.push(itemTable.eventId.in(this.$state.params.eventId));
+        } else {
+          ands.push(itemTable.eventId.eq(this.$state.params.eventId));
+        }
+      }
+
       return this.db.select(...columns)
         .from(itemTable)
         .innerJoin(eventTable, itemTable.eventId.eq(eventTable.id))
         .innerJoin(permissionTable, permissionTable.objectId.eq(itemTable.organizationId))
         .leftOuterJoin(transactionTable, transactionTable.itemId.eq(itemTable.id))
-        .where(
-          permissionTable.objectClass.eq('Organization'),
-          permissionTable.user_id.eq(userId)
-        )
+        .where(lf.op.and(...ands))
         .exec()
         .then(rows => {
           const data = [];

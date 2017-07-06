@@ -127,6 +127,7 @@ export default class ReadTransactionController {
             } else {
               ands.push(this.transactionTable[filter].eq(value));
             }
+
             hasFilter = true;
           }
         });

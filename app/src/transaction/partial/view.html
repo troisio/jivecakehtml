@@ -38,7 +38,7 @@
           <div>
             <span ng-show="transaction.currency === 'USD'">&#36;</span>
             <span ng-show="transaction.currency === 'EUR'">&#128;</span>
-            <span>{{transaction.amount * -1| number: 2}}</span>
+            <span>{{transaction.amount| number: 2}}</span>
           </div>
         </div>
       </md-list-item>

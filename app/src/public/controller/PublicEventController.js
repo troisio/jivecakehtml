@@ -185,13 +185,13 @@ export default class PublicEventController {
     });
   }
 
-  processStripe(group, paidSelections, itemFormData) {
+  processStripe(group, paidSelections) {
     const defer = this.$q.defer();
 
     const profile = this.$scope.paymentProfile;
     const pk = this.settings.stripe.useAsMock ? this.settings.stripe.pk : profile.stripe_publishable_key;
 
-    const total = this.getTotalFromSelections(paidSelections, itemFormData);
+    const total = this.getTotalFromSelections(paidSelections);
 
     const checkout = StripeCheckout.configure({
       name: 'JiveCake',
@@ -236,7 +236,7 @@ export default class PublicEventController {
   }
 
   getTotalFromSelections(selections) {
-    return selections.reduce((sum, selection) => selection.selection.amount * selection.itemData.amount, 0);
+    return selections.reduce((sum, selection) => selection.selection.amount * selection.itemData.amount + sum, 0);
   }
 
   processPaypal(group, paidSelections) {
