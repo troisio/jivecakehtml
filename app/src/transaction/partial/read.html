@@ -59,7 +59,7 @@
                     <span ng-show="transactionData.Transaction.status === 2" md-menu-align-target>undo revocation</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-item ng-show="canRefund(transactionData.Transaction)">
+                <md-menu-item ng-show="transactionData.Transaction.canRefund()">
                   <md-button ng-click="controller.refund(transactionData.Transaction, $event)">
                     <span md-menu-align-target>refund transaction</span>
                   </md-button>

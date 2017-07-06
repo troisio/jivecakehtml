@@ -12,6 +12,7 @@ export default class ReadTransactionController {
     stripeService,
     userService,
     uiService,
+    toolsService,
     db,
     Transaction
   ) {
@@ -25,18 +26,15 @@ export default class ReadTransactionController {
     this.stripeService = stripeService;
     this.userService = userService;
     this.uiService = uiService;
+    this.toolsService = toolsService;
     this.db = db;
+    this.Transaction = Transaction;
 
     $scope.selected = [];
     $scope.searchText = '';
     this.$scope.data = [];
 
     $scope.$parent.selectedTab = 3;
-
-    const canRefund = new Transaction().canRefund;
-    $scope.canRefund = function(transaction) {
-      return canRefund.call(transaction);
-    };
 
     [
       'transaction.create',
@@ -82,7 +80,13 @@ export default class ReadTransactionController {
         const storage = this.storageService.read();
         return this.userService.refreshUserCacheFromTransactions(storage.auth.idToken, whereClause).then(() => {
           return this.getRows(whereClause)
-            .then(rows => {
+            .then(data => {
+              const rows = data.map(datum => Object.assign({}, datum));
+
+              for (let row of rows) {
+                row.Transaction = this.toolsService.toObject(row.Transaction, this.Transaction);
+              }
+
               this.$scope.data = rows;
             });
         });
@@ -315,6 +319,7 @@ ReadTransactionController.$inject = [
   'StripeService',
   'UserService',
   'UIService',
+  'ToolsService',
   'db',
   'Transaction'
 ];
