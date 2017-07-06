@@ -91,7 +91,6 @@ builder.createTable('Transaction')
   .addColumn('organizationId', lf.Type.STRING)
   .addColumn('user_id', lf.Type.STRING)
   .addColumn('linkedId', lf.Type.STRING)
-  .addColumn('linkedIdString', lf.Type.STRING)
   .addColumn('linkedObjectClass', lf.Type.STRING)
   .addColumn('status', lf.Type.INTEGER)
   .addColumn('paymentStatus', lf.Type.INTEGER)
@@ -113,7 +112,6 @@ builder.createTable('Transaction')
     'parentTransactionId',
     'user_id',
     'linkedId',
-    'linkedIdString',
     'linkedObjectClass',
     'given_name',
     'middleName',
