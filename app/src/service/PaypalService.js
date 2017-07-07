@@ -30,7 +30,17 @@ export default class PaypalService {
     return this.$http.post(url, body, options).then(response => response.data);
   }
 
-  getPayment(token, eventId, body) {
+  getPayment(token, transactionId) {
+    const url = [this.settings.jivecakeapi.uri, 'paypal', transactionId, 'payment'].join('/');
+
+    return this.$http.get(url, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.data);
+  }
+
+  generatePayment(token, eventId, body) {
     const url = [this.settings.jivecakeapi.uri, 'paypal', eventId, 'order'].join('/');
 
     const options = {};

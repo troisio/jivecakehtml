@@ -253,7 +253,7 @@ export default class PublicEventController {
             entity: selection.itemData.item.id
           }));
 
-          this.paypalService.getPayment(token, group.event.id, {
+          this.paypalService.generatePayment(token, group.event.id, {
             itemData: itemData
           }).then(data => {
             resolve(data.id);

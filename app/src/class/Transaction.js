@@ -22,11 +22,10 @@ export default class Transaction {
   }
 
   isVendorTransaction() {
-    return this.linkedObjectClass === 'StripeCharge' ||
-      this.linkedObjectClass === 'PaypalPayment';
+    return this.linkedObjectClass === 'StripeCharge' || this.linkedObjectClass === 'PaypalPayment';
   }
 
   canRefund() {
-    return ((this.status === 0 && !this.isVendorTransaction()) || (this.status === 2 && this.isVendorTransaction())) && this.leaf;
+    return this.isVendorTransaction() && this.status === 0 && this.leaf;
   }
 }
