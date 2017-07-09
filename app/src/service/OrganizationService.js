@@ -108,9 +108,7 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => response.data.map((entity) => {
-      return this.toolsService.toObject(entity, this.Organization);
-    }));
+    }).then(response => response.data.map(entity => this.toolsService.toObject(entity, this.Organization)));
   }
 
   getOrganizationsWithPermissions(organizations, permissions) {

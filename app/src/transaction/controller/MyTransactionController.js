@@ -1,81 +1,63 @@
 export default class MyTransactionController {
   constructor(
-    $window,
-    $q,
     $scope,
     $state,
     $mdDialog,
-    Paging,
     storageService,
     itemService,
     transactionService,
-    toolsService,
-    uiService,
-    Page
+    uiService
   ) {
-    this.$window = $window;
-    this.$q = $q;
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
-    this.Paging = Paging;
+    this.storageService = storageService;
     this.itemService = itemService;
     this.transactionService = transactionService;
-    this.toolsService = toolsService;
     this.uiService = uiService;
-    this.Page = Page;
 
     this.$scope.$parent.showTabs = false;
-
-    this.storage = storageService.read();
+    this.$scope.uiReady = false;
     this.selected = [];
-    this.pagingService = new this.Paging(
-      (data) => this.$q.resolve(data.count),
-      () => {
-        return this.transactionService.getTransactionData(this.itemService, this.storage.auth.idToken, {
-          status: [transactionService.SETTLED, transactionService.PENDING],
-          limit: 100,
-          leaf: true,
-          order: '-timeCreated',
-          user_id: this.$state.params.user_id
-        });
-      }
-    );
+
+    [
+      'transaction.create',
+      'transaction.update',
+      'transaction.revoke',
+      'transaction.delete'
+    ].forEach(event => {
+      $scope.$on(event, () => {
+        this.run();
+      });
+    });
 
     this.run();
   }
 
   run() {
     this.$scope.uiReady = false;
-    this.$scope.paging = new this.Page();
-    this.$scope.paging.data = {entity: []};
+    const storage = this.storageService.read();
 
     this.$scope.$parent.ready.then(() => {
-      this.loadPage(
-        this.$window.parseInt(this.$state.params.page),
-        this.$window.parseInt(this.$state.params.pageSize)
-      ).finally(() => {
+      this.transactionService.getTransactionData(this.itemService, storage.auth.idToken, {
+        status: [this.transactionService.SETTLED, this.transactionService.PENDING],
+        limit: 100,
+        leaf: true,
+        order: '-timeCreated',
+        user_id: this.$state.params.user_id
+      }).then((data) => {
+        this.$scope.data = data.entity;
         this.$scope.uiReady = true;
+      }, () => {
+        this.$scope.uiReady = true;
+        this.uiService.notify('Unable to retrieve transactions');
       });
-    });
-
-    this.$scope.$on('transaction.created', () => {
-      this.loadPage(
-        this.$window.parseInt(this.$state.params.page),
-        this.$window.parseInt(this.$state.params.pageSize)
-      );
-    });
-  }
-
-  loadPage(page, pageSize) {
-    return this.pagingService.getPaging(page, pageSize).then((paging) => {
-      this.$scope.paging = paging;
-    }, () => {
-      this.uiService.notify('Unable to retrieve transactions');
     });
   }
 
   readTransaction(transaction, item) {
+    const storage = this.storageService.read();
+
     this.$mdDialog.show({
       controller: 'ViewTransactionController',
       controllerAs: 'controller',
@@ -83,7 +65,8 @@ export default class MyTransactionController {
       clickOutsideToClose: true,
       locals: {
         transaction: transaction,
-        item: item
+        item: item,
+        user: storage.profile
       }
     });
   }
@@ -102,33 +85,14 @@ export default class MyTransactionController {
       }
     });
   }
-
-  showQRCode(transaction) {
-    this.$mdDialog.show({
-      controller: ['$scope', 'settings', 'transaction', function($scope, settings, transaction) {
-        $scope.settings = settings;
-        $scope.transaction = transaction;
-      }],
-      templateUrl: '/src/transaction/partial/qr.html',
-      clickOutsideToClose: true,
-      locals: {
-        transaction: transaction
-      }
-    });
-  }
 }
 
 MyTransactionController.$inject = [
-  '$window',
-  '$q',
   '$scope',
   '$state',
   '$mdDialog',
-  'Paging',
   'StorageService',
   'ItemService',
   'TransactionService',
-  'ToolsService',
-  'UIService',
-  'Page'
+  'UIService'
 ];

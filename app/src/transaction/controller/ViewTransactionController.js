@@ -1,11 +1,12 @@
 export default class ViewTransactionController {
-  constructor($scope, storageService, paypalService, transactionService, item, transaction) {
+  constructor($scope, storageService, paypalService, transactionService, item, transaction, user) {
     this.$scope = $scope;
     this.storageService = storageService;
     this.paypalService = paypalService;
     this.transactionService = transactionService;
     $scope.item = item;
     $scope.transaction = transaction;
+    $scope.user = user;
     $scope.time = new Date();
     $scope.paypalManualAction = false;
 
@@ -37,5 +38,6 @@ ViewTransactionController.$inject = [
   'PaypalService',
   'TransactionService',
   'item',
-  'transaction'
+  'transaction',
+  'user'
 ];

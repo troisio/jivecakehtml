@@ -104,6 +104,8 @@ export default class ApplicationController {
             permission.objectClass === 'Application' && hasPermission.call(permission, this.permissionService.READ)
           );
         });
+    }).then(() => {
+      this.$scope.uiReady = true;
     }, () => {
       this.storageService.reset();
       this.$scope.storage = this.storageService.read();
@@ -111,7 +113,7 @@ export default class ApplicationController {
       if (!this.$state.$current.name.startsWith('application.public')) {
         this.$state.go('application.public.home');
       }
-    }).finally(() => {
+
       this.$scope.uiReady = true;
     });
 

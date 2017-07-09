@@ -176,7 +176,9 @@ export default class ReadItemController {
         }, () => {
           this.uiService.notify('Unable to retrieve data');
         });
-    }).finally(() => {
+    }).then(() => {
+      this.$scope.uiReady = true;
+    }, () => {
       this.$scope.uiReady = true;
     });
   }

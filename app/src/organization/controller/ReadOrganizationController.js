@@ -43,7 +43,7 @@ export default class ReadOrganizationController {
         .from(organizationTable)
         .innerJoin(permissionTable, permissionTable.objectId.eq(organizationTable.id))
         .orderBy(organizationTable.lastActivity, lf.Order.DESC)
-        .limit(50)
+        .limit(100)
         .exec()
         .then(rows => {
           const data = angular.copy(rows);
@@ -58,7 +58,9 @@ export default class ReadOrganizationController {
 
           this.$scope.data = data;
         });
-    }).finally(() => {
+    }).then(() => {
+      this.$scope.uiReady = true;
+    }, () => {
       this.$scope.uiReady = true;
     });
   }

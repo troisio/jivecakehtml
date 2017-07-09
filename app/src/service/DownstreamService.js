@@ -345,9 +345,21 @@ export default class DownstreamService {
   }
 
   cacheUserData(auth) {
-    return this.permissionService.search(auth.idToken, {
+    const organizationFuture = this.organizationService.getOrganizationsByUser(
+      auth.idToken,
+      auth.idTokenPayload.sub,
+      {
+        order: '-lastActivity'
+      }
+    ).then((organizations) => {
+      const organiationTable = this.db.getSchema().table('Organization');
+      const rows = organizations.map(organiationTable.createRow, organiationTable);
+      return this.db.insertOrReplace().into(organiationTable).values(rows).exec();
+    });
+
+    const permissionFuture = this.permissionService.search(auth.idToken, {
       user_id: auth.idTokenPayload.sub
-    }).then((permissionSearchResult) => {
+    }).then(permissionSearchResult => {
       const permissions = permissionSearchResult.entity;
       const organizationIds = permissions
         .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
@@ -452,23 +464,15 @@ export default class DownstreamService {
             });
         });
 
-        const organizationFuture = this.organizationService.getOrganizationsByUser(
-          auth.idToken,
-          auth.idTokenPayload.sub,
-          {}
-        ).then((organizations) => {
-          const organiationTable = this.db.getSchema().table('Organization');
-          const rows = organizations.map(organiationTable.createRow, organiationTable);
-          return this.db.insertOrReplace().into(organiationTable).values(rows).exec();
-        });
-
-        futures = [eventFuture, organizationFuture, permissionFuture];
+        futures = [eventFuture, permissionFuture];
       } else {
         futures = [];
       }
 
-      return this.$q.all(futures);
+      return Promise.all(futures);
     });
+
+    return Promise.all([organizationFuture, permissionFuture]);
   }
 }
 

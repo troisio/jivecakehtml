@@ -1,6 +1,9 @@
+import anguar from 'angular';
+
 export default class UpdateOrganizationController {
   constructor(
     $q,
+    $window,
     $rootScope,
     $scope,
     $mdDialog,
@@ -18,6 +21,7 @@ export default class UpdateOrganizationController {
     db
   ) {
     this.$q = $q;
+    this.$window = $window;
     this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
@@ -41,15 +45,25 @@ export default class UpdateOrganizationController {
     this.selectedPaymentProfile = [];
     this.storage = storageService.read();
     this.$scope.auth = this.storage.auth;
-    this.$scope.uiReady = false;
     this.$scope.organizationPermissionTypes = [];
+    this.$scope.loading = false;
+
+    [
+      'ORGANIZATION.PERMISSION.WRITE',
+      'SUBSCRIPTION.CREATED',
+      'paymentprofile.delete',
+      'paymentprofile.create'
+    ].forEach((event) => {
+      this.$scope.$on(event, () => {
+        this.loadUI(this.$stateParams.organizationId);
+      });
+    });
 
     this.run();
   }
 
   run() {
     this.$scope.uiReady = false;
-    this.$scope.loading = false;
 
     this.$scope.$parent.ready.then(() => {
       const permissionTable = this.db.getSchema().table('Permission');
@@ -62,76 +76,34 @@ export default class UpdateOrganizationController {
           const hasPermission = new this.Permission().has;
           this.$scope.hasApplicationWrite = rows.filter(row => hasPermission.call(row, this.permissionService.WRITE)).length > 0;
           return this.loadUI(this.$stateParams.organizationId);
+        }).then(() => {
+          this.$scope.uiReady = true;
+        }, () => {
+          this.$scope.uiReady = true;
+          this.uiService.notify('Unable to find organization');
+        }).then(() => {
+          this.$scope.$apply();
         });
+    });
+  }
+
+  submit(organization) {
+    this.$scope.loading = true;
+
+    return this.organizationService.update(this.storage.auth.idToken, organization).then(() => {
+      this.uiService.notify('Updated organization');
     }, () => {
-      this.uiService.notify('Unable to find organization');
+      this.uiService.notify('Unable to update organization');
     }).finally(() => {
-      this.$scope.uiReady = true;
-    });
-
-    [
-      'ORGANIZATION.PERMISSION.WRITE',
-      'SUBSCRIPTION.CREATED',
-      'paymentprofile.delete',
-      'paymentprofile.create'
-    ].forEach((event) => {
-      this.$scope.$on(event, () => {
-        this.loadUI(this.$stateParams.organizationId);
-      });
-    });
-  }
-
-  changeInclusion(id, inclusion) {
-    if (inclusion === 0) {
-      const object = this.$scope.userPermissionModel[id].permission;
-
-      for (let key in object) {
-        object[key] = true;
-      }
-    }
-  }
-
-  submit(organization, userPermissions) {
-    const loading = this.uiService.load();
-
-    const permissions = Object.keys(userPermissions).map((user_id) => {
-      const userPermission = userPermissions[user_id];
-
-      const permission = new this.Permission();
-      permission.user_id = user_id;
-      permission.objectClass = this.organizationService.getObjectClassName();
-      permission.objectId = this.$stateParams.organizationId;
-      permission.include = userPermission.include;
-      permission.permissions = Object.keys(userPermission.permission).reduce(function(previous, current) {
-        if (userPermission.permission[current] === true) {
-          previous.push(current);
-        }
-
-        return previous;
-      }, []);
-
-      return permission;
-    });
-
-    return this.permissionService.write(this.storage.auth.idToken, this.$stateParams.organizationId, permissions).then(() => {
-      return this.organizationService.update(this.storage.auth.idToken, organization).then((organization) => {
-        loading.dialog.finally(() => {
-          this.uiService.notify('Updated organization');
-        });
-
-        return this.loadUI(organization.id);
-      }, () => {
-        this.uiService.notify('Unable to update organization');
-      });
-    }).finally(() => {
-        loading.close.resolve();
+      this.$scope.loading = false;
+      anguar.element(document.querySelector('md-content'))[0].scrollTop = 0;
     });
   }
 
   getUserPermissionModel(users, permissions, userPermissions) {
     const userPermissionsMap = this.relationalService.groupBy(userPermissions, false, subject => subject.user_id);
 
-    return Object.keys(userPermissionsMap).reduce((previous, user_id) => {
+    const result = Object.keys(userPermissionsMap).reduce((previous, user_id) => {
       const permission = userPermissionsMap[user_id][0];
       let set;
 
@@ -155,6 +127,8 @@ export default class UpdateOrganizationController {
 
       return previous;
     }, {});
+
+    return result;
   }
 
   loadUI(organizationId) {
@@ -169,7 +143,7 @@ export default class UpdateOrganizationController {
 
       const permission = this.permissionService.search(this.storage.auth.idToken, {
         objectId: organization.id,
-        objectClass: this.organizationService.getObjectClassName()
+        objectClass: 'Organization'
       });
 
       return this.$q.all({
@@ -307,6 +281,7 @@ export default class UpdateOrganizationController {
 
 UpdateOrganizationController.$inject = [
   '$q',
+  '$window',
   '$rootScope',
   '$scope',
   '$mdDialog',

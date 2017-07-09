@@ -118,7 +118,9 @@ export default class UpdateEventController {
             this.uiService.notify('Unable to find event');
           });
         });
-    }).finally(() => {
+    }).then(() => {
+      this.$scope.uiReady = true;
+    }, () => {
       this.$scope.uiReady = true;
     });
   }

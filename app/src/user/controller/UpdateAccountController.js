@@ -75,7 +75,6 @@ export default class UpdateAccountController {
       };
 
       reader.readAsDataURL(file);
-
     });
   }
 

@@ -79,22 +79,24 @@ export default class ReadTransactionController {
       return this.getWhereClause(this.$scope.searchText).then(whereClause => {
         const storage = this.storageService.read();
         return this.userService.refreshUserCacheFromTransactions(storage.auth.idToken, whereClause).then(() => {
-          return this.getRows(whereClause)
-            .then(data => {
-              const rows = data.map(datum => Object.assign({}, datum));
+          return this.getRows(whereClause).then(data => {
+            const rows = data.map(datum => Object.assign({}, datum));
 
-              for (let row of rows) {
-                row.Transaction = this.toolsService.toObject(row.Transaction, this.Transaction);
-              }
+            for (let row of rows) {
+              row.Transaction = this.toolsService.toObject(row.Transaction, this.Transaction);
+            }
 
-              this.$scope.data = rows;
-            });
+            this.$scope.data = rows;
+          });
         });
-      });
-    }, () => {
-      this.uiService.notify('Unable to retrieve data');
-    }).finally(() => {
-      this.$scope.loading = false;
+      }).then(() => {
+        this.$scope.loading = false;
+      }, () => {
+        this.uiService.notify('Unable to retrieve data');
+        this.$scope.loading = false;
+      }).then(() => {
+        this.$scope.$apply();
+      })
     });
   }
 
@@ -230,7 +232,7 @@ export default class ReadTransactionController {
       });
   }
 
-  readTransaction(transaction, item) {
+  readTransaction(transaction, item, user) {
     this.$mdDialog.show({
       controller: 'ViewTransactionController',
       controllerAs: 'controller',
@@ -238,7 +240,8 @@ export default class ReadTransactionController {
       clickOutsideToClose: true,
       locals: {
         transaction: transaction,
-        item: item
+        item: item,
+        user: user
       }
     });
   }
