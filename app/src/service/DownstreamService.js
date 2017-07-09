@@ -416,11 +416,12 @@ export default class DownstreamService {
                         let userFuture;
                         let assetFuture;
 
-                        if (transactions.length > 0) {
-                          const transactionIds = transactions.map(transaction => transaction.id);
+                        const transactionIdsUserSearch = this.transactionService.getMinimalUserIdCovering(transactions)
+                          .map(transaction => transaction.id);
 
+                        if (transactionIdsUserSearch.length > 0) {
                           assetFuture = this.transactionService.getUserAssets(auth.idToken, {
-                            id: transactionIds
+                            id: transactionIdsUserSearch
                           }).then((assets) => {
                             const assetTable = this.db.getSchema().table('EntityAsset');
                             const rows = assets.map(assetTable.createRow, assetTable);
@@ -428,7 +429,7 @@ export default class DownstreamService {
                           });
 
                           userFuture = this.transactionService.searchUsers(auth.idToken, {
-                            id: transactionIds
+                            id: transactionIdsUserSearch
                           }).then((users) => {
                             const userTable = this.db.getSchema().table('User');
                             const rows = users.map(userTable.createRow, userTable);

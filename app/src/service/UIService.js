@@ -68,6 +68,10 @@ export default class UIService {
   getDefaultItemCartSelectionSize() {
     return 30;
   }
+
+  getMaximumItemCartSelectionSize() {
+    return 100;
+  }
 }
 
 UIService.$inject = ['$window', '$q', '$http', '$mdToast', '$mdDialog', 'settings'];

@@ -12,11 +12,13 @@
       md-item-text="user| userIdentificationFilter: true">
         <md-item-template>
           <span>{{user| userIdentificationFilter: true}}</span>
+          <i ng-show="userService.hasFacebookIdentity(user)" class="fa fa-facebook" aria-hidden="true"></i>
+          <i ng-show="userService.hasGoogleIdentity(user)" class="fa fa-google" aria-hidden="true"></i>
         </md-item-template>
         <md-not-found>No users found</md-not-found>
       </md-autocomplete>
       <md-input-container class="md-block">
-          <label>Permissions</label>
+        <label>Permissions</label>
       </md-input-container>
       <div layout="row">
         <md-select aria-label="Inclusion" ng-model="include" ng-change="changeInclusion(include)">

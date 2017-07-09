@@ -226,6 +226,24 @@ export default class TransactionService {
       });
     });
   }
+
+  /*
+    Given an array of transactions, return an array of transactions such that
+    `transaction.user_id`s are preserved and the resulting array is minimal in length
+  */
+  getMinimalUserIdCovering(transactions) {
+    const result = [];
+    const userIds = new Set();
+
+    for (let transaction of transactions) {
+      if (transaction.user_id !== null && !userIds.has(transaction.user_id)) {
+        userIds.add(transaction.user_id);
+        result.push(transaction);
+      }
+    }
+
+    return result;
+  }
 }
 
 TransactionService.$inject = ['$q', '$http', 'Transaction', 'settings', 'ToolsService', 'RelationalService', 'SearchEntity'];

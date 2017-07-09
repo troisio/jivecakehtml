@@ -230,20 +230,14 @@ export default class ReadTransactionController {
       });
   }
 
-  readTransaction(transaction, user, item) {
+  readTransaction(transaction, item) {
     this.$mdDialog.show({
-      controller: ['$scope', 'transaction', 'user', 'item', function($scope, transaction, user, item) {
-        $scope.transaction = transaction;
-        $scope.user = user;
-        $scope.item = item;
-        $scope.time = new Date();
-      }],
+      controller: 'ViewTransactionController',
       controllerAs: 'controller',
       templateUrl: '/src/transaction/partial/view.html',
       clickOutsideToClose: true,
       locals: {
         transaction: transaction,
-        user: user,
         item: item
       }
     });

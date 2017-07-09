@@ -1,7 +1,6 @@
 export default class AddUserOrganizationPermissionController {
   constructor(
     $q,
-    $window,
     $rootScope,
     $scope,
     $mdDialog,
@@ -10,11 +9,11 @@ export default class AddUserOrganizationPermissionController {
     organizationService,
     permissionService,
     uiService,
+    userService,
     organization,
     Permission
   ) {
     this.$q = $q;
-    this.$window = $window;
     this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
@@ -22,8 +21,11 @@ export default class AddUserOrganizationPermissionController {
     this.organizationService = organizationService;
     this.permissionService = permissionService;
     this.uiService = uiService;
+    this.userService = userService;
     this.organization = organization;
     this.Permission = Permission;
+
+    $scope.userService = userService;
 
     this.storage = storageService.read();
 
@@ -46,7 +48,7 @@ export default class AddUserOrganizationPermissionController {
     this.$scope.types = organizationType.permissions;
 
     this.$scope.query = (search) => {
-       const terms = search.split(new this.$window.RegExp('\\s+', 'g')).join(' ');
+       const terms = search.split(new RegExp('\\s+', 'g')).join(' ');
        const queryParts = ['user_metadata.given_name', 'user_metadata.family_name', 'given_name', 'family_name', 'email', 'name'].map(function(field) {
          return field + ':' + terms + '*';
        });
@@ -132,7 +134,6 @@ export default class AddUserOrganizationPermissionController {
 
 AddUserOrganizationPermissionController.$inject = [
   '$q',
-  '$window',
   '$rootScope',
   '$scope',
   '$mdDialog',
@@ -141,6 +142,7 @@ AddUserOrganizationPermissionController.$inject = [
   'OrganizationService',
   'PermissionService',
   'UIService',
+  'UserService',
   'organization',
   'Permission'
 ];

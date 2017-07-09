@@ -11,6 +11,7 @@ import 'ui-cropper';
 import 'script-loader!ui-cropper/compile/minified/ui-cropper.js';
 
 import lf from 'lovefield';
+import run from './run';
 import angularMaterialDataTable from 'angular-material-data-table';
 import angularAnimate from 'angular-animate';
 import angularAria from 'angular-aria';
@@ -21,7 +22,6 @@ import angularJwt from 'angular-jwt';
 import ngMessages from 'angular-messages';
 import ngMaterial from 'angular-material';
 import ngIcons from 'angular-material-icons';
-import URLSearchParams from 'url-search-params';
 
 import settings from './settings';
 import builder from './database';
@@ -74,6 +74,7 @@ import MyTransactionController from './transaction/controller/MyTransactionContr
 import CreateTransactionController from './transaction/controller/CreateTransactionController';
 import TransactionController from './transaction/controller/TransactionController';
 import ReadTransactionController from './transaction/controller/ReadTransactionController';
+import ViewTransactionController from './transaction/controller/ViewTransactionController';
 
 import UpdateAccountController from './user/controller/UpdateAccountController';
 
@@ -83,186 +84,85 @@ if (!window.Promise) {
   window.Promise = Promise;
 }
 
-builder.connect({storeType: lf.schema.DataStoreType.MEMORY}).then(function(db) {
-  angular.module('jivecakeweb', [
-    jiveCakeClassModule.name,
-    jiveCakeServiceModule.name,
-    ngMessages,
-    ngMaterial,
-    ngIcons,
-    angularSanitize,
-    uiRouter,
-    angularMaterialDataTable,
-    angularAnimate,
-    angularAria,
-    angularMessages,
-    angularJwt,
-    'uiCropper',
-    'auth0.lock'
-  ])
-  .filter('featureTypeFilter', featureTypeFilter)
-  .service('HTTPInterceptor', HTTPInterceptor)
-  .filter('absoluteValue', absoluteValue)
-  .filter('userIdentificationFilter', userIdentificationFilter)
-  .filter('transactionCSSClass', transactionCSSClass)
-  .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
-  .constant('settings', settings)
-  .constant('db', db)
-  .constant('URLSearchParams', URLSearchParams)
-  .config(configuration)
-  .run([
-    'lock',
-    '$transitions',
-    '$location',
-    '$state',
-    '$q',
-    '$mdDialog',
-    'OrganizationService',
-    'PermissionService',
-    'TransactionService',
-    'UIService',
-    'StorageService',
-    'Auth0Service',
-    'JiveCakeLocalStorage',
-    'SearchEntity',
-    'UserInterfaceEvent',
-    'settings',
-    function(
-      lock,
-      $transitions,
-      $location,
-      $state,
-      $q,
-      $mdDialog,
-      organizationService,
-      permissionService,
-      transactionService,
-      uiService,
-      storageService,
-      auth0Service,
-      JiveCakeLocalStorage,
-      SearchEntity,
-      UserInterfaceEvent,
-      settings
-    ) {
-      if (settings.google.analytics.enabled) {
-        ga('create', 'UA-81919203-1', 'auto');
-      }
+builder.connect({
+  storeType: lf.schema.DataStoreType.INDEXED_DB
+}).then(function(db) {
+  const deleteFutures = db.getSchema().tables().map(table => {
+    return db.delete()
+      .from(db.getSchema().table(table.getName()))
+      .exec();
+  });
 
-      $transitions.onSuccess({}, function() {
-        if (settings.google.analytics.enabled) {
-          ga('send', 'pageview', $location.path());
-        }
-      });
+  Promise.all(deleteFutures).then(function() {
+    angular.module('jivecakeweb', [
+      jiveCakeClassModule.name,
+      jiveCakeServiceModule.name,
+      ngMessages,
+      ngMaterial,
+      ngIcons,
+      angularSanitize,
+      uiRouter,
+      angularMaterialDataTable,
+      angularAnimate,
+      angularAria,
+      angularMessages,
+      angularJwt,
+      'uiCropper',
+      'auth0.lock'
+    ])
+    .filter('featureTypeFilter', featureTypeFilter)
+    .service('HTTPInterceptor', HTTPInterceptor)
+    .filter('absoluteValue', absoluteValue)
+    .filter('userIdentificationFilter', userIdentificationFilter)
+    .filter('transactionCSSClass', transactionCSSClass)
+    .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
+    .constant('settings', settings)
+    .constant('db', db)
+    .config(configuration)
+    .run(run)
+    .controller('ApplicationController', ApplicationController)
+    .controller('HomeController', HomeController)
+    .controller('InternalApplicationController', InternalApplicationController)
 
-      document.addEventListener('visibilitychange', function() {
-        const storage = storageService.read();
-        const token = storage.auth === null ? null : storage.auth.idToken;
-        const event = new UserInterfaceEvent();
-        event.event = 'visibilitychange';
-        event.parameters = {
-          visibilityState: document.visibilityState
-        };
-        uiService.logInteraction(token, event);
-      });
+    .controller('ConfirmationController', ConfirmationController)
 
-      lock.on('authenticated', function(auth) {
-        lock.getUserInfo(auth.accessToken, function(error, profile) {
-          if (typeof error === 'undefined' || error === null) {
-            const storage = new JiveCakeLocalStorage();
-            storage.timeCreated = new Date().getTime();
-            storage.auth = auth;
-            storage.profile = profile;
-            storageService.write(storage);
+    .controller('OAuthRedirectController', OAuthRedirectController)
+    .controller('EmailVerifiedController', EmailVerifiedController)
+    .controller('SessionWarningController', SessionWarningController)
 
-            permissionService.search(auth.idToken, {
-              user_id: auth.idTokenPayload.sub,
-              objectClass: 'Organization'
-            }).then(function(permissionResult) {
-              const permissions = permissionResult.entity;
-              const organizationIds = permissions.map(permission => permission.objectId);
+    .controller('CreateEventController', CreateEventController)
+    .controller('CreateOrganizationAndEventController', CreateOrganizationAndEventController)
+    .controller('EventController', EventController)
+    .controller('InsufficientSubscriptionController', InsufficientSubscriptionController)
+    .controller('ReadEventController', ReadEventController)
+    .controller('UpdateEventController', UpdateEventController)
 
-              const transactionFuture = organizationIds.length === 0 ? $q.resolve(new SearchEntity()) :
-                transactionService.search(auth.idToken, {
-                  limit: 1,
-                  organizationId: organizationIds,
-                  order: '-timeCreated'
-                });
+    .controller('CreateItemController', CreateItemController)
+    .controller('ItemController', ItemController)
+    .controller('ReadItemController', ReadItemController)
+    .controller('UpdateItemController', UpdateItemController)
 
-              transactionFuture.then(transactionSearch => {
-                const millisecondsPerWeek = 604800000;
-                const currentTime = new Date().getTime();
-                const transactionsInPreviousWeek = transactionSearch.entity.filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
+    .controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
+    .controller('CreateOrganizationController', CreateOrganizationController)
+    .controller('OrganizationController', OrganizationController)
+    .controller('ReadOrganizationController', ReadOrganizationController)
+    .controller('UpdateOrganizationController', UpdateOrganizationController)
 
-                const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
+    .controller('CreatePaymentProfileController', CreatePaymentProfileController)
 
-                if (routerParameters !== null && routerParameters.name === 'application.public.event') {
-                  $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-                } else if (transactionsInPreviousWeek.length > 0) {
-                  $state.go('application.internal.transaction.read', {}, {reload: true});
-                } else if (permissions.length > 0) {
-                  $state.go('application.internal.organization.read', {}, {reload: true});
-                } else if (routerParameters === null) {
-                  $state.go('application.internal.myTransaction', {
-                    user_id: auth.idTokenPayload.sub
-                  }, {
-                    reload: true
-                  });
-                } else {
-                  $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-                }
-              });
-            });
-          } else {
-            uiService.notify('Unable to login');
-          }
-        });
-      }, function() {
-        uiService.notify('Unable to login');
-      });
-    }
-  ])
-  .controller('ApplicationController', ApplicationController)
-  .controller('HomeController', HomeController)
-  .controller('InternalApplicationController', InternalApplicationController)
+    .controller('PublicController', PublicController)
+    .controller('PublicEventController', PublicEventController)
+    .controller('MyTransactionController', MyTransactionController)
 
-  .controller('ConfirmationController', ConfirmationController)
+    .controller('CreateTransactionController', CreateTransactionController)
+    .controller('TransactionController', TransactionController)
+    .controller('ReadTransactionController', ReadTransactionController)
+    .controller('ViewTransactionController', ViewTransactionController)
 
-  .controller('OAuthRedirectController', OAuthRedirectController)
-  .controller('EmailVerifiedController', EmailVerifiedController)
-  .controller('SessionWarningController', SessionWarningController)
+    .controller('UpdateAccountController', UpdateAccountController);
 
-  .controller('CreateEventController', CreateEventController)
-  .controller('CreateOrganizationAndEventController', CreateOrganizationAndEventController)
-  .controller('EventController', EventController)
-  .controller('InsufficientSubscriptionController', InsufficientSubscriptionController)
-  .controller('ReadEventController', ReadEventController)
-  .controller('UpdateEventController', UpdateEventController)
-
-  .controller('CreateItemController', CreateItemController)
-  .controller('ItemController', ItemController)
-  .controller('ReadItemController', ReadItemController)
-  .controller('UpdateItemController', UpdateItemController)
-
-  .controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
-  .controller('CreateOrganizationController', CreateOrganizationController)
-  .controller('OrganizationController', OrganizationController)
-  .controller('ReadOrganizationController', ReadOrganizationController)
-  .controller('UpdateOrganizationController', UpdateOrganizationController)
-
-  .controller('CreatePaymentProfileController', CreatePaymentProfileController)
-
-  .controller('PublicController', PublicController)
-  .controller('PublicEventController', PublicEventController)
-  .controller('MyTransactionController', MyTransactionController)
-
-  .controller('CreateTransactionController', CreateTransactionController)
-  .controller('TransactionController', TransactionController)
-  .controller('ReadTransactionController', ReadTransactionController)
-
-  .controller('UpdateAccountController', UpdateAccountController);
-
-  angular.element(document).ready(() => {
-    angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});
+    angular.element(document).ready(() => {
+      angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});
+    });
   });
 });

@@ -2,9 +2,7 @@ import angular from 'angular';
 
 export default class CreateTransactionController {
   constructor(
-    $window,
     $q,
-    $rootScope,
     $scope,
     $state,
     auth0Service,
@@ -16,11 +14,10 @@ export default class CreateTransactionController {
     organizationService,
     transactionService,
     storageService,
-    uiService
+    uiService,
+    userService
   ) {
-    this.$window = $window;
     this.$q = $q;
-    this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$state = $state;
     this.auth0Service = auth0Service;
@@ -32,6 +29,8 @@ export default class CreateTransactionController {
     this.organizationService = organizationService;
     this.transactionService = transactionService;
     this.uiService = uiService;
+
+    $scope.userService = userService;
 
     this.storage = storageService.read();
     this.itemFuture = this.itemService.read(this.storage.auth.idToken, this.$stateParams.itemId);
@@ -84,7 +83,7 @@ export default class CreateTransactionController {
   }
 
   query(search) {
-    const terms = search.split(new this.$window.RegExp('\\s+', 'g')).join(' ');
+    const terms = search.split(new RegExp('\\s+', 'g')).join(' ');
     const queryParts = [
       'user_metadata.given_name',
       'user_metadata.family_name',
@@ -132,7 +131,7 @@ export default class CreateTransactionController {
       return this.transactionService.create(this.storage.auth.idToken, item.id, transactionCopy).then(() => {
         this.uiService.notify('Transaction created');
 
-        this.$window.scrollTo(0, 0);
+        window.scrollTo(0, 0);
         return this.setDefaults();
       }, response => {
         let message = 'Unable to create transaction';
@@ -156,9 +155,7 @@ export default class CreateTransactionController {
 }
 
 CreateTransactionController.$inject = [
-  '$window',
   '$q',
-  '$rootScope',
   '$scope',
   '$state',
   'Auth0Service',
@@ -170,5 +167,6 @@ CreateTransactionController.$inject = [
   'OrganizationService',
   'TransactionService',
   'StorageService',
-  'UIService'
+  'UIService',
+  'UserService'
 ];

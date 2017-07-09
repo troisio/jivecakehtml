@@ -20,6 +20,8 @@
     >
       <md-item-template>
         <span md-highlight-text="searchText" md-highlight-flags="^i">{{user| userIdentificationFilter: true}}</span>
+        <i ng-show="userService.hasFacebookIdentity(user)" class="fa fa-facebook" aria-hidden="true"></i>
+        <i ng-show="userService.hasGoogleIdentity(user)" class="fa fa-google" aria-hidden="true"></i>
       </md-item-template>
       <md-not-found>No users found</md-not-found>
     </md-autocomplete>

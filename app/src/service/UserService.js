@@ -18,6 +18,28 @@ export default class UserService {
     }).then(response => response.data);
   }
 
+  hasGoogleIdentity(user) {
+    let result = false;
+
+    if (user.hasOwnProperty('identities')) {
+      const identity = user.identities.find(identity => identity.connection === 'google-oauth2');
+      result = typeof identity !== 'undefined';
+    }
+
+    return result;
+  }
+
+  hasFacebookIdentity(user) {
+    let result = false;
+
+    if (user.hasOwnProperty('identities')) {
+      const identity = user.identities.find(identity => identity.connection === 'facebook');
+      result = typeof identity !== 'undefined';
+    }
+
+    return result;
+  }
+
   getUserIdsNotInDBCache(userIds) {
     const userTable = this.db.getSchema().table('User');
 
@@ -49,14 +71,14 @@ export default class UserService {
       .where(loveFieldQuery)
       .exec()
       .then(rows => {
-        const transactionWithUserIds = rows.filter(row => row.user_id !== null);
-        const userIds = transactionWithUserIds.map(row => row.user_id);
+        const transactions = this.transactionService.getMinimalUserIdCovering(rows);
+        const userIds = transactions.map(row => row.user_id);
 
         return this.getUserIdsNotInDBCache(userIds).then(ids => {
           const userIds = new Set();
           ids.forEach(id => userIds.add(id));
 
-          const transactionIds = transactionWithUserIds.filter(transaction => userIds.has(transaction.user_id))
+          const transactionIds = transactions.filter(transaction => userIds.has(transaction.user_id))
             .map(transaction => transaction.id);
 
           return this.transactionService.searchUsers(token, {

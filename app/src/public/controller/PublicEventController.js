@@ -111,6 +111,11 @@ export default class PublicEventController {
           amountSelectionSize = Math.min(remaingUserTransactions, remainingTotalAvailibleTransactions);
         }
 
+        amountSelectionSize = Math.min(
+          amountSelectionSize,
+          this.uiService.getMaximumItemCartSelectionSize()
+        );
+
         itemData.remainingTotalAvailibleTransactions = remainingTotalAvailibleTransactions;
         itemData.remaingUserTransactions = remaingUserTransactions;
 
@@ -304,7 +309,7 @@ export default class PublicEventController {
         const paidSelections = selectionAndItemData.filter(data => data.itemData.amount > 0);
 
         if (this.$scope.paymentProfile instanceof this.StripePaymentProfile) {
-          return this.processStripe(group, paidSelections, itemFormData);
+          return this.processStripe(group, paidSelections);
         } else if (this.$scope.paymentProfile instanceof this.PaypalPaymentProfile) {
           return this.processPaypal(group, paidSelections, this.$scope.paymentProfile);
         } else {

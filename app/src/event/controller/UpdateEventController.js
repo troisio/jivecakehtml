@@ -207,12 +207,15 @@ export default class UpdateEventController {
         this.$state.go('application.internal.event.read');
         this.uiService.notify('Event updated');
       }, (response) => {
-        let message;
+        let message = 'Unable to update event';
 
         if (response.status === 409) {
           message = 'Sorry, that name has already been taken';
-        } else {
-          message = 'Unable to update event';
+        } else if (response.status === 400) {
+
+          if (typeof response.data === 'object' && response.data.error === 'subscription') {
+            message = 'Sorry, you do not have enough subscriptions to update this event';
+          }
         }
 
         this.uiService.notify(message);

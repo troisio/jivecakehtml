@@ -17,8 +17,7 @@ export default class ApplicationController {
     connectionService,
     storageService,
     db,
-    Permission,
-    SearchEntity
+    Permission
   ) {
     this.$scope = $scope;
     this.$q = $q;
@@ -36,7 +35,6 @@ export default class ApplicationController {
     this.uiService = uiService;
     this.connectionService = connectionService;
     this.storageService = storageService;
-    this.SearchEntity = SearchEntity;
     this.Permission = Permission;
     this.db = db;
 
@@ -178,6 +176,5 @@ ApplicationController.$inject = [
   'ConnectionService',
   'StorageService',
   'db',
-  'Permission',
-  'SearchEntity'
+  'Permission'
 ];

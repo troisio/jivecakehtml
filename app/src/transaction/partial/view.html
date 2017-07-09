@@ -29,6 +29,7 @@
           <span ng-show="transaction.status === 2">Revoked</span>
           <span ng-show="transaction.status === 3">Refunded</span>
           <span ng-show="transaction.status === 4">Unknown</span>
+          <p ng-show="paypalManualAction">Your seller has not yet approved this sale in their account</p>
         </div>
       </md-list-item>
       <md-list-item class="layout-padding md-1-line">
