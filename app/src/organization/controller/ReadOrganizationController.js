@@ -62,6 +62,8 @@ export default class ReadOrganizationController {
       this.$scope.uiReady = true;
     }, () => {
       this.$scope.uiReady = true;
+    }).then(() => {
+      this.$scope.$apply();
     });
   }
 

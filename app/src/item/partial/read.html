@@ -11,6 +11,11 @@
             <a ui-sref="application.internal.transaction.read({itemId: itemData.Item.id})">{{itemData.transactionCount}}</a><span>&nbsp;/&nbsp;</span><span ng-show="itemData.Item.totalAvailible === null">&infin;</span><span ng-show="itemData.Item.totalAvailible !== null">{{itemData.Item.totalAvailible}}</span>
           </td>
           <td md-cell>
+            <md-input-container class="md-block">
+              <md-checkbox ng-model="itemData.Item.status" ng-true-value="0" ng-false-value="1" ng-change="controller.toggleStatus(itemData.Item)" aria-label="Active">active</md-checkbox>
+            </md-input-container>
+          </td>
+          <td md-cell>
             <md-menu md-position-mode="target-right target">
               <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
                 <ng-md-icon icon="more_vert"></ng-md-icon>

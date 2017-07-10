@@ -196,8 +196,19 @@ export default class ReadTransactionController {
   }
 
   refund(transaction, $event) {
+    let content;
+
+    if (transaction.linkedObjectClass === 'PaypalPayment') {
+      content = 'Please regard Paypal\'s refund policy at paypal.com/us/webapps/mpp/ua/useragreement-full#transaction-fees';
+    } else if (transaction.linkedObjectClass === 'StripeCharge') {
+      content = 'Please regard Stripe\'s refund policy at stripe.com/docs/refunds#fees';
+    } else {
+      content = '';
+    }
+
     const confirm = this.$mdDialog.confirm()
       .title('Are you sure you refund this transaction?')
+      .content(content)
       .ariaLabel('Refund Transaction')
       .clickOutsideToClose(true)
       .targetEvent($event)

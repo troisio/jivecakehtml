@@ -9,7 +9,6 @@ export default class ReadEventController {
     $mdDialog,
     organizationService,
     eventService,
-    relationalService,
     itemService,
     storageService,
     toolsService,
@@ -23,7 +22,6 @@ export default class ReadEventController {
     this.$mdDialog = $mdDialog;
     this.organizationService = organizationService;
     this.eventService = eventService;
-    this.relationalService = relationalService;
     this.itemService = itemService;
     this.toolsService = toolsService;
     this.settings = settings;
@@ -69,7 +67,7 @@ export default class ReadEventController {
         .where(lf.op.and(...and))
         .orderBy(eventTable.status, lf.Order.DESC)
         .orderBy(eventTable.lastActivity, lf.Order.DESC)
-        .limit(50)
+        .limit(100)
         .exec()
         .then(rows => {
           const data = angular.copy(rows);
@@ -161,7 +159,6 @@ ReadEventController.$inject = [
   '$mdDialog',
   'OrganizationService',
   'EventService',
-  'RelationalService',
   'ItemService',
   'StorageService',
   'ToolsService',

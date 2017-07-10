@@ -4,7 +4,6 @@ export default class UpdateOrganizationController {
   constructor(
     $q,
     $window,
-    $rootScope,
     $scope,
     $mdDialog,
     $stateParams,
@@ -22,7 +21,6 @@ export default class UpdateOrganizationController {
   ) {
     this.$q = $q;
     this.$window = $window;
-    this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
     this.$stateParams = $stateParams;
@@ -282,7 +280,6 @@ export default class UpdateOrganizationController {
 UpdateOrganizationController.$inject = [
   '$q',
   '$window',
-  '$rootScope',
   '$scope',
   '$mdDialog',
   '$stateParams',

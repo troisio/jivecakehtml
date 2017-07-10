@@ -6,41 +6,30 @@ export default class ReadItemController {
     $scope,
     $state,
     $mdDialog,
-    applicationService,
-    eventService,
     itemService,
     transactionService,
-    organizationService,
     permissionService,
     storageService,
-    toolsService,
     settings,
     uiService,
-    paypalService,
     db,
-    Permission,
-    Item
+    Permission
   ) {
     this.$q = $q;
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
-    this.applicationService = applicationService;
-    this.eventService = eventService;
     this.itemService = itemService;
     this.transactionService = transactionService;
-    this.organizationService = organizationService;
     this.permissionService = permissionService;
-    this.toolsService = toolsService;
+    this.storageService = storageService;
     this.uiService = uiService;
-    this.paypalService = paypalService;
     this.db = db;
+
     this.Permission = Permission;
-    this.Item = Item;
 
-    this.storage = storageService.read();
-
-    this.$scope.token = this.storage.auth.idToken;
+    const storage = this.storageService.read();
+    this.$scope.token = storage.auth.idToken;
     this.$scope.apiUrl = settings.jivecakeapi.uri;
     this.$scope.uiReady = false;
     this.$scope.selected = [];
@@ -80,8 +69,11 @@ export default class ReadItemController {
         const value = this.$state.params[field];
 
         if (value) {
-          const arrayValue = Array.isArray(value) ? value : [value];
-          and.push(itemTable[field].in(arrayValue));
+          if (Array.isArray(value)) {
+            and.push(itemTable[field].in(value));
+          } else {
+            and.push(itemTable[field].eq(value));
+          }
         }
       });
 
@@ -103,7 +95,8 @@ export default class ReadItemController {
           }
         });
 
-      const userId = this.storage.auth.idTokenPayload.sub;
+      const storage = this.storageService.read();
+      const userId = storage.auth.idTokenPayload.sub;
 
       const ands = [
         permissionTable.objectClass.eq('Organization'),
@@ -124,6 +117,8 @@ export default class ReadItemController {
         .innerJoin(permissionTable, permissionTable.objectId.eq(itemTable.organizationId))
         .leftOuterJoin(transactionTable, transactionTable.itemId.eq(itemTable.id))
         .where(lf.op.and(...ands))
+        .orderBy(itemTable.status, lf.Order.ASC)
+        .orderBy(itemTable.lastActivity, lf.Order.DESC)
         .exec()
         .then(rows => {
           const data = [];
@@ -180,6 +175,8 @@ export default class ReadItemController {
       this.$scope.uiReady = true;
     }, () => {
       this.$scope.uiReady = true;
+    }).then(() => {
+      this.$scope.$apply();
     });
   }
 
@@ -203,10 +200,19 @@ export default class ReadItemController {
             clickOutsideToClose: true
           });
         } else {
-          this.uiService.notify('Create some events before creating items');
+          this.uiService.notify('Create am event before creating items');
         }
       });
   }
+
+ toggleStatus(item) {
+   const storage = this.storageService.read();
+
+   this.itemService.update(storage.auth.idToken, item).then(() => {
+   }, () => {
+     this.uiService.notify('Unable to update item');
+   })
+ }
 
   delete(itemData, $event) {
     const confirm = this.$mdDialog.confirm()
@@ -218,7 +224,8 @@ export default class ReadItemController {
       .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.itemService.delete(this.storage.auth.idToken, itemData.Item.id).then(() => {
+      const storage = this.storageService.read();
+      this.itemService.delete(storage.auth.idToken, itemData.Item.id).then(() => {
         this.uiService.notify('Item deleted');
       }, (response) => {
         let message;
@@ -239,18 +246,12 @@ ReadItemController.$inject = [
   '$scope',
   '$state',
   '$mdDialog',
-  'ApplicationService',
-  'EventService',
   'ItemService',
   'TransactionService',
-  'OrganizationService',
   'PermissionService',
   'StorageService',
-  'ToolsService',
   'settings',
   'UIService',
-  'PaypalService',
   'db',
-  'Permission',
-  'Item'
+  'Permission'
 ];

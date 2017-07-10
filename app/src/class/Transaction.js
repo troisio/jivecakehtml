@@ -28,4 +28,8 @@ export default class Transaction {
   canRefund() {
     return this.isVendorTransaction() && this.status === 0 && this.leaf;
   }
+
+  canDelete() {
+    this.status === 2 || (this.status === 0 && !this.isVendorTransaction());
+  }
 }
