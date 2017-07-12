@@ -99,7 +99,11 @@ export default [
               } else {
                 $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
               }
+            }, function() {
+              uiService.notify('Unable to login');
             });
+          }, function() {
+            uiService.notify('Unable to login');
           });
         } else {
           uiService.notify('Unable to login');

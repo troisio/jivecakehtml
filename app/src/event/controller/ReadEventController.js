@@ -81,14 +81,14 @@ export default class ReadEventController {
           }
 
           this.$scope.data = data;
-        }, () => {
-          this.uiService.notify('Unable to retrieve data');
         });
     }).then(() => {
-      this.$scope.uiReady = true;
     }, () => {
+      this.uiService.notify('Unable to retrieve data');
+    }).then(() => {
       this.$scope.uiReady = true;
-    });
+      this.$scope.$apply();
+    })
   }
 
   toggleStatus(eventData) {
