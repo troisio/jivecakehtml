@@ -1,8 +1,10 @@
 export default class EventService {
-  constructor($http, settings, toolsService, Event, Item) {
+  constructor($http, settings, toolsService, paymentProfileService, Organization, Event, Item) {
     this.$http = $http;
     this.settings = settings;
     this.toolsService = toolsService;
+    this.paymentProfileService = paymentProfileService;
+    this.Organization = Organization;
     this.Event = Event;
     this.Item = Item;
   }
@@ -18,10 +20,12 @@ export default class EventService {
     }
 
     return this.$http.get(url, options).then(response => {
+      response.data.organization = this.toolsService.toObject(response.data.organization, this.Organization);
       response.data.event = this.toolsService.toObject(response.data.event, this.Event);
       response.data.itemData.forEach(itemDatum => {
         itemDatum.item = this.toolsService.toObject(itemDatum.item, this.Item);
       });
+      response.data.paymentProfile = this.paymentProfileService.toObject(response.data.profile);
 
       return response.data;
     });
@@ -118,4 +122,4 @@ export default class EventService {
   }
 }
 
-EventService.$inject = ['$http', 'settings', 'ToolsService', 'Event', 'Item'];
+EventService.$inject = ['$http', 'settings', 'ToolsService', 'PaymentProfileService', 'Organization', 'Event', 'Item'];

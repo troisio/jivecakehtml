@@ -54,6 +54,7 @@ export default class StripeService {
       image: 'assets/safari/apple-touch-120x120.png',
       locale: 'auto',
       currency: 'USD',
+      zipCode: true,
       token: function(token) {
         defer.resolve(token);
       },

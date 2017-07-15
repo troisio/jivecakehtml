@@ -67,6 +67,7 @@ import UpdateOrganizationController from './organization/controller/UpdateOrgani
 
 import CreatePaymentProfileController from './payment/profile/controller/CreatePaymentProfileController';
 
+import OrderErrorController from './public/controller/OrderErrorController';
 import PublicController from './public/controller/PublicController';
 import PublicEventController from './public/controller/PublicEventController';
 import MyTransactionController from './transaction/controller/MyTransactionController';
@@ -150,6 +151,7 @@ builder.connect({
 
     .controller('CreatePaymentProfileController', CreatePaymentProfileController)
 
+    .controller('OrderErrorController', OrderErrorController)
     .controller('PublicController', PublicController)
     .controller('PublicEventController', PublicEventController)
     .controller('MyTransactionController', MyTransactionController)

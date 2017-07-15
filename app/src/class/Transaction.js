@@ -30,6 +30,6 @@ export default class Transaction {
   }
 
   canDelete() {
-    this.status === 2 || (this.status === 0 && !this.isVendorTransaction());
+    return this.status === 2 || (this.status === 0 && !this.isVendorTransaction());
   }
 }

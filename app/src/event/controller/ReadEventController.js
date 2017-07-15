@@ -23,18 +23,23 @@ export default class ReadEventController {
     this.organizationService = organizationService;
     this.eventService = eventService;
     this.itemService = itemService;
+    this.storageService = storageService;
     this.toolsService = toolsService;
     this.settings = settings;
     this.uiService = uiService;
     this.db = db;
 
-    this.storage = storageService.read();
+    const storage = storageService.read();
     this.$scope.$parent.$parent.selectedTab = 1;
-    this.$scope.token = this.storage.auth.idToken;
+    this.$scope.token = storage.auth.idToken;
     this.$scope.apiUri = settings.jivecakeapi.uri;
     this.$scope.selected = [];
 
-    ['event.create', 'event.update', 'event.delete'].forEach((name) => {
+    [
+      'event.create',
+      'event.update',
+      'event.delete'
+    ].forEach((name) => {
       $scope.$on(name, () => {
         this.run();
       });
@@ -92,34 +97,53 @@ export default class ReadEventController {
   }
 
   toggleStatus(eventData) {
-    const promise = this.uiService.load();
-
-    this.eventService.fieldUpdate(this.storage.auth.idToken, eventData.Event.id, {
+    const storage = this.storageService.read();
+    const updateFuture = this.eventService.fieldUpdate(storage.auth.idToken, eventData.Event.id, {
       status: eventData.Event.status
-    }).then(function() {
-      promise.close.resolve();
+    });
+
+    if (eventData.Event.status === this.eventService.getActiveEventStatus()) {
+      this.$mdDialog.show({
+        controller: ['$scope', '$mdDialog', 'EventService', function($scope, $mdDialog, eventService) {
+          $scope.$mdDialog = $mdDialog;
+          $scope.loading = true;
+
+          updateFuture.then((event) => {
+            if (event.status === eventService.getInactiveEventStatus()) {
+              $mdDialog.hide();
+            } else {
+              $scope.loading = false;
+            }
+          });
+        }],
+        templateUrl: '/src/event/partial/eventActiveFeedback.html',
+        clickOutsideToClose: false
+      });
+    }
+
+    updateFuture.then(function() {
     }, (response) => {
-      promise.close.resolve();
+      this.$mdDialog.hide().then(() => {
+        if (eventData.Event.status === this.eventService.getActiveEventStatus()) {
+          eventData.Event.status = this.eventService.getInactiveEventStatus();
+        }
 
-      if (eventData.Event.status === this.eventService.getActiveEventStatus()) {
-        eventData.Event.status = this.eventService.getInactiveEventStatus();
-      }
-
-      if (typeof response.data === 'object' && response.data.error === 'subscription') {
-        this.$mdDialog.show({
-          controllerAs: 'controller',
-          controller: 'InsufficientSubscriptionController',
-          templateUrl: '/src/event/partial/insufficientSubscriptions.html',
-          clickOutsideToClose: true,
-          locals: {
-            subscriptions: response.data,
-            organization: eventData.Organization
-          }
-        });
-      } else {
-        const message = response.status === 401 ? 'You do not have permission to update this event' : 'Unable to update event';
-        this.uiService.notify(message);
-      }
+        if (typeof response.data === 'object' && response.data.error === 'subscription') {
+          this.$mdDialog.show({
+            controllerAs: 'controller',
+            controller: 'InsufficientSubscriptionController',
+            templateUrl: '/src/event/partial/insufficientSubscriptions.html',
+            clickOutsideToClose: true,
+            locals: {
+              subscriptions: response.data,
+              organization: eventData.Organization
+            }
+          });
+        } else {
+          const message = response.status === 401 ? 'You do not have permission to update this event' : 'Unable to update event';
+          this.uiService.notify(message);
+        }
+      });
     });
   }
 
@@ -133,7 +157,9 @@ export default class ReadEventController {
       .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.eventService.delete(this.storage.auth.idToken, eventData.Event.id).then(() => {
+      const storage = this.storageService.read();
+
+      this.eventService.delete(storage.auth.idToken, eventData.Event.id).then(() => {
         this.uiService.notify('Event deleted');
       }, (response) => {
         const message = response.status === 401 ? 'You do not have permission to delete this event' : 'Unable to delete event';

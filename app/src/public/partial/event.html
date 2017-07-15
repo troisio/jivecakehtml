@@ -35,7 +35,7 @@
                     <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
                   </md-select>
                 </md-input-container>
-                <a href="" ng-click="controller.login()" ng-show="itemData.item.requiresAccountForRegistration() && auth === null">requires login</a>
+                <a href="" ng-click="controller.login()" ng-show="(itemData.item.requiresAccountForRegistration() && auth === null) && !controller.itemIsBlocked(groupData, itemData)">requires login</a>
               </td>
               <td md-cell>
                 <ng-md-icon ng-show="controller.itemIsBlocked(groupData, itemData)" icon="block"></ng-md-icon>

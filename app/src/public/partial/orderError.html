@@ -1,0 +1,10 @@
+<md-dialog flex="80">
+  <div layout="row" layout-padding layout-align="space-between center">
+    <h2>Order Errors</h2>
+  </div>
+  <div layout-padding layout="column">
+    <div ng-repeat="message in messages">
+      {{message.message}}
+    </div>
+  </div>
+</md-dialog>
