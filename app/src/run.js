@@ -54,6 +54,11 @@ export default [
       uiService.logInteraction(token, event);
     });
 
+    const loginFailure = function() {
+      uiService.notify('Sorry, there was an error during login');
+      $state.go('application.public.home');
+    };
+
     lock.on('authenticated', function(auth) {
       lock.getUserInfo(auth.accessToken, function(error, profile) {
         if (typeof error === 'undefined' || error === null) {
@@ -99,18 +104,12 @@ export default [
               } else {
                 $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
               }
-            }, function() {
-              uiService.notify('Unable to login');
-            });
-          }, function() {
-            uiService.notify('Unable to login');
-          });
+            }, loginFailure);
+          }, loginFailure);
         } else {
-          uiService.notify('Unable to login');
+          loginFailure();
         }
       });
-    }, function() {
-      uiService.notify('Unable to login');
-    });
+    }, loginFailure);
   }
 ]

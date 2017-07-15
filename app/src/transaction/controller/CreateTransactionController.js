@@ -7,11 +7,9 @@ export default class CreateTransactionController {
     $state,
     auth0Service,
     $stateParams,
-    $mdDialog,
     Transaction,
     itemService,
     eventService,
-    organizationService,
     transactionService,
     storageService,
     uiService,
@@ -22,18 +20,17 @@ export default class CreateTransactionController {
     this.$state = $state;
     this.auth0Service = auth0Service;
     this.$stateParams = $stateParams;
-    this.$mdDialog = $mdDialog;
     this.Transaction = Transaction;
     this.itemService = itemService;
     this.eventService = eventService;
-    this.organizationService = organizationService;
     this.transactionService = transactionService;
+    this.storageService = storageService;
     this.uiService = uiService;
 
     $scope.userService = userService;
 
-    this.storage = storageService.read();
-    this.itemFuture = this.itemService.read(this.storage.auth.idToken, this.$stateParams.itemId);
+    const storage = storageService.read();
+    this.itemFuture = this.itemService.read(storage.auth.idToken, this.$stateParams.itemId);
 
     this.run();
   }
@@ -51,6 +48,8 @@ export default class CreateTransactionController {
   }
 
   setDefaults() {
+    const storage = this.storageService.read();
+
     this.$scope.form.$setUntouched();
     this.$scope.form.$setPristine();
 
@@ -63,7 +62,7 @@ export default class CreateTransactionController {
     return this.itemFuture.then((item) => {
       this.$scope.item = item;
 
-      const eventFuture = this.eventService.read(this.storage.auth.idToken, item.eventId).then(event => {
+      const eventFuture = this.eventService.read(storage.auth.idToken, item.eventId).then(event => {
         this.$scope.transaction.currency = event.currency;
         this.$scope.event = event;
       });
@@ -76,13 +75,9 @@ export default class CreateTransactionController {
     });
   }
 
-  cancel() {
-    this.itemFuture.then((item) => {
-      this.$state.go('application.internal.item.read', {eventId: item.eventId});
-    });
-  }
-
   query(search) {
+    const storage = this.storageService.read();
+
     const terms = search.split(new RegExp('\\s+', 'g')).join(' ');
     const queryParts = [
       'user_metadata.given_name',
@@ -95,7 +90,7 @@ export default class CreateTransactionController {
 
     let query = queryParts.join(' OR ');
 
-    return this.auth0Service.searchUsers(this.storage.auth.idToken, {
+    return this.auth0Service.searchUsers(storage.auth.idToken, {
       q: query,
       search_engine: 'v2'
     });
@@ -110,10 +105,12 @@ export default class CreateTransactionController {
   }
 
   submit(transaction, item, selectedUser, event) {
+    const storage = this.storageService.read();
+
     this.$scope.loading = true;
     const transactionCopy = angular.copy(transaction);
 
-    this.transactionService.search(this.storage.auth.idToken, {
+    this.transactionService.search(storage.auth.idToken, {
       itemId: item.id
     }).then(() => {
       if (selectedUser !== null) {
@@ -128,7 +125,7 @@ export default class CreateTransactionController {
         transactionCopy.currency = event.currency;
       }
 
-      return this.transactionService.create(this.storage.auth.idToken, item.id, transactionCopy).then(() => {
+      return this.transactionService.create(storage.auth.idToken, item.id, transactionCopy).then(() => {
         this.uiService.notify('Transaction created');
 
         window.scrollTo(0, 0);
@@ -138,9 +135,7 @@ export default class CreateTransactionController {
 
         if (response.status === 400 && 'data' in response) {
           if (response.data.error === 'totalAvailible') {
-            message = 'Can not create more transactions';
-          } else if (response.data.error === 'inactive') {
-            message = 'The event for this item is not active';
+            message = 'Can not create more than ' + response.data.data + ' transactions';
           }
         }
 
@@ -160,11 +155,9 @@ CreateTransactionController.$inject = [
   '$state',
   'Auth0Service',
   '$stateParams',
-  '$mdDialog',
   'Transaction',
   'ItemService',
   'EventService',
-  'OrganizationService',
   'TransactionService',
   'StorageService',
   'UIService',
