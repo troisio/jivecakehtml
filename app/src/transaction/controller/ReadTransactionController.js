@@ -90,11 +90,10 @@ export default class ReadTransactionController {
           });
         });
       }).then(() => {
-        this.$scope.loading = false;
       }, () => {
         this.uiService.notify('Unable to retrieve data');
-        this.$scope.loading = false;
       }).then(() => {
+        this.$scope.loading = false;
         this.$scope.$apply();
       })
     });
@@ -180,8 +179,9 @@ export default class ReadTransactionController {
       });
     }, () => {
       this.uiService.notify('Unable to retrieve data');
-    }).finally(() => {
+    }).then(() => {
       this.$scope.loading = false;
+      this.$scope.$apply();
     });
   }
 
