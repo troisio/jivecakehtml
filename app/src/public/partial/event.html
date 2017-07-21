@@ -52,7 +52,7 @@
     <div ng-show="groupData.itemData.length === 0" layout-padding>
       <p>Sorry, this event does not have any items to display</p>
     </div>
-    <div ng-show="groupData.event.currency === null || groupData.event.paymentProfileId === null" layout-padding>
+    <div ng-show="groupData.event.currency === null || groupData.event.paymentProfileId === null || groupData.profile === null" layout-padding>
       <p>Sorry, this event does not have any valid payment options</p>
     </div>
   </div>

@@ -1,14 +1,12 @@
 export default class PublicEventController {
   constructor(
     $q,
-    $location,
     $state,
     $mdDialog,
     $timeout,
     $scope,
     eventService,
     transactionService,
-    organizationService,
     accessService,
     uiService,
     storageService,
@@ -19,14 +17,12 @@ export default class PublicEventController {
     settings
   ) {
     this.$q = $q;
-    this.$location = $location;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.$timeout = $timeout;
     this.$scope = $scope;
     this.eventService = eventService;
     this.transactionService = transactionService;
-    this.organizationService = organizationService;
     this.accessService = accessService;
     this.uiService = uiService;
     this.storageService = storageService;
@@ -65,7 +61,7 @@ export default class PublicEventController {
     return this.eventService.getAggregatedEventData(this.$state.params.id, idToken).then((groupData) => {
       this.$scope.groupData = groupData;
       this.$scope.organization = groupData.organization;
-      this.$scope.paymentProfile = groupData.paymentProfile;
+      this.$scope.profile = groupData.profile;
 
       groupData.itemData.forEach((itemData) => {
         this.$scope.itemFormData[itemData.item.id] = {amount: 0};
@@ -158,7 +154,7 @@ export default class PublicEventController {
     const requiresAccount = itemData.item.requiresAccountForRegistration();
     const hasCurrencyAndPaymentProfile = group.event.hasCurrencyAndPaymentProfile();
 
-    return soldOut || soldOutForUser || (requiresAccount && auth === null) || !hasCurrencyAndPaymentProfile;
+    return soldOut || soldOutForUser || (requiresAccount && auth === null) || !hasCurrencyAndPaymentProfile || group.profile === null;
   }
 
   showInformation(event, organization) {
@@ -180,9 +176,7 @@ export default class PublicEventController {
 
   processStripe(group, paidSelections) {
     const defer = this.$q.defer();
-    const profile = this.$scope.paymentProfile;
-    const pk = this.settings.stripe.useAsMock ? this.settings.stripe.pk : profile.stripe_publishable_key;
-
+    const pk = this.settings.stripe.useAsMock ? this.settings.stripe.pk : group.profile.stripe_publishable_key;
     const total = this.getTotalFromSelections(paidSelections);
 
     const checkout = StripeCheckout.configure({
@@ -249,6 +243,12 @@ export default class PublicEventController {
     const storage = this.storageService.read();
     const token = storage.auth === null ? null : storage.auth.idToken;
 
+    const buttonSelector = '#paypal-button';
+    const node = document.querySelector(buttonSelector);
+    while (node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
+
     paypal.Button.render({
       env: this.settings.paypal.env,
       commit: true,
@@ -278,7 +278,7 @@ export default class PublicEventController {
           this.uiService.notify('Unable to complete payment');
         });
       }
-    }, '#paypal-button');
+    }, buttonSelector);
   }
 
   checkout(group, itemFormData) {
@@ -309,9 +309,9 @@ export default class PublicEventController {
       this.$q.all(unpaidFutures).then(() => {
         const paidSelections = selectionAndItemData.filter(data => data.itemData.amount > 0);
 
-        if (this.$scope.paymentProfile instanceof this.StripePaymentProfile) {
+        if (this.$scope.profile instanceof this.StripePaymentProfile) {
           this.processStripe(group, paidSelections);
-        } else if (this.$scope.paymentProfile instanceof this.PaypalPaymentProfile) {
+        } else if (this.$scope.profile instanceof this.PaypalPaymentProfile) {
           this.processPaypal(group, paidSelections, this.$scope.paymentProfile);
         } else {
           throw new Error('invalid payment profile implementation');
@@ -346,14 +346,12 @@ export default class PublicEventController {
 
 PublicEventController.$inject = [
   '$q',
-  '$location',
   '$state',
   '$mdDialog',
   '$timeout',
   '$scope',
   'EventService',
   'TransactionService',
-  'OrganizationService',
   'AccessService',
   'UIService',
   'StorageService',

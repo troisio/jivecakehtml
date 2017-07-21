@@ -200,7 +200,7 @@ export default class ReadItemController {
             clickOutsideToClose: true
           });
         } else {
-          this.uiService.notify('Create am event before creating items');
+          this.uiService.notify('Create an event before creating items');
         }
       });
   }

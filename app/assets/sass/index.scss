@@ -62,6 +62,7 @@ div[ng-messages] p[ng-message] {
 
 .md-fab {
   fill: #fff;
+  position:fixed !important;
 
   ng-md-icon {
     position: relative;

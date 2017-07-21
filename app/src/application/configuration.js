@@ -51,6 +51,10 @@ export default [
       controller: 'HomeController',
       controllerAs: 'controller'
     })
+    .state('application.public.faq', {
+      url: '/faq',
+      templateUrl: '/src/application/partial/faq.html'
+    })
     .state('application.public.terms', {
       url: '/terms',
       templateUrl: '/src/application/partial/terms.html'

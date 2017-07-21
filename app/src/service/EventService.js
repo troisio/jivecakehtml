@@ -25,7 +25,10 @@ export default class EventService {
       response.data.itemData.forEach(itemDatum => {
         itemDatum.item = this.toolsService.toObject(itemDatum.item, this.Item);
       });
-      response.data.paymentProfile = this.paymentProfileService.toObject(response.data.profile);
+
+      if (response.data.profile !== null) {
+        response.data.profile = this.paymentProfileService.toObject(response.data.profile);
+      }
 
       return response.data;
     });
