@@ -104,9 +104,12 @@ export default class ReadEventController {
 
     if (eventData.Event.status === this.eventService.getActiveEventStatus()) {
       this.$mdDialog.show({
-        controller: ['$scope', '$mdDialog', 'EventService', function($scope, $mdDialog, eventService) {
+        controller: ['$window', '$scope', '$mdDialog', 'EventService', 'event', function($window, $scope, $mdDialog, eventService, event) {
           $scope.$mdDialog = $mdDialog;
           $scope.loading = true;
+          $scope.event = event;
+          $scope.flex = 10;
+          $scope.eventUrl = window.location.protocol + '//' + window.location.hostname + '/event/' + event.id;
 
           updateFuture.then((event) => {
             if (event.status === eventService.getInactiveEventStatus()) {
@@ -114,10 +117,19 @@ export default class ReadEventController {
             } else {
               $scope.loading = false;
             }
-          });
+          }).then(() => {
+            if ($window.innerWidth < 500) {
+              $scope.flex = 80;
+            } else {
+              $scope.flex = 55;
+            }
+          })
         }],
         templateUrl: '/src/event/partial/eventActiveFeedback.html',
-        clickOutsideToClose: false
+        clickOutsideToClose: false,
+        locals: {
+          event: eventData.Event
+        }
       });
     }
 

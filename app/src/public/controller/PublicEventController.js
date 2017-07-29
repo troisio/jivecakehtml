@@ -35,10 +35,9 @@ export default class PublicEventController {
     this.$scope.ready = this.$scope.$parent.ready;
     this.$scope.selected = [];
     this.defaultAmountSize = uiService.getDefaultItemCartSelectionSize();
-    this.$scope.uiReady = false;
-    this.scheduledModificationTimes = new Set();
     this.$scope.time = new Date();
-    this.$scope.hasAnySelections = false;
+
+    this.setDefaultState();
 
     const storage = this.storageService.read();
     this.$scope.auth = storage.auth;
@@ -51,8 +50,7 @@ export default class PublicEventController {
   }
 
   run() {
-    this.$scope.uiReady = false;
-    this.$scope.itemFormData = {};
+    this.setDefaultState();
 
     const storage = this.storageService.read();
     const currentTime = new Date().getTime();
@@ -269,6 +267,8 @@ export default class PublicEventController {
         });
       },
       onAuthorize: (authorization) => {
+        this.uiReady = false;
+
         this.paypalService.execute(token, authorization).then(() => {
           this.uiService.notify('Payment complete');
           this.$state.go('application.internal.myTransaction', {
@@ -276,6 +276,8 @@ export default class PublicEventController {
           });
         }, () => {
           this.uiService.notify('Unable to complete payment');
+        }).then(() => {
+          this.uiReady = true;
         });
       }
     }, buttonSelector);
@@ -312,6 +314,7 @@ export default class PublicEventController {
         if (this.$scope.profile instanceof this.StripePaymentProfile) {
           this.processStripe(group, paidSelections);
         } else if (this.$scope.profile instanceof this.PaypalPaymentProfile) {
+          this.$scope.isPaypalCheckoutView = true;
           this.processPaypal(group, paidSelections, this.$scope.paymentProfile);
         } else {
           throw new Error('invalid payment profile implementation');
@@ -341,6 +344,14 @@ export default class PublicEventController {
         item: item
       }
     });
+  }
+
+  setDefaultState() {
+    this.$scope.uiReady = false;
+    this.$scope.hasAnySelections = false;
+    this.$scope.itemFormData = {};
+    this.scheduledModificationTimes = new Set();
+    this.$scope.isPaypalCheckoutView = false;
   }
 }
 

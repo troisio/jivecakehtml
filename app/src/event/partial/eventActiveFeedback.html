@@ -1,10 +1,11 @@
-<md-dialog layout-align="center center" flex="50">
+<md-dialog class="page-eventActiveFeedback" layout-align="center center" flex="{{flex}}">
   <div layout-padding>
     <md-progress-circular ng-show="loading" md-mode="indeterminate"></md-progress-circular>
     <div flex ng-show="!loading">
       <div>
-        <p>Congratulations, your event is active.</p>
-        <p>Click your event name to visit your home page.</p>
+        <p>Your event is active. Click your event name to visit your published page.</p>
+        <p>Your event is hosted at</p>
+        <a ng-href="{{eventUrl}}">{{eventUrl}}</a>
       </div>
       <div style="margin-top: 1em" layout="row" layout-align="end end">
         <md-button ng-click="$mdDialog.hide()" class="md-raised">Ok</md-button>

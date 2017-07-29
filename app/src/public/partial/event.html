@@ -11,7 +11,7 @@
     </div>
   </md-toolbar>
   <div class="public-item-page" ng-show="uiReady">
-    <section ng-show="groupData.event.currency !== null && groupData.event.paymentProfileId !== null">
+    <section ng-show="!isPaypalCheckoutView && groupData.event.currency !== null && groupData.event.paymentProfileId !== null">
       <md-table-container>
         <table ng-model="selected" md-table multiple>
           <tbody md-body>
@@ -45,9 +45,14 @@
         </table>
       </md-table-container>
     </section>
-    <div ng-show="groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections" class="checkout">
-      <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
+    <div ng-show="isPaypalCheckoutView" layout="row" layout-padding layout-align="space-between center">
+      <div>
+        <a href="" ng-click="isPaypalCheckoutView = false;">return to selection</a>
+      </div>
       <div id="paypal-button"></div>
+    </div>
+    <div ng-show="!isPaypalCheckoutView && groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections" class="checkout">
+      <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
     </div>
     <div ng-show="groupData.itemData.length === 0" layout-padding>
       <p>Sorry, this event does not have any items to display</p>
