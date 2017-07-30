@@ -352,10 +352,6 @@ export default class DownstreamService {
         order: '-lastActivity'
       }
     ).then((organizations) => {
-      for (let organization of organizations) {
-        this.organizationService.getTree(auth.idToken, organization.id);
-      }
-
       const organiationTable = this.db.getSchema().table('Organization');
       const rows = organizations.map(organiationTable.createRow, organiationTable);
       return this.db.insertOrReplace().into(organiationTable).values(rows).exec();
@@ -368,6 +364,10 @@ export default class DownstreamService {
       const organizationIds = permissions
         .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
         .map(permission => permission.objectId);
+
+      for (let id of organizationIds) {
+        this.organizationService.getTree(auth.idToken, id);
+      }
 
       let futures;
 
