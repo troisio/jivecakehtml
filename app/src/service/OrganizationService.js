@@ -15,6 +15,16 @@ export default class OrganizationService {
     this.rootOrganization.email = "luis@trois.io";
   }
 
+  getTree(token, id) {
+    const url = [this.settings.jivecakeapi.uri, 'organization', id, 'tree'].join('/');
+
+    return fetch(url, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.ok ? response.json() : Promise.reject(response));
+  }
+
   getObjectClassName() {
     return 'Organization';
   }

@@ -43,17 +43,6 @@ export default [
       }
     });
 
-    document.addEventListener('visibilitychange', function() {
-      const storage = storageService.read();
-      const token = storage.auth === null ? null : storage.auth.idToken;
-      const event = new UserInterfaceEvent();
-      event.event = 'visibilitychange';
-      event.parameters = {
-        visibilityState: document.visibilityState
-      };
-      uiService.logInteraction(token, event);
-    });
-
     const loginFailure = function() {
       uiService.notify('Sorry, there was an error during login');
       $state.go('application.public.home');

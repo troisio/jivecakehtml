@@ -175,16 +175,22 @@ export default class TransactionService {
 
   getTransactionData(itemService, token, query) {
     return this.search(token, query).then((searchResult) => {
-      const transactionIdsSet = new Set();
-      searchResult.entity.map(transaction => transactionIdsSet.add(transaction.id));
-      const transactionIds = Array.from(transactionIdsSet);
+      const userIds = new Set();
+      const userCompressedTransactionIds = [];
+
+      for (let transaction of searchResult.entity) {
+        if (transaction.user_id !== null && !userIds.has(transaction.user_id)) {
+          userIds.add(transaction.user_id);
+          userCompressedTransactionIds.push(transaction.id);
+        }
+      }
 
       const itemIdsSet = new Set();
       searchResult.entity.forEach(transaction => itemIdsSet.add(transaction.itemId));
       const itemIds = Array.from(itemIdsSet);
 
-      const usersFuture = transactionIds.length === 0 ? this.$q.resolve([]) : this.searchUsers(token, {
-        id: transactionIds
+      const usersFuture = userCompressedTransactionIds.length === 0 ? this.$q.resolve([]) : this.searchUsers(token, {
+        id: userCompressedTransactionIds
       });
       const itemsFuture = itemIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : itemService.publicSearch({
         id: itemIds

@@ -1,6 +1,7 @@
 import './polyfill/assign';
 import './polyfill/find';
 import './polyfill/from';
+import 'whatwg-fetch';
 
 import angular from 'angular';
 
