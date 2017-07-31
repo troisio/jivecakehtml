@@ -57,7 +57,21 @@ export default class AccessService {
       href += '&access_token=' + storage.auth.idToken;
     }
 
-     location.href = href;
+    new Promise((resolve, reject) => {
+      const request = indexedDB.deleteDatabase('jivecake');
+
+      request.onerror = function(event) {
+        reject(event);
+      };
+
+      request.onsuccess = function(event) {
+        resolve(event);
+      };
+    }).then(() => {
+    }, () => {
+    }).then(() => {
+      location.href = href;
+    });
   }
 }
 

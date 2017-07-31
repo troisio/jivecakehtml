@@ -85,7 +85,7 @@ export default class AddUserOrganizationPermissionController {
         } else {
           const permission = new this.Permission();
           permission.user_id = user.user_id;
-          permission.objectClass = this.organizationService.getObjectClassName();
+          permission.objectClass = 'Organization';
           permission.objectId = this.organization.id;
           permission.permissions = [];
           permission.include = include;

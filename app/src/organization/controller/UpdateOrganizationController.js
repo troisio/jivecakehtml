@@ -3,6 +3,7 @@ import anguar from 'angular';
 export default class UpdateOrganizationController {
   constructor(
     $q,
+    $timeout,
     $window,
     $scope,
     $mdDialog,
@@ -20,6 +21,7 @@ export default class UpdateOrganizationController {
     db
   ) {
     this.$q = $q;
+    this.$timeout = $timeout;
     this.$window = $window;
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
@@ -75,12 +77,11 @@ export default class UpdateOrganizationController {
           this.$scope.hasApplicationWrite = rows.filter(row => hasPermission.call(row, this.permissionService.WRITE)).length > 0;
           return this.loadUI(this.$stateParams.organizationId);
         }).then(() => {
-          this.$scope.uiReady = true;
         }, () => {
-          this.$scope.uiReady = true;
           this.uiService.notify('Unable to find organization');
         }).then(() => {
-          this.$scope.$apply();
+          this.$scope.uiReady = true;
+          this.$timeout();
         });
     });
   }
@@ -267,7 +268,7 @@ export default class UpdateOrganizationController {
     this.permissionService.delete(this.storage.auth.idToken, {
       user_id: user.user_id,
       objectId: this.$stateParams.organizationId,
-      objectClass: this.organizationService.getObjectClassName()
+      objectClass: 'Organization'
     }).then(() => {
       const removeIndex = this.$scope.users.indexOf(user);
       this.$scope.users.splice(removeIndex, 1);
@@ -279,6 +280,7 @@ export default class UpdateOrganizationController {
 
 UpdateOrganizationController.$inject = [
   '$q',
+  '$timeout',
   '$window',
   '$scope',
   '$mdDialog',

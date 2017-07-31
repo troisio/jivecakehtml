@@ -2,24 +2,18 @@ import lf from 'lovefield';
 
 export default class DownstreamService {
   constructor(
-    $q,
     $rootScope,
     permissionService,
     organizationService,
-    eventService,
-    itemService,
     transactionService,
     storageService,
     assetService,
     db,
     SearchEntity
   ) {
-    this.$q = $q;
     this.$rootScope = $rootScope;
     this.permissionService = permissionService;
     this.organizationService = organizationService;
-    this.eventService = eventService;
-    this.itemService = itemService;
     this.transactionService = transactionService;
     this.storageService = storageService;
     this.assetService = assetService;
@@ -164,10 +158,10 @@ export default class DownstreamService {
       this.db.insertOrReplace()
         .into(table)
         .values(rows)
-          .exec()
-          .then(() => {
-            this.$rootScope.$broadcast('event.update', events);
-          });
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('event.update', events);
+        });
     });
 
     source.addEventListener('event.delete', (sse) => {
@@ -345,148 +339,86 @@ export default class DownstreamService {
   }
 
   cacheUserData(auth) {
-    const organizationFuture = this.organizationService.getOrganizationsByUser(
-      auth.idToken,
-      auth.idTokenPayload.sub,
-      {
-        order: '-lastActivity'
-      }
-    ).then((organizations) => {
-      const organiationTable = this.db.getSchema().table('Organization');
-      const rows = organizations.map(organiationTable.createRow, organiationTable);
-      return this.db.insertOrReplace().into(organiationTable).values(rows).exec();
-    });
-
-    const permissionFuture = this.permissionService.search(auth.idToken, {
+    return this.permissionService.search(auth.idToken, {
       user_id: auth.idTokenPayload.sub
     }).then(permissionSearchResult => {
       const permissions = permissionSearchResult.entity;
+      const permissionTable = this.db.getSchema().table('Permission');
+      const permissionRows = permissions.map(permissionTable.createRow, permissionTable);
+      const permissionFuture = this.db.insert().into(permissionTable).values(permissionRows).exec();
+
       const organizationIds = permissions
-        .filter(permission => permission.objectClass === this.organizationService.getObjectClassName())
+        .filter(permission => permission.objectClass === 'Organization')
         .map(permission => permission.objectId);
 
-      for (let id of organizationIds) {
-        this.organizationService.getTree(auth.idToken, id);
-      }
-
-      let futures;
-
-      if (organizationIds.length > 0) {
-        const permissionTable = this.db.getSchema().table('Permission');
-        const permissionFuture = this.db.delete().from(permissionTable).exec().then(() => {
-          const rows = permissions.map(permissionTable.createRow, permissionTable);
-          return this.db.insert().into(permissionTable).values(rows).exec();
-        });
-
-        const eventFuture = this.eventService.search(auth.idToken, {
-          order: '-lastActivity',
-          limit: 20,
-          organizationId: organizationIds
-        }).then(search => {
-          const events = search.entity;
-          const eventIds = events.map(event => event.id);
+      const treeFutures = organizationIds.map((organizationId) => {
+        return this.organizationService.getTree(auth.idToken, organizationId).then((tree) => {
+          const organizationTable = this.db.getSchema().table('Organization');
+          const paymentProfileTable = this.db.getSchema().table('PaymentProfile');
           const eventTable = this.db.getSchema().table('Event');
-          const rows = events.map(eventTable.createRow, eventTable);
+          const itemTable = this.db.getSchema().table('Item');
+          const transactionTable = this.db.getSchema().table('Transaction');
 
-          let itemFuture;
+          const events = tree.event.map(eventTable.createRow, eventTable);
+          const paymentProfiles = tree.event.map(paymentProfileTable.createRow, paymentProfileTable);
+          const items = tree.item.map(itemTable.createRow, itemTable);
+          const transactions = tree.transaction.map(transactionTable.createRow, transactionTable);
 
-          if (eventIds.length === 0) {
-            itemFuture = Promise.resolve(new this.SearchEntity());
-          } else {
-            itemFuture = this.itemService.search(auth.idToken, {
-              order: '-lastActivity',
-              eventId: eventIds,
-              limit: 40
-            });
-          }
-
-          return this.db.insertOrReplace()
-            .into(eventTable)
-            .values(rows)
+          const organizationInsertFuture = this.db.insert()
+            .into(organizationTable)
+            .values([organizationTable.createRow(tree.organization)])
             .exec()
             .then(() => {
-              return itemFuture.then(search => {
-                const items = search.entity;
-                const itemTable = this.db.getSchema().table('Item');
-                const rows = items.map(itemTable.createRow, itemTable);
-
-                return this.db.insertOrReplace()
-                  .into(itemTable)
-                  .values(rows)
-                  .exec()
-                  .then(() => {
-                    const itemIds = items.map(item => item.id);
-
-                    let transactionFuture;
-
-                    if (itemIds.length > 0) {
-                      transactionFuture = this.transactionService.search(auth.idToken, {
-                        itemId: itemIds,
-                        leaf: true
-                      }).then(search => {
-                        const transactions = search.entity;
-                        const transactionTable = this.db.getSchema().table('Transaction');
-                        const rows = transactions.map(transactionTable.createRow, transactionTable);
-                        const insertFuture = this.db.insertOrReplace().into(transactionTable).values(rows).exec();
-
-                        let userFuture;
-                        let assetFuture;
-
-                        const transactionIdsUserSearch = this.transactionService.getMinimalUserIdCovering(transactions)
-                          .map(transaction => transaction.id);
-
-                        if (transactionIdsUserSearch.length > 0) {
-                          assetFuture = this.transactionService.getUserAssets(auth.idToken, {
-                            id: transactionIdsUserSearch
-                          }).then((assets) => {
-                            const assetTable = this.db.getSchema().table('EntityAsset');
-                            const rows = assets.map(assetTable.createRow, assetTable);
-                            return this.db.insertOrReplace().into(assetTable).values(rows).exec();
-                          });
-
-                          userFuture = this.transactionService.searchUsers(auth.idToken, {
-                            id: transactionIdsUserSearch
-                          }).then((users) => {
-                            const userTable = this.db.getSchema().table('User');
-                            const rows = users.map(userTable.createRow, userTable);
-                            return this.db.insertOrReplace().into(userTable).values(rows).exec();
-                          });
-                        } else {
-                          userFuture = Promise.resolve();
-                          assetFuture = Promise.resolve();
-                        }
-
-                        return Promise.all([insertFuture, userFuture, assetFuture]);
-                      });
-                    } else {
-                      transactionFuture = Promise.resolve();
-                    }
-
-                    return transactionFuture;
-                  });
-              });
+              return this.db.insert().into(paymentProfileTable).values(paymentProfiles).exec();
             });
+          const treeInsertFuture = this.db.insert().into(eventTable).values(events).exec()
+            .then(() => {
+              return this.db.insert().into(itemTable).values(items).exec()
+                .then(() => {
+                  return this.db.insert().into(transactionTable).values(transactions).exec()
+                });
+            });
+
+          let userFuture;
+          let assetFuture;
+
+          const transactionIdsUserSearch = this.transactionService.getMinimalUserIdCovering(tree.transaction)
+            .map(transaction => transaction.id);
+
+          if (transactionIdsUserSearch.length > 0) {
+            assetFuture = this.transactionService.getUserAssets(auth.idToken, {
+              id: transactionIdsUserSearch
+            }).then((assets) => {
+              const assetTable = this.db.getSchema().table('EntityAsset');
+              const rows = assets.map(assetTable.createRow, assetTable);
+              return this.db.insertOrReplace().into(assetTable).values(rows).exec();
+            });
+
+            userFuture = this.transactionService.searchUsers(auth.idToken, {
+              id: transactionIdsUserSearch
+            }).then((users) => {
+              const userTable = this.db.getSchema().table('User');
+              const rows = users.map(userTable.createRow, userTable);
+              return this.db.insertOrReplace().into(userTable).values(rows).exec();
+            });
+          } else {
+            userFuture = Promise.resolve();
+            assetFuture = Promise.resolve();
+          }
+
+          return Promise.all([organizationInsertFuture, treeInsertFuture, userFuture, assetFuture]);
         });
+      });
 
-        futures = [eventFuture, permissionFuture];
-      } else {
-        futures = [];
-      }
-
-      return Promise.all(futures);
+      return Promise.all(treeFutures.concat([permissionFuture]));
     });
-
-    return Promise.all([organizationFuture, permissionFuture]);
   }
 }
 
 DownstreamService.$inject = [
-  '$q',
   '$rootScope',
   'PermissionService',
   'OrganizationService',
-  'EventService',
-  'ItemService',
   'TransactionService',
   'StorageService',
   'AssetService',

@@ -3,6 +3,7 @@ import lf from 'lovefield';
 export default class ReadTransactionController {
   constructor(
     $scope,
+    $timeout,
     $q,
     $state,
     $mdDialog,
@@ -17,6 +18,7 @@ export default class ReadTransactionController {
     Transaction
   ) {
     this.$scope = $scope;
+    this.$timeout = $timeout;
     this.$q = $q;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
@@ -94,7 +96,9 @@ export default class ReadTransactionController {
         this.uiService.notify('Unable to retrieve data');
       }).then(() => {
         this.$scope.loading = false;
-        this.$scope.$apply();
+        this.$timeout(() => {
+          this.$scope.$apply();
+        });
       })
     });
   }
@@ -181,7 +185,7 @@ export default class ReadTransactionController {
       this.uiService.notify('Unable to retrieve data');
     }).then(() => {
       this.$scope.loading = false;
-      this.$scope.$apply();
+      this.$timeout();
     });
   }
 
@@ -307,6 +311,7 @@ export default class ReadTransactionController {
 
 ReadTransactionController.$inject = [
   '$scope',
+  '$timeout',
   '$q',
   '$state',
   '$mdDialog',

@@ -3,6 +3,7 @@ import lf from 'lovefield';
 export default class ReadItemController {
   constructor(
     $q,
+    $timeout,
     $scope,
     $state,
     $mdDialog,
@@ -16,6 +17,7 @@ export default class ReadItemController {
     Permission
   ) {
     this.$q = $q;
+    this.$timeout = $timeout;
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
@@ -172,11 +174,10 @@ export default class ReadItemController {
           this.uiService.notify('Unable to retrieve data');
         });
     }).then(() => {
-      this.$scope.uiReady = true;
     }, () => {
-      this.$scope.uiReady = true;
     }).then(() => {
-      this.$scope.$apply();
+      this.$scope.uiReady = true;
+      this.$timeout();
     });
   }
 
@@ -243,6 +244,7 @@ export default class ReadItemController {
 
 ReadItemController.$inject = [
   '$q',
+  '$timeout',
   '$scope',
   '$state',
   '$mdDialog',

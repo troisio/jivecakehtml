@@ -25,10 +25,6 @@ export default class OrganizationService {
     }).then(response => response.ok ? response.json() : Promise.reject(response));
   }
 
-  getObjectClassName() {
-    return 'Organization';
-  }
-
   getReadPermission() {
     return 0;
   }
@@ -147,7 +143,7 @@ export default class OrganizationService {
     });
 
     permissions.forEach((permission) => {
-      if (permission.objectClass === this.getObjectClassName()) {
+      if (permission.objectClass === 'Organization') {
         const organizationData = organizationIdToData[permission.objectId];
 
         organizationData.permissions = derivePermissions(permission);

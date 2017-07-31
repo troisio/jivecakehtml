@@ -11,10 +11,6 @@ export default class ApplicationService {
     return this.application;
   }
 
-  getObjectClassName() {
-    return 'Application';
-  }
-
   getWritePermission() {
     return 0;
   }

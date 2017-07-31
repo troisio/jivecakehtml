@@ -1,8 +1,9 @@
 import angular from 'angular';
 
 export default class UpdateAccountController {
-  constructor($q, $scope, auth0Service, storageService, userService, uiService, assetService) {
+  constructor($q, $timeout, $scope, auth0Service, storageService, userService, uiService, assetService) {
     this.$q = $q;
+    this.$timeout = $timeout;
     this.$scope = $scope;
     this.auth0Service = auth0Service;
     this.storageService = storageService;
@@ -68,10 +69,9 @@ export default class UpdateAccountController {
       const reader = new FileReader();
 
       reader.onload = (e) => {
-        this.$scope.$apply(() => {
-          this.$scope.image = e.target.result;
-          this.$scope.showCroppingDiv = true;
-        });
+        this.$scope.image = e.target.result;
+        this.$scope.showCroppingDiv = true;
+        this.$timeout();
       };
 
       reader.readAsDataURL(file);
@@ -155,4 +155,4 @@ export default class UpdateAccountController {
   }
 }
 
-UpdateAccountController.$inject = ['$q', '$scope', 'Auth0Service', 'StorageService', 'UserService', 'UIService', 'AssetService'];
+UpdateAccountController.$inject = ['$q', '$timeout', '$scope', 'Auth0Service', 'StorageService', 'UserService', 'UIService', 'AssetService'];

@@ -4,6 +4,7 @@ import lf from 'lovefield';
 export default class ReadOrganizationController {
   constructor(
     $scope,
+    $timeout,
     $state,
     $mdDialog,
     storageService,
@@ -13,6 +14,7 @@ export default class ReadOrganizationController {
     db
   ) {
     this.$scope = $scope;
+    this.$timeout = $timeout;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.organizationService = organizationService;
@@ -59,11 +61,10 @@ export default class ReadOrganizationController {
           this.$scope.data = data;
         });
     }).then(() => {
-      this.$scope.uiReady = true;
     }, () => {
-      this.$scope.uiReady = true;
     }).then(() => {
-      this.$scope.$apply();
+      this.$scope.uiReady = true;
+      this.$timeout();
     });
   }
 
@@ -101,6 +102,7 @@ export default class ReadOrganizationController {
 
 ReadOrganizationController.$inject = [
   '$scope',
+  '$timeout',
   '$state',
   '$mdDialog',
   'StorageService',

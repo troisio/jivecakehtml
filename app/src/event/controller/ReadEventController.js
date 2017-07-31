@@ -4,6 +4,7 @@ import angular from 'angular';
 export default class ReadEventController {
   constructor(
     $scope,
+    $timeout,
     $q,
     $state,
     $mdDialog,
@@ -17,6 +18,7 @@ export default class ReadEventController {
     db
   ) {
     this.$scope = $scope;
+    this.$timeout = $timeout;
     this.$q = $q;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
@@ -56,7 +58,7 @@ export default class ReadEventController {
       const eventTable = this.db.getSchema().table('Event');
       const organizationTable = this.db.getSchema().table('Organization');
       const and = [
-        permissionTable.objectClass.eq(this.organizationService.getObjectClassName())
+        permissionTable.objectClass.eq('Organization')
       ];
 
       if (this.$state.params.organizationId) {
@@ -92,7 +94,7 @@ export default class ReadEventController {
       this.uiService.notify('Unable to retrieve data');
     }).then(() => {
       this.$scope.uiReady = true;
-      this.$scope.$apply();
+      this.$timeout();
     })
   }
 
@@ -192,6 +194,7 @@ export default class ReadEventController {
 
 ReadEventController.$inject = [
   '$scope',
+  '$timeout',
   '$q',
   '$state',
   '$mdDialog',

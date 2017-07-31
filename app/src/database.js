@@ -133,15 +133,15 @@ builder.createTable('User')
   .addNullable(['given_name', 'family_name', 'email', 'user_metadata'])
   .addPrimaryKey(['user_id']);
 
-  builder.createTable('PaypalPaymentProfile')
-    .addColumn('id', lf.Type.STRING)
-    .addColumn('organizationId', lf.Type.STRING)
-    .addColumn('email', lf.Type.STRING)
-    .addColumn('stripe_publishable_key', lf.Type.STRING)
-    .addColumn('stripe_user_id', lf.Type.STRING)
-    .addColumn('timeCreated', lf.Type.INTEGER)
-    .addNullable(['stripe_publishable_key', 'stripe_user_id', 'email'])
-    .addPrimaryKey(['id']);
+builder.createTable('PaymentProfile')
+  .addColumn('id', lf.Type.STRING)
+  .addColumn('organizationId', lf.Type.STRING)
+  .addColumn('email', lf.Type.STRING)
+  .addColumn('stripe_publishable_key', lf.Type.STRING)
+  .addColumn('stripe_user_id', lf.Type.STRING)
+  .addColumn('timeCreated', lf.Type.INTEGER)
+  .addNullable(['stripe_publishable_key', 'stripe_user_id', 'email'])
+  .addPrimaryKey(['id']);
 
 builder.createTable('EntityAsset')
   .addColumn('id', lf.Type.STRING)

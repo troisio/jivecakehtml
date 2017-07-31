@@ -175,18 +175,12 @@ export default class TransactionService {
 
   getTransactionData(itemService, token, query) {
     return this.search(token, query).then((searchResult) => {
-      const userIds = new Set();
-      const userCompressedTransactionIds = [];
-
-      for (let transaction of searchResult.entity) {
-        if (transaction.user_id !== null && !userIds.has(transaction.user_id)) {
-          userIds.add(transaction.user_id);
-          userCompressedTransactionIds.push(transaction.id);
-        }
-      }
+      const transactions = searchResult.entity;
+      const userCompressedTransactionIds = this.getMinimalUserIdCovering(transactions)
+        .map(transaction => transaction.id);
 
       const itemIdsSet = new Set();
-      searchResult.entity.forEach(transaction => itemIdsSet.add(transaction.itemId));
+      transactions.forEach(transaction => itemIdsSet.add(transaction.itemId));
       const itemIds = Array.from(itemIdsSet);
 
       const usersFuture = userCompressedTransactionIds.length === 0 ? this.$q.resolve([]) : this.searchUsers(token, {
@@ -202,7 +196,6 @@ export default class TransactionService {
       }).then((resolve) => {
         const users = resolve.user;
         const items = resolve.item.entity;
-        const transactions = searchResult.entity;
 
         const itemMap = this.relationalService.groupBy(items, true, item => item.id);
         const userMap = this.relationalService.groupBy(users, true, user => user.user_id);

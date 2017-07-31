@@ -29,7 +29,8 @@
     "atob": true,
     "FileReader": true,
     "ga": true,
-    "paypal": true
+    "paypal": true,
+    "indexedDB": true
   },
   "extends": ["eslint:recommended"]
 }

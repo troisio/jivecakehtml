@@ -86,16 +86,23 @@ if (!window.Promise) {
   window.Promise = Promise;
 }
 
-builder.connect({
-  storeType: lf.schema.DataStoreType.INDEXED_DB
-}).then(function(db) {
-  const deleteFutures = db.getSchema().tables().map(table => {
-    return db.delete()
-      .from(db.getSchema().table(table.getName()))
-      .exec();
-  });
+new Promise((resolve, reject) => {
+  const request = indexedDB.deleteDatabase('jivecake');
 
-  Promise.all(deleteFutures).then(function() {
+  request.onerror = function(event) {
+    reject(event);
+  };
+
+  request.onsuccess = function(event) {
+    resolve(event);
+  };
+}).then(() => {
+  builder.connect({
+    storeType: lf.schema.DataStoreType.INDEXED_DB,
+    onUpgrade: function() {
+      return Promise.resolve();
+    }
+  }).then(function(db) {
     angular.module('jivecakeweb', [
       jiveCakeClassModule.name,
       jiveCakeServiceModule.name,
@@ -168,4 +175,6 @@ builder.connect({
       angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});
     });
   });
+}, () => {
+  console.log('Unable to delete database');
 });
