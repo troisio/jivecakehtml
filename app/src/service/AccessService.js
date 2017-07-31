@@ -41,37 +41,28 @@ export default class AccessService {
 
     this.storageService.reset();
 
-     let returnTo;
+    let returnTo;
 
-     if (storage.auth !== null && storage.auth.idTokenPayload.sub.startsWith('facebook')) {
-       returnTo = encodeURIComponent(location.origin);
-     } else {
-       returnTo = location.origin;
-     }
+    if (storage.auth !== null && storage.auth.idTokenPayload.sub.startsWith('facebook')) {
+      returnTo = encodeURIComponent(location.origin);
+    } else {
+      returnTo = location.origin;
+    }
 
-     let href = 'https://' + this.settings.oauth.auth0.domain + '/v2/logout' +
-       '?returnTo=' + returnTo +
-       '&client_id=' + this.settings.oauth.auth0.client_id;
+    let href = 'https://' + this.settings.oauth.auth0.domain + '/v2/logout' +
+      '?returnTo=' + returnTo +
+      '&client_id=' + this.settings.oauth.auth0.client_id;
 
     if (storage.auth !== null) {
       href += '&access_token=' + storage.auth.idToken;
     }
 
-    new Promise((resolve, reject) => {
-      const request = indexedDB.deleteDatabase('jivecake');
+    const request = indexedDB.deleteDatabase('jivecake');
+    const redirect = () => location.href = href;
 
-      request.onerror = function(event) {
-        reject(event);
-      };
-
-      request.onsuccess = function(event) {
-        resolve(event);
-      };
-    }).then(() => {
-    }, () => {
-    }).then(() => {
-      location.href = href;
-    });
+    request.onblocked = redirect;
+    request.onerror = redirect
+    request.onsuccess = redirect
   }
 }
 
