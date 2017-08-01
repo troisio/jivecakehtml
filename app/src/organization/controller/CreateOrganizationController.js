@@ -26,7 +26,7 @@ export default class CreateOrganizationController {
   submit() {
     this.$scope.loading = true;
 
-    return this.organizationService.create(this.storage.auth.idToken).then(() => {
+    return this.organizationService.create(this.storage.auth.idToken, this.$scope.organization).then(() => {
       this.$state.go('application.internal.organization.read');
       this.$mdDialog.hide();
 
