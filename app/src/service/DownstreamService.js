@@ -116,7 +116,7 @@ export default class DownstreamService {
     source.addEventListener('organization.create', (sse) => {
       const organizationsAndPermissions = JSON.parse(sse.data);
 
-      const permissions = organizationsAndPermissions.filter(data => data.hasOwnProperty('permissions'));
+      const permissions = organizationsAndPermissions.filter(data => data.hasOwnProperty('objectClass'));
       const permissionTable = this.db.getSchema().table('Permission');
       const permissionRows = permissions.map(permissionTable.createRow, permissionTable);
       const permissionFuture = this.db.insertOrReplace()
@@ -124,7 +124,7 @@ export default class DownstreamService {
         .values(permissionRows)
         .exec();
 
-      const organizations = organizationsAndPermissions.filter(data => data.hasOwnProperty('children'));
+      const organizations = organizationsAndPermissions.filter(data => data.hasOwnProperty('email'));
       const organizationTable = this.db.getSchema().table('Organization');
       const organizationRows = organizations.map(organizationTable.createRow, organizationTable);
 

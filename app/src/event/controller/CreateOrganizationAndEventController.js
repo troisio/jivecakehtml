@@ -41,7 +41,7 @@ export default class CreateOrganizationAndEventController {
         return this.eventService.create(storage.auth.idToken, organization.id, event).then((event) => {
           this.$mdDialog.hide();
           this.uiService.notify('Event created');
-          this.$state.go('application.internal.event.update', {eventId: event.id}, {reload: true});
+          this.$state.go('application.internal.event.update', {eventId: event.id});
         }, () => {
           this.uiService.notify('Unable to create event');
         });
