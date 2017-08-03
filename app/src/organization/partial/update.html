@@ -70,7 +70,7 @@
                 <td md-cell>
                   <h4>Created {{subscription.created * 1000 | date:'MMMM dd'}} ({{subscription.status}})</h4>
                 </td>
-                <td ng-show="hasApplicationWrite" ng-click="controller.unsubscribe(subscription)" md-cell>
+                <td ng-click="controller.unsubscribe(subscription)" md-cell>
                   <ng-md-icon icon="delete"></ng-md-icon>
                 </td>
               </tr>

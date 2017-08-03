@@ -132,8 +132,8 @@ export default class ApplicationController {
           permission.objectClass === 'Application' &&
           hasPermission.call(permission, this.permissionService.READ)
         );
-      }, (e) => {
-        console.log('exception', e);
+
+        return rows;
       });
   }
 

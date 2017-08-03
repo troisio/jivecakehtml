@@ -1,11 +1,11 @@
 export default class HomeController {
-  constructor($scope, $state, eventService) {
+  constructor($scope, $state, eventService, accessService) {
     this.$scope = $scope;
     this.$state = $state;
     this.eventService = eventService;
 
-    this.$scope.event = null;
-    this.eventService = eventService;
+    $scope.accessService = accessService;
+    $scope.event = null;
   }
 
   selected() {
@@ -19,4 +19,4 @@ export default class HomeController {
   }
 }
 
-HomeController.$inject = ['$scope', '$state', 'EventService'];
+HomeController.$inject = ['$scope', '$state', 'EventService', 'AccessService'];

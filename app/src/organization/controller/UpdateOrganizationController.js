@@ -66,17 +66,7 @@ export default class UpdateOrganizationController {
     this.$scope.uiReady = false;
 
     this.$scope.$parent.ready.then(() => {
-      const permissionTable = this.db.getSchema().table('Permission');
-
-      return this.db.select()
-        .from(permissionTable)
-        .where(permissionTable.objectClass.eq('Application'))
-        .exec()
-        .then(rows => {
-          const hasPermission = new this.Permission().has;
-          this.$scope.hasApplicationWrite = rows.filter(row => hasPermission.call(row, this.permissionService.WRITE)).length > 0;
-          return this.loadUI(this.$stateParams.organizationId);
-        }).then(() => {
+      return this.loadUI(this.$stateParams.organizationId).then(() => {
         }, () => {
           this.uiService.notify('Unable to find organization');
         }).then(() => {

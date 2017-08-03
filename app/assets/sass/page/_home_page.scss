@@ -15,8 +15,12 @@
     &.jivecake {
       background-color: $logo-color;
 
-      h1, h2, h3, h4, h5, h6 {
+      h1, h2, h3, h4, h5, h6, a {
         color: white;
+      }
+
+      div:last-child {
+        margin-top: 1em;
       }
     }
 

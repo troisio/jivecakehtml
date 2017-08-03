@@ -1,5 +1,7 @@
 export default [
   'lock',
+  '$timeout',
+  '$mdSidenav',
   '$transitions',
   '$location',
   '$state',
@@ -17,6 +19,8 @@ export default [
   'settings',
   function(
     lock,
+    $timeout,
+    $mdSidenav,
     $transitions,
     $location,
     $state,
@@ -41,6 +45,20 @@ export default [
       if (settings.google.analytics.enabled) {
         ga('send', 'pageview', $location.path());
       }
+    });
+
+    $transitions.onFinish({
+      from: 'application.public.oauthRedirect',
+      to: 'application.public.home'
+    }, (transition) => {
+      transition.promise.then(() => {
+        const component = $mdSidenav('left');
+
+        if (!component.isOpen()) {
+          component.toggle();
+          $timeout();
+        }
+      });
     });
 
     const loginFailure = function() {

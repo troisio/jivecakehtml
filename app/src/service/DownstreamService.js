@@ -290,7 +290,7 @@ export default class DownstreamService {
 
     source.addEventListener('paymentprofile.create', (sse) => {
       const profiles = JSON.parse(sse.data);
-      const table = this.db.getSchema().table('PaypalPaymentProfile');
+      const table = this.db.getSchema().table('PaymentProfile');
       const rows = profiles.map(table.createRow, table);
 
       this.db.insertOrReplace()
