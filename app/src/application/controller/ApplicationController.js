@@ -1,5 +1,6 @@
 export default class ApplicationController {
   constructor(
+    $rootScope,
     $scope,
     $q,
     $mdDialog,
@@ -59,6 +60,16 @@ export default class ApplicationController {
       }
     };
 
+    this.$scope.$on('application.permission.refresh', () => {
+      this.$scope.uiReady = false;
+
+      this.refreshPermissions()
+      .then(() => {}, () => {})
+      .then(() => {
+        this.$scope.uiReady = true;
+      });
+    });
+
     this.run();
   }
 
@@ -78,9 +89,6 @@ export default class ApplicationController {
     }
 
     ready.then(() => {
-      const hasPermission = new this.Permission().has;
-      const permissionTable = this.db.getSchema().table('Permission');
-
       const showEmailUnverified = storage.profile.user_id.startsWith('auth0') &&
         !storage.profile.email_verified &&
         storage.profile.logins_count > 1;
@@ -94,15 +102,7 @@ export default class ApplicationController {
         });
       }
 
-      return this.db.select()
-        .from(permissionTable)
-        .exec()
-        .then(rows => {
-          this.$scope.organizationPermissions = rows.filter(permission => permission.objectClass === 'Organization');
-          this.$scope.applicationReadPermissions = rows.filter(permission =>
-            permission.objectClass === 'Application' && hasPermission.call(permission, this.permissionService.READ)
-          );
-        });
+      return this.refreshPermissions();
     }).then(() => {
       this.$scope.uiReady = true;
     }, () => {
@@ -117,6 +117,24 @@ export default class ApplicationController {
     });
 
     this.$scope.ready = ready;
+  }
+
+  refreshPermissions() {
+    const hasPermission = new this.Permission().has;
+    const permissionTable = this.db.getSchema().table('Permission');
+
+    return this.db.select()
+      .from(permissionTable)
+      .exec()
+      .then(rows => {
+        this.$scope.organizationPermissions = rows.filter(permission => permission.objectClass === 'Organization');
+        this.$scope.applicationReadPermissions = rows.filter(permission =>
+          permission.objectClass === 'Application' &&
+          hasPermission.call(permission, this.permissionService.READ)
+        );
+      }, (e) => {
+        console.log('exception', e);
+      });
   }
 
   getApplicationFutures() {
@@ -160,6 +178,7 @@ export default class ApplicationController {
 }
 
 ApplicationController.$inject = [
+  '$rootScope',
   '$scope',
   '$q',
   '$mdDialog',

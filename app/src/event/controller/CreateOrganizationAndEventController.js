@@ -1,5 +1,6 @@
 export default class CreateOrganizationAndEventController {
-  constructor($scope, $state, $mdDialog, uiService, storageService, organizationService, eventService, Organization, Event) {
+  constructor($rootScope, $scope, $state, $mdDialog, uiService, storageService, organizationService, eventService, Organization, Event) {
+    this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
@@ -41,6 +42,9 @@ export default class CreateOrganizationAndEventController {
         return this.eventService.create(storage.auth.idToken, organization.id, event).then((event) => {
           this.$mdDialog.hide();
           this.uiService.notify('Event created');
+
+          this.$rootScope.$broadcast('application.permission.refresh');
+
           this.$state.go('application.internal.event.update', {eventId: event.id});
         }, () => {
           this.uiService.notify('Unable to create event');
@@ -55,4 +59,4 @@ export default class CreateOrganizationAndEventController {
   }
 }
 
-CreateOrganizationAndEventController.$inject = ['$scope', '$state', '$mdDialog', 'UIService', 'StorageService', 'OrganizationService', 'EventService', 'Organization', 'Event'];
+CreateOrganizationAndEventController.$inject = ['$rootScope', '$scope', '$state', '$mdDialog', 'UIService', 'StorageService', 'OrganizationService', 'EventService', 'Organization', 'Event'];
