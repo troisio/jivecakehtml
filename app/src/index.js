@@ -88,17 +88,21 @@ if (!window.Promise) {
 
 new Promise((resolve) => {
   const deleteDatabase = function() {
-    const request = indexedDB.deleteDatabase('jivecake');
-    request.onblocked = resolve;
-    request.onerror = resolve;
-    request.onsuccess = resolve;
+    return new Promise((resolve) => {
+      const request = indexedDB.deleteDatabase('jivecake');
+      request.onblocked = resolve;
+      request.onerror = resolve;
+      request.onsuccess = resolve;
+    });
   };
 
   const openRequest = indexedDB.open('jivecake');
   openRequest.onerror = resolve;
   openRequest.onsuccess = function(e) {
-    e.target.result.close();
-    deleteDatabase();
+    deleteDatabase().then(() => {
+      e.target.result.close();
+      resolve();
+    }, resolve);
   };
   openRequest.onupgradeneeded = function (e) {
       e.target.transaction.abort();
@@ -106,7 +110,7 @@ new Promise((resolve) => {
       if (e.oldVersion === 0) {
         resolve();
       } else {
-        deleteDatabase();
+        deleteDatabase().then(resolve, resolve);
       }
   };
 }).then(() => {
@@ -188,4 +192,6 @@ new Promise((resolve) => {
       angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});
     });
   });
+}, (e) => {
+  console.log('rejected', e);
 });
