@@ -11,22 +11,22 @@
       </a>
     </md-item>
     <md-item ng-show="storage.auth !== null">
-      <a ng-click="closeSideNav('left')" ui-sref="application.internal.account()">
-        <md-item-content md-ink-ripple layout="row" layout-align="start center">
-          <div class="inset">
-            <ng-md-icon icon="account_box"></ng-md-icon>
-          </div>
-          <div class="inset">My Account</div>
-        </md-item-content>
-      </a>
-    </md-item>
-    <md-item ng-show="storage.auth !== null">
       <a ng-click="closeSideNav('left')" ui-sref="application.internal.myTransaction({user_id: this.storage.profile.user_id})">
         <md-item-content md-ink-ripple layout="row" layout-align="start center">
           <div class="inset">
             <ng-md-icon icon="local_offer"></ng-md-icon>
           </div>
           <div class="inset">My Transactions</div>
+        </md-item-content>
+      </a>
+    </md-item>
+    <md-item ng-show="storage.auth !== null">
+      <a ng-click="closeSideNav('left')" ui-sref="application.internal.account()">
+        <md-item-content md-ink-ripple layout="row" layout-align="start center">
+          <div class="inset">
+            <ng-md-icon icon="account_box"></ng-md-icon>
+          </div>
+          <div class="inset">My Account</div>
         </md-item-content>
       </a>
     </md-item>

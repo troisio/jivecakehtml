@@ -57,12 +57,7 @@ export default class AccessService {
       href += '&access_token=' + storage.auth.idToken;
     }
 
-    const request = indexedDB.deleteDatabase('jivecake');
-    const redirect = () => location.href = href;
-
-    request.onblocked = redirect;
-    request.onerror = redirect
-    request.onsuccess = redirect
+    location.href = href;
   }
 }
 

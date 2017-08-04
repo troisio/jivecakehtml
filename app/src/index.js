@@ -86,15 +86,28 @@ if (!window.Promise) {
   window.Promise = Promise;
 }
 
-new Promise((resolve, reject) => {
-  const request = indexedDB.deleteDatabase('jivecake');
-
-  request.onerror = function(event) {
-    reject(event);
+new Promise((resolve) => {
+  const deleteDatabase = function() {
+    const request = indexedDB.deleteDatabase('jivecake');
+    request.onblocked = resolve;
+    request.onerror = resolve;
+    request.onsuccess = resolve;
   };
 
-  request.onsuccess = function(event) {
-    resolve(event);
+  const openRequest = indexedDB.open('jivecake');
+  openRequest.onerror = resolve;
+  openRequest.onsuccess = function(e) {
+    e.target.result.close();
+    deleteDatabase();
+  };
+  openRequest.onupgradeneeded = function (e) {
+      e.target.transaction.abort();
+
+      if (e.oldVersion === 0) {
+        resolve();
+      } else {
+        deleteDatabase();
+      }
   };
 }).then(() => {
   builder.connect({
@@ -175,6 +188,4 @@ new Promise((resolve, reject) => {
       angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});
     });
   });
-}, () => {
-  console.log('Unable to delete database');
 });

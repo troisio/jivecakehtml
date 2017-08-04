@@ -33,7 +33,9 @@
       </div>
     </form>
   </div>
-  <md-input-container layout-align="center center" ng-show="!uiReady" class="md-block">
-    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-  </md-input-container>
+  <div layout-align="center center">
+    <md-input-container ng-show="!uiReady" class="md-block">
+      <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+    </md-input-container>
+  </div>
 </md-dialog>
