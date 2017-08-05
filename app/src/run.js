@@ -37,12 +37,12 @@ export default [
     UserInterfaceEvent,
     settings
   ) {
-    if (settings.google.analytics.enabled) {
+    if (settings.google.analytics.enabled && window.ga) {
       ga('create', 'UA-81919203-1', 'auto');
     }
 
     $transitions.onSuccess({}, function() {
-      if (settings.google.analytics.enabled) {
+      if (settings.google.analytics.enabled && window.ga) {
         ga('send', 'pageview', $location.path());
       }
     });
@@ -60,11 +60,6 @@ export default [
         }
       });
     });
-
-    const loginFailure = function() {
-      uiService.notify('Sorry, there was an error during login');
-      $state.go('application.public.home');
-    };
 
     lock.on('authenticated', function(auth) {
       lock.getUserInfo(auth.accessToken, function(error, profile) {
@@ -111,12 +106,19 @@ export default [
               } else {
                 $state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
               }
-            }, loginFailure);
-          }, loginFailure);
+            }, () => {
+              uiService.notify('Sorry, we were unable to load your data');
+              $state.go('application.public.home');
+            });
+          }, () => {
+            uiService.notify('Sorry, we were unable to load your organizations');
+            $state.go('application.public.home');
+          });
         } else {
-          loginFailure();
+          uiService.notify('Sorry, we were unable to get your data from Auth0');
+          $state.go('application.public.home');
         }
       });
-    }, loginFailure);
+    });
   }
 ]

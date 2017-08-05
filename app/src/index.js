@@ -86,112 +86,102 @@ if (!window.Promise) {
   window.Promise = Promise;
 }
 
-new Promise((resolve) => {
-  const deleteDatabase = function() {
-    return new Promise((resolve) => {
-      const request = indexedDB.deleteDatabase('jivecake');
-      request.onblocked = resolve;
-      request.onerror = resolve;
-      request.onsuccess = resolve;
-    });
-  };
+const module = angular.module('jivecakeweb', [
+  jiveCakeClassModule.name,
+  jiveCakeServiceModule.name,
+  ngMessages,
+  ngMaterial,
+  ngIcons,
+  angularSanitize,
+  uiRouter,
+  angularMaterialDataTable,
+  angularAnimate,
+  angularAria,
+  angularMessages,
+  angularJwt,
+  'uiCropper',
+  'auth0.lock'
+])
+.filter('featureTypeFilter', featureTypeFilter)
+.service('HTTPInterceptor', HTTPInterceptor)
+.filter('absoluteValue', absoluteValue)
+.filter('userIdentificationFilter', userIdentificationFilter)
+.filter('transactionCSSClass', transactionCSSClass)
+.filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
+.constant('settings', settings)
+.config(configuration)
+.run(run)
+.controller('ApplicationController', ApplicationController)
+.controller('HomeController', HomeController)
+.controller('InternalApplicationController', InternalApplicationController)
 
-  const openRequest = indexedDB.open('jivecake');
-  openRequest.onerror = resolve;
-  openRequest.onsuccess = function(e) {
-    deleteDatabase().then(() => {
-      e.target.result.close();
-      resolve();
-    }, resolve);
-  };
-  openRequest.onupgradeneeded = function (e) {
-      e.target.transaction.abort();
+.controller('ConfirmationController', ConfirmationController)
 
-      if (e.oldVersion === 0) {
-        resolve();
-      } else {
-        deleteDatabase().then(resolve, resolve);
+.controller('OAuthRedirectController', OAuthRedirectController)
+.controller('EmailVerifiedController', EmailVerifiedController)
+.controller('SessionWarningController', SessionWarningController)
+
+.controller('CreateEventController', CreateEventController)
+.controller('CreateOrganizationAndEventController', CreateOrganizationAndEventController)
+.controller('EventController', EventController)
+.controller('InsufficientSubscriptionController', InsufficientSubscriptionController)
+.controller('ReadEventController', ReadEventController)
+.controller('UpdateEventController', UpdateEventController)
+
+.controller('CreateItemController', CreateItemController)
+.controller('ItemController', ItemController)
+.controller('ReadItemController', ReadItemController)
+.controller('UpdateItemController', UpdateItemController)
+
+.controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
+.controller('CreateOrganizationController', CreateOrganizationController)
+.controller('OrganizationController', OrganizationController)
+.controller('ReadOrganizationController', ReadOrganizationController)
+.controller('UpdateOrganizationController', UpdateOrganizationController)
+
+.controller('CreatePaymentProfileController', CreatePaymentProfileController)
+
+.controller('OrderErrorController', OrderErrorController)
+.controller('PublicController', PublicController)
+.controller('PublicEventController', PublicEventController)
+.controller('MyTransactionController', MyTransactionController)
+
+.controller('CreateTransactionController', CreateTransactionController)
+.controller('TransactionController', TransactionController)
+.controller('ReadTransactionController', ReadTransactionController)
+.controller('ViewTransactionController', ViewTransactionController)
+
+.controller('UpdateAccountController', UpdateAccountController);
+
+builder.connect({
+  storeType: lf.schema.DataStoreType.INDEXED_DB,
+  onUpgrade: function(db) {
+    const tablesInSchema = builder.getSchema().tables().map(table => table.getName());
+    const rawDB = db.getRawDBInstance();
+
+    for (let index = 0; index < rawDB.objectStoreNames.length; index++) {
+      const name = rawDB.objectStoreNames[index];
+      if (!tablesInSchema.includes(name)) {
+        db.dropTable(name);
       }
-  };
-}).then(() => {
-  builder.connect({
-    storeType: lf.schema.DataStoreType.INDEXED_DB,
-    onUpgrade: function() {
-      return Promise.resolve();
     }
-  }).then(function(db) {
-    angular.module('jivecakeweb', [
-      jiveCakeClassModule.name,
-      jiveCakeServiceModule.name,
-      ngMessages,
-      ngMaterial,
-      ngIcons,
-      angularSanitize,
-      uiRouter,
-      angularMaterialDataTable,
-      angularAnimate,
-      angularAria,
-      angularMessages,
-      angularJwt,
-      'uiCropper',
-      'auth0.lock'
-    ])
-    .filter('featureTypeFilter', featureTypeFilter)
-    .service('HTTPInterceptor', HTTPInterceptor)
-    .filter('absoluteValue', absoluteValue)
-    .filter('userIdentificationFilter', userIdentificationFilter)
-    .filter('transactionCSSClass', transactionCSSClass)
-    .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
-    .constant('settings', settings)
-    .constant('db', db)
-    .config(configuration)
-    .run(run)
-    .controller('ApplicationController', ApplicationController)
-    .controller('HomeController', HomeController)
-    .controller('InternalApplicationController', InternalApplicationController)
 
-    .controller('ConfirmationController', ConfirmationController)
+    return Promise.resolve();
+  }
+}).then(function(db) {
+  const deleteFutures = db.getSchema().tables().map(table => {
+    return db.delete()
+      .from(db.getSchema().table(table.getName()))
+      .exec();
+  });
 
-    .controller('OAuthRedirectController', OAuthRedirectController)
-    .controller('EmailVerifiedController', EmailVerifiedController)
-    .controller('SessionWarningController', SessionWarningController)
+  module.constant('db', db);
 
-    .controller('CreateEventController', CreateEventController)
-    .controller('CreateOrganizationAndEventController', CreateOrganizationAndEventController)
-    .controller('EventController', EventController)
-    .controller('InsufficientSubscriptionController', InsufficientSubscriptionController)
-    .controller('ReadEventController', ReadEventController)
-    .controller('UpdateEventController', UpdateEventController)
-
-    .controller('CreateItemController', CreateItemController)
-    .controller('ItemController', ItemController)
-    .controller('ReadItemController', ReadItemController)
-    .controller('UpdateItemController', UpdateItemController)
-
-    .controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
-    .controller('CreateOrganizationController', CreateOrganizationController)
-    .controller('OrganizationController', OrganizationController)
-    .controller('ReadOrganizationController', ReadOrganizationController)
-    .controller('UpdateOrganizationController', UpdateOrganizationController)
-
-    .controller('CreatePaymentProfileController', CreatePaymentProfileController)
-
-    .controller('OrderErrorController', OrderErrorController)
-    .controller('PublicController', PublicController)
-    .controller('PublicEventController', PublicEventController)
-    .controller('MyTransactionController', MyTransactionController)
-
-    .controller('CreateTransactionController', CreateTransactionController)
-    .controller('TransactionController', TransactionController)
-    .controller('ReadTransactionController', ReadTransactionController)
-    .controller('ViewTransactionController', ViewTransactionController)
-
-    .controller('UpdateAccountController', UpdateAccountController);
-
+  Promise.all(deleteFutures).then(function() {
     angular.element(document).ready(() => {
       angular.bootstrap(document, ['jivecakeweb'], {strictDi: true});
     });
   });
 }, (e) => {
-  console.log('rejected', e);
+  console.log('unable to connect to lovefield', e);
 });
