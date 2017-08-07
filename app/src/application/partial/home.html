@@ -22,7 +22,7 @@
     <div>
       <h3>simple online registration</h3>
     </div>
-    <div>
+    <div ng-show="auth === null">
       <strong>
         <a ng-click="accessService.oauthSignIn()">get started</a>
       </strong>

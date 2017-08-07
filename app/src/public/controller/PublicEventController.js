@@ -42,9 +42,11 @@ export default class PublicEventController {
     const storage = this.storageService.read();
     this.$scope.auth = storage.auth;
 
-    this.$scope.$parent.ready.then(() => {
-    }, () => {
-    }).then(() => {
+    this.eventSearchFuture = this.eventService.publicSearch({
+      hash: this.$state.params.hash
+    });
+
+    this.$scope.$parent.ready.then(() => {}, () => {}).then(() => {
       this.run();
     });
   }
@@ -56,92 +58,105 @@ export default class PublicEventController {
     const currentTime = new Date().getTime();
     const idToken = storage.auth === null ? null : storage.auth.idToken;
 
-    return this.eventService.getAggregatedEventData(this.$state.params.id, idToken).then((groupData) => {
-      this.$scope.groupData = groupData;
-      this.$scope.organization = groupData.organization;
-      this.$scope.profile = groupData.profile;
+    return this.eventSearchFuture.then((eventSearch) => {
+      const events = eventSearch.entity;
+      let future;
 
-      groupData.itemData.forEach((itemData) => {
-        this.$scope.itemFormData[itemData.item.id] = {amount: 0};
+      if (events.length === 0) {
+        this.$scope.groupData = {event: null};
+        future = Promise.resolve();
+      } else {
+        future = this.eventService.getAggregatedEventData(events[0].id, idToken).then((groupData) => {
+          this.$scope.groupData = groupData;
+          this.$scope.organization = groupData.organization;
+          this.$scope.profile = groupData.profile;
 
-        const completeOrPendingTransactions = itemData.transactions.filter(this.transactionService.countingFilter);
+          groupData.itemData.forEach((itemData) => {
+            this.$scope.itemFormData[itemData.item.id] = {amount: 0};
 
-        let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
+            const completeOrPendingTransactions = itemData.transactions.filter(this.transactionService.countingFilter);
 
-        if (storage.auth === null) {
-          itemData.completOrPendingUserTransactions = null;
-        } else {
-          itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.auth.idTokenPayload.sub)
-            .filter(this.transactionService.countingFilter);
+            let remaingUserTransactions = null, remainingTotalAvailibleTransactions = null;
 
-          if (itemData.item.maximumPerUser !== null) {
-            const total  = itemData.completOrPendingUserTransactions.reduce((previous, next) => previous + next.quantity, 0);
-            remaingUserTransactions = itemData.item.maximumPerUser - total;
+            if (storage.auth === null) {
+              itemData.completOrPendingUserTransactions = null;
+            } else {
+              itemData.completOrPendingUserTransactions = itemData.transactions.filter(transaction => transaction.user_id === storage.auth.idTokenPayload.sub)
+                .filter(this.transactionService.countingFilter);
+
+              if (itemData.item.maximumPerUser !== null) {
+                const total  = itemData.completOrPendingUserTransactions.reduce((previous, next) => previous + next.quantity, 0);
+                remaingUserTransactions = itemData.item.maximumPerUser - total;
+              }
+            }
+
+            if (itemData.item.totalAvailible !== null) {
+              const total  = completeOrPendingTransactions.reduce((previous, next) => previous + next.quantity, 0);
+              remainingTotalAvailibleTransactions = itemData.item.totalAvailible - total;
+            }
+
+            let amountSelectionSize;
+
+            if (remainingTotalAvailibleTransactions === null && remaingUserTransactions === null) {
+              amountSelectionSize = this.defaultAmountSize;
+            } else if (remaingUserTransactions === null) {
+              amountSelectionSize = remainingTotalAvailibleTransactions;
+            } else if (remainingTotalAvailibleTransactions === null) {
+              amountSelectionSize = remaingUserTransactions;
+            } else {
+              amountSelectionSize = Math.min(remaingUserTransactions, remainingTotalAvailibleTransactions);
+            }
+
+            amountSelectionSize = Math.min(
+              amountSelectionSize,
+              this.uiService.getMaximumItemCartSelectionSize()
+            );
+
+            itemData.remainingTotalAvailibleTransactions = remainingTotalAvailibleTransactions;
+            itemData.remaingUserTransactions = remaingUserTransactions;
+
+            itemData.amountSelections = amountSelectionSize > -1 ? Array.from(new Array(amountSelectionSize + 1), (item, index) => index): [0];
+            itemData.completeOrPendingTransactions = completeOrPendingTransactions;
+          });
+
+          for (let itemData of groupData.itemData) {
+            const canDisplayItem = (
+              itemData.item.totalAvailible === null ||
+              itemData.remainingTotalAvailibleTransactions > 0
+            ) && (
+              itemData.item.maximumPerUser === null ||
+              itemData.remaingUserTransactions > 0
+            );
+
+            if (canDisplayItem) {
+              this.$scope.hasAnySelections = true;
+              break;
+            }
           }
-        }
 
-        if (itemData.item.totalAvailible !== null) {
-          const total  = completeOrPendingTransactions.reduce((previous, next) => previous + next.quantity, 0);
-          remainingTotalAvailibleTransactions = itemData.item.totalAvailible - total;
-        }
+          const positiveTimes = groupData.itemData
+            .filter(itemData => itemData.item.timeAmounts !== null)
+            .reduce((array, itemData) => {
+              array.push.apply(array, itemData.item.timeAmounts.map(timeAmount => timeAmount.after));
+              return array;
+            }, [])
+            .map(time => time - currentTime)
+            .filter(time => time > 0 && !this.scheduledModificationTimes.has(time));
 
-        let amountSelectionSize;
-
-        if (remainingTotalAvailibleTransactions === null && remaingUserTransactions === null) {
-          amountSelectionSize = this.defaultAmountSize;
-        } else if (remaingUserTransactions === null) {
-          amountSelectionSize = remainingTotalAvailibleTransactions;
-        } else if (remainingTotalAvailibleTransactions === null) {
-          amountSelectionSize = remaingUserTransactions;
-        } else {
-          amountSelectionSize = Math.min(remaingUserTransactions, remainingTotalAvailibleTransactions);
-        }
-
-        amountSelectionSize = Math.min(
-          amountSelectionSize,
-          this.uiService.getMaximumItemCartSelectionSize()
-        );
-
-        itemData.remainingTotalAvailibleTransactions = remainingTotalAvailibleTransactions;
-        itemData.remaingUserTransactions = remaingUserTransactions;
-
-        itemData.amountSelections = amountSelectionSize > -1 ? Array.from(new Array(amountSelectionSize + 1), (item, index) => index): [0];
-        itemData.completeOrPendingTransactions = completeOrPendingTransactions;
-      });
-
-      for (let index = 0; index < groupData.itemData.length; index++) {
-        const itemData = this.$scope.groupData.itemData[index];
-        const canDisplayItem = (
-          itemData.item.totalAvailible === null ||
-          itemData.remainingTotalAvailibleTransactions > 0
-        ) && (
-          itemData.item.maximumPerUser === null ||
-          itemData.remainingTotalAvailibleTransactions > 0
-        );
-
-        if (canDisplayItem) {
-          this.$scope.hasAnySelections = true;
-          break;
-        }
+          positiveTimes.forEach(this.scheduledModificationTimes.add, this.scheduledModificationTimes);
+          positiveTimes.forEach(time => {
+            this.$timeout(() => {
+              this.uiService.notify('Updating data');
+              this.run();
+            }, time);
+          });
+        });
       }
 
-      const positiveTimes = groupData.itemData
-        .filter(itemData => itemData.item.timeAmounts !== null)
-        .reduce((array, itemData) => {
-          array.push.apply(array, itemData.item.timeAmounts.map(timeAmount => timeAmount.after));
-          return array;
-        }, [])
-        .map(time => time - currentTime)
-        .filter(time => time > 0 && !this.scheduledModificationTimes.has(time));
-
-      positiveTimes.forEach(this.scheduledModificationTimes.add, this.scheduledModificationTimes);
-      positiveTimes.forEach(time => {
-        this.$timeout(() => {
-          this.uiService.notify('Updating data');
-          this.run();
-        }, time);
-      });
-    }).finally(() => {
+      return future;
+    })
+    .then(() => {}, () => {})
+    .then(() => {
       this.$scope.uiReady = true;
     });
   }
@@ -271,9 +286,14 @@ export default class PublicEventController {
 
         this.paypalService.execute(token, authorization).then(() => {
           this.uiService.notify('Payment complete');
-          this.$state.go('application.internal.myTransaction', {
-            user_id: storage.auth.idTokenPayload.sub
-          });
+
+          if (token === null) {
+            this.$state.go('application.internal.myTransaction', {
+              user_id: storage.auth.idTokenPayload.sub
+            });
+          } else {
+            this.run();
+          }
         }, () => {
           this.uiService.notify('Unable to complete payment');
         }).then(() => {
@@ -284,46 +304,57 @@ export default class PublicEventController {
   }
 
   checkout(group, itemFormData) {
-    const totalSelected = Object.keys(itemFormData)
-      .reduce((previous, key) => previous + itemFormData[key].amount, 0);
+    const violatesConsent = group.assets.length > 0 && !this.$scope.hasConsented;
 
-    if (totalSelected > 0) {
-      const storage = this.storageService.read();
-      const selectionAndItemData = Object.keys(itemFormData).map((itemId) => {
-        const selection = itemFormData[itemId];
-        const itemData = group.itemData.find((datum) => datum.item.id === itemId);
-
-        return {
-          selection: selection,
-          itemData: itemData
-        };
-      }).filter(data => data.selection.amount > 0);
-
-      const unpaidFutures = selectionAndItemData.filter(data => data.itemData.amount === 0)
-        .map((data) => {
-          return this.transactionService.purchase(
-            storage.auth.idToken,
-            data.itemData.item.id,
-            {quantity: data.selection.amount}
-          );
-        });
-
-      this.$q.all(unpaidFutures).then(() => {
-        const paidSelections = selectionAndItemData.filter(data => data.itemData.amount > 0);
-
-        if (this.$scope.profile instanceof this.StripePaymentProfile) {
-          this.processStripe(group, paidSelections);
-        } else if (this.$scope.profile instanceof this.PaypalPaymentProfile) {
-          this.$scope.isPaypalCheckoutView = true;
-          this.processPaypal(group, paidSelections, this.$scope.paymentProfile);
-        } else {
-          throw new Error('invalid payment profile implementation');
-        }
-      }, () => {
-        this.uiService.notify('Unable to purchase free items');
-      });
+    if (violatesConsent) {
+      this.uiService.notify('Must consent to terms before checkout');
     } else {
-      this.uiService.notify('No item selection made');
+      const storage = this.storageService.read();
+      const idToken = storage.auth === null ? null : storage.auth.idToken;
+      const totalSelected = Object.keys(itemFormData)
+        .reduce((previous, key) => previous + itemFormData[key].amount, 0);
+
+      if (totalSelected > 0) {
+        const selectionAndItemData = Object.keys(itemFormData).map((itemId) => {
+          const selection = itemFormData[itemId];
+          const itemData = group.itemData.find((datum) => datum.item.id === itemId);
+
+          return {
+            selection: selection,
+            itemData: itemData
+          };
+        }).filter(data => data.selection.amount > 0);
+
+        const unpaidFutures = selectionAndItemData.filter(data => data.itemData.amount === 0)
+          .map((data) => {
+            return this.transactionService.purchase(
+              idToken,
+              data.itemData.item.id,
+              {quantity: data.selection.amount}
+            );
+          });
+
+        this.$q.all(unpaidFutures).then(() => {
+          const paidSelections = selectionAndItemData.filter(data => data.itemData.amount > 0);
+
+          if (paidSelections.length > 0) {
+            if (this.$scope.profile instanceof this.StripePaymentProfile) {
+              this.processStripe(group, paidSelections);
+            } else if (this.$scope.profile instanceof this.PaypalPaymentProfile) {
+              this.$scope.isPaypalCheckoutView = true;
+              this.processPaypal(group, paidSelections, this.$scope.paymentProfile);
+            } else {
+              throw new Error('invalid payment profile implementation');
+            }
+          } else {
+            this.$state.go('application.internal.myTransaction');
+          }
+        }, () => {
+          this.uiService.notify('Unable to purchase free items');
+        });
+      } else {
+        this.uiService.notify('No selection made');
+      }
     }
   }
 
@@ -346,12 +377,24 @@ export default class PublicEventController {
     });
   }
 
+  showAsset($event, asset) {
+    this.$mdDialog.show({
+      targetEvent: $event,
+      controller: ['$scope', function($scope) {
+        $scope.text = atob(asset.data);
+      }],
+      templateUrl: '/src/organization/partial/consent.html',
+      clickOutsideToClose: true
+    });
+  }
+
   setDefaultState() {
     this.$scope.uiReady = false;
     this.$scope.hasAnySelections = false;
     this.$scope.itemFormData = {};
     this.scheduledModificationTimes = new Set();
     this.$scope.isPaypalCheckoutView = false;
+    this.$scope.hasConsented = false;
   }
 }
 

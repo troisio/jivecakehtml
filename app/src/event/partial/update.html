@@ -15,6 +15,14 @@
         <textarea ng-model="event.description" maxlength="1000" rows="3" md-select-on-focus>
         </textarea>
       </md-input-container>
+      <md-input-container class="md-block">
+        <label>Consent Acknowledgement Document</label>
+        <md-select ng-show="consentAssets.length > 0" ng-model="event.entityAssetConsentId" aria-label="Consent Acknowledgement Document">
+          <md-option ng-value="null"></md-option>
+          <md-option ng-repeat="asset in consentAssets" ng-value="asset.id">{{asset.name}}</md-option>
+        </md-select>
+        <a ng-show="consentAssets.length === 0" href="" ng-click="controller.addConsentAcknowledgement(event)">add consent document</a>
+      </md-input-container>
       <div>
         <h5>Start and End Time - Timezone: {{currentDate| browserTimeZoneAbbreviation}}</h5>
       </div>

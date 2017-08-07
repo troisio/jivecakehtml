@@ -45,20 +45,30 @@
         </table>
       </md-table-container>
     </section>
+    <div ng-show="groupData.itemData.length === 0" layout-padding>
+      <p>Sorry, this event does not have any items to display</p>
+    </div>
+    <div ng-show="groupData.event.currency === null || groupData.event.paymentProfileId === null || groupData.profile === null" layout-padding>
+      <p>Sorry, this event does not have any valid payment options</p>
+    </div>
+    <div class="consent" ng-show="!isPaypalCheckoutView && groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections && groupData.assets.length > 0" layout="row" layout-align="end start" layout-padding>
+      <div>
+        <md-checkbox ng-true-value="true" ng-true-value="false" ng-checked="hasConsented" ng-model="hasConsented" aria-label="Consent to terms">
+        </md-checkbox>
+        <span ng-show="groupData.assets.length > 0 && groupData.assets[0].assetType === 2">I have read and consent to <a href="" ng-click="controller.showAsset($event, groupData.assets[0])">the terms</a> of this event</span>
+        <span ng-show="groupData.assets.length > 0 && groupData.assets[0].assetType === 1">I have read and consent to <a target="_blank" ng-href="https://storage.googleapis.com/{{groupData.assets[0].assetId}}">the terms</a> of this event</span>
+      </div>
+    </div>
     <div ng-show="isPaypalCheckoutView" layout="row" layout-padding layout-align="space-between center">
       <div>
         <a href="" ng-click="isPaypalCheckoutView = false;">return to selection</a>
       </div>
       <div id="paypal-button"></div>
     </div>
-    <div ng-show="!isPaypalCheckoutView && groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections" class="checkout">
-      <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
-    </div>
-    <div ng-show="groupData.itemData.length === 0" layout-padding>
-      <p>Sorry, this event does not have any items to display</p>
-    </div>
-    <div ng-show="groupData.event.currency === null || groupData.event.paymentProfileId === null || groupData.profile === null" layout-padding>
-      <p>Sorry, this event does not have any valid payment options</p>
+    <div ng-show="!isPaypalCheckoutView && groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections" layout layout-padding layout-align="end start">
+      <div>
+        <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
+      </div>
     </div>
   </div>
   <div ng-show="!uiReady" layout="row" layout-margin layout-align="center">

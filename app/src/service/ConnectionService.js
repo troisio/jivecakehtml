@@ -1,7 +1,6 @@
 export default class ConnectionService {
-  constructor($http, settings, ClientConnection, toolsService, auth0Service) {
+  constructor($http, settings, toolsService, auth0Service) {
     this.$http = $http;
-    this.ClientConnection = ClientConnection;
     this.toolsService = toolsService;
     this.auth0Service = auth0Service;
     this.settings = settings;
@@ -57,4 +56,4 @@ export default class ConnectionService {
   }
 }
 
-ConnectionService.$inject = ['$http', 'settings', 'ClientConnection', 'ToolsService', 'Auth0Service'];
+ConnectionService.$inject = ['$http', 'settings', 'ToolsService', 'Auth0Service'];

@@ -61,6 +61,7 @@ import ReadItemController from './item/controller/ReadItemController';
 import UpdateItemController from './item/controller/UpdateItemController';
 
 import AddUserOrganizationPermissionController from './organization/controller/AddUserOrganizationPermissionController';
+import CreateConsentAssetController from './organization/controller/CreateConsentAssetController';
 import CreateOrganizationController from './organization/controller/CreateOrganizationController';
 import OrganizationController from './organization/controller/OrganizationController';
 import ReadOrganizationController from './organization/controller/ReadOrganizationController';
@@ -134,6 +135,7 @@ const module = angular.module('jivecakeweb', [
 .controller('UpdateItemController', UpdateItemController)
 
 .controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
+.controller('CreateConsentAssetController', CreateConsentAssetController)
 .controller('CreateOrganizationController', CreateOrganizationController)
 .controller('OrganizationController', OrganizationController)
 .controller('ReadOrganizationController', ReadOrganizationController)
@@ -183,5 +185,5 @@ builder.connect({
     });
   });
 }, (e) => {
-  console.log('unable to connect to lovefield', e);
+  throw new Error(e);
 });

@@ -10,7 +10,8 @@ export default class CreatePaymentProfileController {
     storageService,
     uiService,
     PaypalPaymentProfile,
-    organization
+    organization,
+    onPaymentProfileCreate
   ) {
     this.$state = $state;
     this.$scope = $scope;
@@ -21,6 +22,7 @@ export default class CreatePaymentProfileController {
     this.uiService = uiService;
     this.PaypalPaymentProfile = PaypalPaymentProfile;
     this.organization = organization;
+    this.onPaymentProfileCreate = onPaymentProfileCreate;
 
     this.$scope.type = 'stripe';
     this.$scope.hasStripeAccount = true;
@@ -45,7 +47,8 @@ export default class CreatePaymentProfileController {
         storage.auth.idToken,
         this.organization.id,
         this.$scope.profile
-      ).then(() => {
+      ).then((profile) => {
+        this.onPaymentProfileCreate(profile);
         this.uiService.notify('Payment Profile created');
         this.$mdDialog.hide();
       }, () => {
@@ -92,5 +95,6 @@ CreatePaymentProfileController.$inject = [
   'StorageService',
   'UIService',
   'PaypalPaymentProfile',
-  'organization'
+  'organization',
+  'onPaymentProfileCreate'
 ];

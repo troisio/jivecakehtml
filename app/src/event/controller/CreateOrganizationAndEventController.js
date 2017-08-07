@@ -12,20 +12,6 @@ export default class CreateOrganizationAndEventController {
     this.$scope.organization = new Organization();
     this.$scope.event = new Event();
     this.$scope.hide = $mdDialog.hide;
-
-    this.rootOrganizationPromise = this.organizationService.publicSearch({
-      parentId: null
-    }).then(function(searchResult) {
-      return searchResult.entity[0];
-    }).finally(() => {
-      this.$scope.uiReady = true;
-    });
-
-    this.run();
-  }
-
-  run() {
-    this.$scope.uiReady = false;
   }
 
   submit(organization, event) {
@@ -33,27 +19,23 @@ export default class CreateOrganizationAndEventController {
 
     this.$scope.loading = true;
 
-    this.rootOrganizationPromise.then((rootOrganization) => {
-      organization.parentId = rootOrganization.id;
+    return this.organizationService.create(storage.auth.idToken, organization).then((organization) => {
+      event.status = this.eventService.getInactiveEventStatus();
 
-      return this.organizationService.create(storage.auth.idToken, organization).then((organization) => {
-        event.status = this.eventService.getInactiveEventStatus();
+      return this.eventService.create(storage.auth.idToken, organization.id, event).then((event) => {
+        this.$mdDialog.hide();
+        this.uiService.notify('Event created');
 
-        return this.eventService.create(storage.auth.idToken, organization.id, event).then((event) => {
-          this.$mdDialog.hide();
-          this.uiService.notify('Event created');
+        this.$rootScope.$broadcast('application.permission.refresh');
 
-          this.$rootScope.$broadcast('application.permission.refresh');
-
-          this.$state.go('application.internal.event.update', {eventId: event.id});
-        }, () => {
-          this.uiService.notify('Unable to create event');
-        });
-      }, (response) => {
-        const message = response.status === 409 ? 'Email has already been taken' : 'Unable to create Organization';
-        this.uiService.notify(message);
+        this.$state.go('application.internal.event.update', {eventId: event.id});
+      }, () => {
+        this.uiService.notify('Unable to create event');
       });
-    }).finally(() => {
+    }, (response) => {
+      const message = response.status === 409 ? 'Email has already been taken' : 'Unable to create Organization';
+      this.uiService.notify(message);
+    }).then(() => {
       this.$scope.loading = false;
     });
   }

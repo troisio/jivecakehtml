@@ -1,8 +1,6 @@
 import angular from 'angular';
-
-
 import Application from './Application';
-import ClientConnection from './ClientConnection';
+import EntityAsset from './EntityAsset';
 import Event from './Event';
 import Feature from './Feature';
 import Item from './Item';
@@ -17,11 +15,10 @@ import Permission from './Permission';
 import SearchEntity from './SearchEntity';
 import StripePaymentProfile from './StripePaymentProfile';
 import Transaction from './Transaction';
-import UserInterfaceEvent from './UserInterfaceEvent';
 
 export default angular.module('jivecakeclass', [])
   .constant('Application', Application)
-  .constant('ClientConnection', ClientConnection)
+  .constant('EntityAsset', EntityAsset)
   .constant('Event', Event)
   .constant('Feature', Feature)
   .constant('Item', Item)
@@ -35,5 +32,4 @@ export default angular.module('jivecakeclass', [])
   .constant('PaypalPaymentProfile', PaypalPaymentProfile)
   .constant('Permission', Permission)
   .constant('SearchEntity', SearchEntity)
-  .constant('StripePaymentProfile', StripePaymentProfile)
-  .constant('UserInterfaceEvent', UserInterfaceEvent);
+  .constant('StripePaymentProfile', StripePaymentProfile);

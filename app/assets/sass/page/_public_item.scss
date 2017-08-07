@@ -5,8 +5,11 @@
     padding: 15px;
   }
 
-  .checkout {
-    float: right;
-    margin: 1em 1em 1em 0;
+  @media screen and (max-width: 500px) {
+    .consent {
+    span {
+      font-size: 0.7em;
+      }
+    }
   }
 }

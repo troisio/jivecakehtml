@@ -1,0 +1,14 @@
+.user-account-page {
+  .image-cropper {
+      display: inline-block;
+  }
+
+  .crop {
+    width: 260px;
+    height: 200px;
+  }
+
+  .image-cropper img {
+    width: 3em;
+  }
+}

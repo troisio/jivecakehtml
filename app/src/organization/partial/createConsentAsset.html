@@ -1,0 +1,40 @@
+<md-dialog flex="80">
+  <div layout-padding>
+    <h3>Create Consent Acknowledgement</h3>
+    <form ng-submit="!loading && controller.submit(isText, asset)">
+      <div>
+        <md-input-container class="md-block">
+          <md-select aria-label="Document Type" ng-model="isText">
+            <md-option ng-value="false">PDF</md-option>
+            <md-option ng-value="true">text</md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+      <div layout>
+        <md-input-container flex>
+          <label>Name</label>
+          <input required ng-model="asset.name">
+        </md-input-container>
+      </div>
+      <div ng-show="!isText">
+        <md-input-container class="md-block">
+          <input ng-required="!isText" ng-model="pdf" ng-required="!isText" name="consentPdf" aria-label="PDF Document" accept="application/pdf" type="file">
+        </md-input-container>
+      </div>
+      <div layout ng-show="isText">
+        <md-input-container flex>
+          <label>Text</label>
+          <textarea ng-model="text" ng-required="isText" maxlength="5000" rows="3" md-select-on-focus></textarea>
+        </md-input-container>
+      </div>
+      <div layout-sm="column">
+        <md-input-container>
+          <md-button type="submit" class="md-raised md-primary">Create</md-button>
+        </md-input-container>
+        <md-input-container ng-show="loading">
+          <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+        </md-input-container>
+      </div>
+    </form>
+  </div>
+</md-dialog>

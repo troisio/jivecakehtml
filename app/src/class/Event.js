@@ -2,9 +2,11 @@ export default class Event {
   constructor() {
     this.id = null;
     this.name = null;
+    this.hash = null;
     this.description = null;
     this.status = null;
     this.organizationId = null;
+    this.entityAssetConsentId = null;
     this.paymentProfileId = null;
     this.currency = null;
     this.timeStart = null;

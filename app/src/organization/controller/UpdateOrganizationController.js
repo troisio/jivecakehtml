@@ -9,6 +9,7 @@ export default class UpdateOrganizationController {
     $mdDialog,
     $stateParams,
     storageService,
+    assetService,
     auth0Service,
     paymentProfileService,
     applicationService,
@@ -27,6 +28,8 @@ export default class UpdateOrganizationController {
     this.$mdDialog = $mdDialog;
     this.$stateParams = $stateParams;
     this.storageService = storageService;
+    this.assetService = assetService;
+    this.storageService = storageService;
     this.auth0Service = auth0Service;
     this.paymentProfileService = paymentProfileService;
     this.applicationService = applicationService;
@@ -39,7 +42,9 @@ export default class UpdateOrganizationController {
     this.db = db;
 
     this.$scope.selectedSubscriptions = [];
+    this.$scope.selectConsentAcknowledgement = [];
     this.$scope.subscriptions = [];
+    this.$scope.assets = [];
     this.paymentProfiles = [];
     this.selected = [];
     this.selectedPaymentProfile = [];
@@ -50,9 +55,7 @@ export default class UpdateOrganizationController {
 
     [
       'ORGANIZATION.PERMISSION.WRITE',
-      'SUBSCRIPTION.CREATED',
-      'paymentprofile.delete',
-      'paymentprofile.create'
+      'organization.delete',
     ].forEach((event) => {
       this.$scope.$on(event, () => {
         this.loadUI(this.$stateParams.organizationId);
@@ -67,12 +70,12 @@ export default class UpdateOrganizationController {
 
     this.$scope.$parent.ready.then(() => {
       return this.loadUI(this.$stateParams.organizationId).then(() => {
-        }, () => {
-          this.uiService.notify('Unable to find organization');
-        }).then(() => {
-          this.$scope.uiReady = true;
-          this.$timeout();
-        });
+      }, () => {
+        this.uiService.notify('Unable to find organization');
+      }).then(() => {
+        this.$scope.uiReady = true;
+        this.$timeout();
+      });
     });
   }
 
@@ -135,7 +138,14 @@ export default class UpdateOrganizationController {
         objectClass: 'Organization'
       });
 
+      const assetFuture = this.assetService.search(this.storage.auth.idToken, {
+        entityId: organization.id,
+        entityType: this.assetService.ORGANIZATION_TYPE,
+        order: '-timeCreated'
+      });
+
       return this.$q.all({
+        asset: assetFuture,
         permissions: permission,
         subscription: subscriptionFuture,
         paymentProfile: paymentProfileFutures
@@ -145,8 +155,8 @@ export default class UpdateOrganizationController {
         const permissionTypes = this.permissionService.getTypes();
 
         this.$scope.organizationPermissionTypes = permissionTypes.find(type => type.class === 'Organization').permissions;
-
-        this.paymentProfiles = resolve.paymentProfile.entity;
+        this.$scope.assets = resolve.asset.entity;
+        this.$scope.paymentProfiles = resolve.paymentProfile.entity;
         this.$scope.subscriptions = resolve.subscription;
 
         if (permissions.length === 0) {
@@ -170,6 +180,36 @@ export default class UpdateOrganizationController {
           this.$scope.userPermissionModel = userPermissionModel;
         });
       });
+    });
+  }
+
+  addConsentAcknowledgement(organization) {
+    this.$mdDialog.show({
+      controller: 'CreateConsentAssetController',
+      controllerAs: 'controller',
+      templateUrl: '/src/organization/partial/createConsentAsset.html',
+      clickOutsideToClose: true,
+      locals: {
+        organization: organization,
+        onAssetCreate: (asset) => {
+          this.$scope.assets.unshift(asset);
+        }
+      }
+    });
+  }
+
+  deleteConsentAsset(asset) {
+    const storage = this.storageService.read();
+
+    this.assetService.delete(storage.auth.idToken, asset.id).then(() => {
+      this.$scope.assets = this.$scope.assets.filter(subject => subject.id !== asset.id);
+      this.uiService.notify('Document deleted');
+    }, (response) => {
+      if (typeof response.data == 'object' && response.data.error === 'entityAssetConsentId') {
+        this.uiService.notify('Can not delete. Asset is being used by an event');
+      } else {
+        this.uiService.notify('Unable to delete document');
+      }
     });
   }
 
@@ -225,7 +265,10 @@ export default class UpdateOrganizationController {
       clickOutsideToClose: true,
       controllerAs: 'controller',
       locals: {
-        organization: organization
+        organization: organization,
+        onPaymentProfileCreate: (profile) => {
+          this.$scope.paymentProfiles.push(profile);
+        }
       }
     });
   }
@@ -266,6 +309,17 @@ export default class UpdateOrganizationController {
       this.uiService.notify('Unable to remove user from organization');
     });
   }
+
+  showAsset($event, asset) {
+    this.$mdDialog.show({
+      targetEvent: $event,
+      controller: ['$scope', function($scope) {
+        $scope.text = atob(asset.data);
+      }],
+      templateUrl: '/src/organization/partial/consent.html',
+      clickOutsideToClose: true
+    });
+  }
 }
 
 UpdateOrganizationController.$inject = [
@@ -276,6 +330,7 @@ UpdateOrganizationController.$inject = [
   '$mdDialog',
   '$stateParams',
   'StorageService',
+  'AssetService',
   'Auth0Service',
   'PaymentProfileService',
   'ApplicationService',

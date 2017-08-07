@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 2);
+const builder = lf.schema.create('jivecake', 3);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)
@@ -27,18 +27,21 @@ builder.createTable('Organization')
 
 builder.createTable('Event')
   .addColumn('id', lf.Type.STRING)
+  .addColumn('hash', lf.Type.STRING)
+  .addColumn('organizationId', lf.Type.STRING)
+  .addColumn('entityAssetConsentId', lf.Type.STRING)
+  .addColumn('paymentProfileId', lf.Type.STRING)
+  .addColumn('currency', lf.Type.STRING)
   .addColumn('name', lf.Type.STRING)
   .addColumn('description', lf.Type.STRING)
   .addColumn('status', lf.Type.STRING)
-  .addColumn('organizationId', lf.Type.STRING)
-  .addColumn('paymentProfileId', lf.Type.STRING)
-  .addColumn('currency', lf.Type.STRING)
   .addColumn('timeStart', lf.Type.INTEGER)
   .addColumn('timeEnd', lf.Type.INTEGER)
   .addColumn('timeCreated', lf.Type.INTEGER)
   .addColumn('timeUpdated', lf.Type.INTEGER)
   .addColumn('lastActivity', lf.Type.INTEGER)
   .addNullable([
+    'entityAssetConsentId',
     'paymentProfileId',
     'description',
     'currency',
@@ -46,6 +49,7 @@ builder.createTable('Event')
     'timeStart',
     'timeEnd'
   ])
+  .addUnique('unique', ['hash'])
   .addPrimaryKey(['id']);
 
 builder.createTable('Item')
@@ -149,7 +153,8 @@ builder.createTable('EntityAsset')
   .addColumn('entityType', lf.Type.STRING)
   .addColumn('assetId', lf.Type.STRING)
   .addColumn('assetType', lf.Type.STRING)
-  .addColumn('data', lf.Type.ARRAY_BUFFER)
+  .addColumn('data', lf.Type.STRING)
+  .addColumn('name', lf.Type.INTEGER)
   .addColumn('timeCreated', lf.Type.INTEGER)
   .addNullable(['data'])
   .addPrimaryKey(['id']);

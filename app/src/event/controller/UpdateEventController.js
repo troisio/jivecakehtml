@@ -2,7 +2,6 @@ import angular from 'angular';
 
 export default class UpdateEventController {
   constructor(
-    $window,
     $q,
     $scope,
     $state,
@@ -10,6 +9,7 @@ export default class UpdateEventController {
     $mdDialog,
     storageService,
     eventService,
+    assetService,
     organizationService,
     permissionService,
     paymentProfileService,
@@ -17,13 +17,13 @@ export default class UpdateEventController {
     db,
     Permission
   ) {
-    this.$window = $window;
     this.$q = $q;
     this.$scope = $scope;
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$mdDialog = $mdDialog;
     this.eventService = eventService;
+    this.assetService = assetService;
     this.organizationService = organizationService;
     this.permissionService = permissionService;
     this.paymentProfileService = paymentProfileService;
@@ -36,20 +36,11 @@ export default class UpdateEventController {
 
     this.$scope.loading = false;
 
-    this.$scope.hours = this.$window.Array.from(new Array(24), (_, index) => index);
-    this.$scope.minutes = this.$window.Array.from(new Array(60), (_, index) => index);
+    this.$scope.hours = Array.from(new Array(24), (_, index) => index);
+    this.$scope.minutes = Array.from(new Array(60), (_, index) => index);
 
     this.storage = storageService.read();
     this.timeSelections = this.uiService.getTimeSelections();
-
-    [
-      'paymentprofile.delete',
-      'paymentprofile.create'
-    ].forEach((event) => {
-      this.$scope.$on(event, () => {
-        this.run();
-      });
-    });
 
     this.run();
   }
@@ -74,6 +65,11 @@ export default class UpdateEventController {
               organizationId: event.organizationId
             });
             const organizationFuture = this.organizationService.read(this.storage.auth.idToken, event.organizationId);
+            const consentFuture = this.assetService.search(this.storage.auth.idToken, {
+              entityId: event.organizationId,
+              entityType: this.assetService.ORGANIZATION_TYPE,
+              order: '-timeCreated'
+            });
 
             if (event.timeStart === null) {
               this.$scope.timeStart = {
@@ -108,9 +104,11 @@ export default class UpdateEventController {
             this.$scope.event = event;
 
             return this.$q.all({
+              consent: consentFuture,
               paymentProfile: paymentProfileFuture,
               organization: organizationFuture
             }).then(resolve => {
+              this.$scope.consentAssets = resolve.consent.entity;
               this.$scope.organization = resolve.organization;
               this.$scope.paymentProfiles = resolve.paymentProfile.entity;
             });
@@ -132,7 +130,10 @@ export default class UpdateEventController {
       controllerAs: 'controller',
       clickOutsideToClose: true,
       locals: {
-        organization: this.$scope.organization
+        organization: this.$scope.organization,
+        onPaymentProfileCreate: (profile) => {
+          this.$scope.paymentProfiles.push(profile);
+        }
       }
     }).finally(() => {
       this.$scope.ready.then(() => {
@@ -226,10 +227,28 @@ export default class UpdateEventController {
       });
     }
   }
+
+  addConsentAcknowledgement(event) {
+    this.$mdDialog.show({
+      controller: 'CreateConsentAssetController',
+      controllerAs: 'controller',
+      templateUrl: '/src/organization/partial/createConsentAsset.html',
+      clickOutsideToClose: true,
+      locals: {
+        organization: {id: event.organizationId},
+        onAssetCreate: (asset) => {
+          this.$scope.consentAssets.unshift(asset);
+
+          if (this.$scope.consentAssets.length === 1) {
+            this.$scope.event.entityAssetConsentId = asset.id;
+          }
+        }
+      }
+    });
+  }
 }
 
 UpdateEventController.$inject = [
-  '$window',
   '$q',
   '$scope',
   '$state',
@@ -237,6 +256,7 @@ UpdateEventController.$inject = [
   '$mdDialog',
   'StorageService',
   'EventService',
+  'AssetService',
   'OrganizationService',
   'PermissionService',
   'PaymentProfileService',

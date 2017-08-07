@@ -50,11 +50,11 @@ export default class UpdateAccountController {
       const assetFuture = this.assetService.search(storage.auth.idToken, {
         assetType: this.assetService.GOOGLE_CLOUD_STORAGE_BLOB_FACE,
         entityId: storage.auth.idTokenPayload.sub,
-        entityType: this.assetService.USER,
+        entityType: this.assetService.USER_TYPE,
         order: '-timeCreated',
         limit: 1
-      }).then((assets) => {
-        this.$scope.assets = assets;
+      }).then((searchResult) => {
+        this.$scope.assets = searchResult.entity;
       }, () => {
         this.uiService.notify('Unable to get asset information');
       });
@@ -79,6 +79,7 @@ export default class UpdateAccountController {
   }
 
   submit(user) {
+    this.$scope.loading = true;
     const storage = this.storageService.read();
     let imageFuture;
 
@@ -109,8 +110,7 @@ export default class UpdateAccountController {
     let userUpdateFuture;
 
     if (!this.$scope.isIdentityProviderAccount) {
-      this.$scope.loading = true;
-      let body = {
+      const body = {
         email: user.email,
         user_metadata: {
           given_name: user.given_name,
@@ -122,13 +122,10 @@ export default class UpdateAccountController {
         storage.auth.idToken,
         storage.auth.idTokenPayload.sub,
         body
-      ).then(() => {
-      });
+      );
     } else {
       userUpdateFuture = this.$q.resolve();
     }
-
-    this.$scope.loading = true;
 
     this.$q.all([imageFuture, userUpdateFuture]).then(() => {
       this.uiService.notify('Successfully updated');

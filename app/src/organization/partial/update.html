@@ -6,14 +6,6 @@
 <div ng-show="uiReady" layout-padding class="md-inline-form">
   <form ng-submit="!loading && controller.submit(organization)">
     <section layout-padding>
-      <div layout="row">
-        <md-input-container flex>
-          <label>Organization Email</label>
-          <input ng-model="organization.email" autocomplete="off" type="email" required>
-        </md-input-container>
-      </div>
-    </section>
-    <section layout-padding>
       <div layout="row" layout-padding>
         <div>
           <h4>Organization Users</h4>
@@ -97,7 +89,7 @@
         <md-table-container>
           <table ng-model="controller.selectedPaymentProfile" md-table md-row-select multiple>
             <tbody md-body>
-              <tr md-row md-auto-select ng-repeat="paymentProfile in controller.paymentProfiles track by paymentProfile.id">
+              <tr md-row md-auto-select ng-repeat="paymentProfile in paymentProfiles track by paymentProfile.id">
                 <td md-cell>
                   <span>{{paymentProfile.email}}</span>
                 </td>
@@ -109,7 +101,7 @@
                   <ng-md-icon icon="delete"></ng-md-icon>
                 </td>
               </tr>
-              <tr ng-show="controller.paymentProfiles.length === 0" md-row layout-padding>
+              <tr ng-show="paymentProfiles.length === 0" md-row layout-padding>
                 <td colspan="3" md-cell>
                   <span class="md-subheader">No data found</span>
                 </td>
@@ -117,6 +109,50 @@
             </tbody>
           </table>
         </md-table-container>
+      </div>
+    </section>
+    <section>
+      <div layout-padding layout="row">
+        <div>
+          <h4>Consent Acknowledgement</h4>
+        </div>
+        <div>
+          <a href="" ng-click="controller.addConsentAcknowledgement(organization)">add new</a>
+        </div>
+      </div>
+      <div>
+        <md-table-container>
+          <table ng-model="selectConsentAcknowledgement" md-table md-row-select multiple>
+            <tbody md-body>
+              <tr md-row md-auto-select ng-repeat="asset in assets track by asset.id">
+                <td md-cell>
+                  <div ng-show="asset.assetType !== 1">
+                    <a href="" ng-click="controller.showAsset($event, asset)" ng-show="asset.assetType !== 1">{{asset.name}}</a>
+                  </div>
+                  <div ng-show="asset.assetType === 1">
+                    <a ng-href="https://storage.googleapis.com/{{asset.assetId}}">{{asset.name}}</a>
+                  </div>
+                </td>
+                <td ng-click="controller.deleteConsentAsset(asset)" md-cell>
+                  <ng-md-icon icon="delete"></ng-md-icon>
+                </td>
+              </tr>
+              <tr ng-show="assets.length === 0" md-row layout-padding>
+                <td colspan="2" md-cell>
+                  <span class="md-subheader">No data found</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+      </div>
+    </section>
+    <section layout-padding>
+      <div layout="row">
+        <md-input-container flex>
+          <label>Organization Email</label>
+          <input ng-model="organization.email" autocomplete="off" type="email" required>
+        </md-input-container>
       </div>
     </section>
     <div layout="row">

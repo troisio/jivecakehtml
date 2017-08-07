@@ -1,5 +1,5 @@
 <md-dialog flex="80">
-  <div layout-padding class="md-inline-form" ng-show="uiReady">
+  <div layout-padding class="md-inline-form">
     <h3>Create an Event</h3>
     <form ng-submit="!loading && controller.submit(organization, event)">
       <div layout="row">
@@ -32,10 +32,5 @@
         </md-input-container>
       </div>
     </form>
-  </div>
-  <div layout-align="center center">
-    <md-input-container ng-show="!uiReady" class="md-block">
-      <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-    </md-input-container>
   </div>
 </md-dialog>

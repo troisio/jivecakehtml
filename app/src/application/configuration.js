@@ -151,7 +151,7 @@ export default [
       controller: 'PublicController'
     })
     .state('application.public.event', {
-      url: '/event/{id}',
+      url: '/e/{hash}',
       templateUrl: '/src/public/partial/event.html',
       controller: 'PublicEventController',
       controllerAs: 'controller'

@@ -21,7 +21,8 @@
       </md-list-item>
       <md-list-item ng-show="event.description !== null && event.description.length > 0" class="layout-padding md-1-line">
         <div class="md-list-item-text" layout="column">
-          <div layout-padding marked="$sanitize(event.description)">
+          <div layout-padding>
+            {{event.description}}
           </div>
         </div>
       </md-list-item>
