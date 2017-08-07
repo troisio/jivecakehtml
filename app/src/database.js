@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 3);
+const builder = lf.schema.create('jivecake', 4);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)
@@ -156,7 +156,7 @@ builder.createTable('EntityAsset')
   .addColumn('data', lf.Type.STRING)
   .addColumn('name', lf.Type.INTEGER)
   .addColumn('timeCreated', lf.Type.INTEGER)
-  .addNullable(['data'])
+  .addNullable(['data', 'name'])
   .addPrimaryKey(['id']);
 
 export default builder;
