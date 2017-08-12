@@ -112,6 +112,7 @@ export default class ReadEventController {
           $scope.event = event;
           $scope.flex = 10;
           $scope.eventUrl = window.location.protocol + '//' + window.location.hostname + '/e/' + event.hash;
+          $scope.eventUrlDisplay = window.location.hostname + '/e/' + event.hash;
 
           updateFuture.then((event) => {
             if (event.status === eventService.getInactiveEventStatus()) {

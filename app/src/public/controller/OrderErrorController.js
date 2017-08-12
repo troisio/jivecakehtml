@@ -12,6 +12,10 @@ export default class OrderErrorController {
         message: 'You must be logged in to complete your order'
       },
       {
+        error: 'eventNotActive',
+        message: 'You attempted to pay for an event that is not active'
+      },
+      {
         error: 'itemNotActive',
         message: 'You attempted to pay for inactive items'
       },

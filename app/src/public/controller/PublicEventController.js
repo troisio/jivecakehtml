@@ -212,9 +212,21 @@ export default class PublicEventController {
           token: token,
           itemData: itemData
         }).then(() => {
-          this.$state.go('application.internal.myTransaction', {
-            user_id: storage.auth.idTokenPayload.sub
-          });
+          if (idToken === null) {
+            this.$mdDialog.show(
+              this.$mdDialog.confirm()
+                .title('Your order has been processed. We will send you an email shortly.')
+                .ariaLabel('Order Processed')
+                .clickOutsideToClose(true)
+                .ok('Ok')
+            );
+            this.run();
+          } else {
+            this.uiService.notify('Payment complete');
+            this.$state.go('application.internal.myTransaction', {
+              user_id: storage.auth.idTokenPayload.sub
+            });
+          }
         }, (response) => {
           if (response.status == 400 && Array.isArray(response.data)) {
             this.$mdDialog.show({
@@ -230,9 +242,9 @@ export default class PublicEventController {
           }
         });
 
-        orderFuture.finally(() => {
+        orderFuture.then(() => {
           defer.resolve();
-        });
+        })
       },
       closed: function () {
         defer.reject();
@@ -285,14 +297,20 @@ export default class PublicEventController {
         this.uiReady = false;
 
         this.paypalService.execute(token, authorization).then(() => {
-          this.uiService.notify('Payment complete');
-
           if (token === null) {
+            this.$mdDialog.show(
+              this.$mdDialog.confirm()
+                .title('Thanks! Your order has been processed.')
+                .ariaLabel('Order Processed')
+                .clickOutsideToClose(true)
+                .ok('Ok')
+            );
+            this.run();
+          } else {
+            this.uiService.notify('Payment complete');
             this.$state.go('application.internal.myTransaction', {
               user_id: storage.auth.idTokenPayload.sub
             });
-          } else {
-            this.run();
           }
         }, () => {
           this.uiService.notify('Unable to complete payment');
@@ -325,33 +343,43 @@ export default class PublicEventController {
           };
         }).filter(data => data.selection.amount > 0);
 
-        const unpaidFutures = selectionAndItemData.filter(data => data.itemData.amount === 0)
-          .map((data) => {
-            return this.transactionService.purchase(
-              idToken,
-              data.itemData.item.id,
-              {quantity: data.selection.amount}
-            );
-          });
+        let hasPaidItem = false;
 
-        this.$q.all(unpaidFutures).then(() => {
-          const paidSelections = selectionAndItemData.filter(data => data.itemData.amount > 0);
-
-          if (paidSelections.length > 0) {
-            if (this.$scope.profile instanceof this.StripePaymentProfile) {
-              this.processStripe(group, paidSelections);
-            } else if (this.$scope.profile instanceof this.PaypalPaymentProfile) {
-              this.$scope.isPaypalCheckoutView = true;
-              this.processPaypal(group, paidSelections, this.$scope.paymentProfile);
-            } else {
-              throw new Error('invalid payment profile implementation');
-            }
-          } else {
-            this.$state.go('application.internal.myTransaction');
+        for (let data of selectionAndItemData) {
+          if (data.itemData.amount > 0) {
+            hasPaidItem = true;
+            break;
           }
-        }, () => {
-          this.uiService.notify('Unable to purchase free items');
-        });
+        }
+
+        if (hasPaidItem) {
+          if (this.$scope.profile instanceof this.StripePaymentProfile) {
+            this.processStripe(group, selectionAndItemData);
+          } else if (this.$scope.profile instanceof this.PaypalPaymentProfile) {
+            this.$scope.isPaypalCheckoutView = true;
+            this.processPaypal(group, selectionAndItemData, this.$scope.paymentProfile);
+          } else {
+            throw new Error('invalid payment profile implementation');
+          }
+        } else {
+          const unpaidFutures = selectionAndItemData.map((data) => {
+              return this.transactionService.purchase(
+                idToken,
+                data.itemData.item.id,
+                {quantity: data.selection.amount}
+              );
+            }
+          );
+
+          Promise.all(unpaidFutures).then(() => {
+          }, () => {
+            this.uiService.notify('We were not able to process all of your orders');
+          }).then(() => {
+            this.$state.go('application.internal.myTransaction', {
+              user_id: storage.auth.idTokenPayload.sub
+            });
+          })
+        }
       } else {
         this.uiService.notify('No selection made');
       }

@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 4);
+const builder = lf.schema.create('jivecake', 5);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)
@@ -22,7 +22,7 @@ builder.createTable('Organization')
   .addColumn('timeUpdated', lf.Type.INTEGER)
   .addColumn('timeCreated', lf.Type.INTEGER)
   .addColumn('lastActivity', lf.Type.INTEGER)
-  .addNullable(['parentId', 'timeUpdated', 'lastActivity'])
+  .addNullable(['parentId', 'timeUpdated'])
   .addPrimaryKey(['id']);
 
 builder.createTable('Event')
@@ -40,6 +40,11 @@ builder.createTable('Event')
   .addColumn('timeCreated', lf.Type.INTEGER)
   .addColumn('timeUpdated', lf.Type.INTEGER)
   .addColumn('lastActivity', lf.Type.INTEGER)
+  .addForeignKey('EventToOrganizationForeignKey', {
+    local: 'organizationId',
+    ref: 'Organization.id',
+    action: lf.ConstraintAction.CASCADE
+  })
   .addNullable([
     'entityAssetConsentId',
     'paymentProfileId',
@@ -96,6 +101,7 @@ builder.createTable('Transaction')
   .addColumn('user_id', lf.Type.STRING)
   .addColumn('linkedId', lf.Type.STRING)
   .addColumn('linkedObjectClass', lf.Type.STRING)
+  .addColumn('linkedFee', lf.Type.NUMBER)
   .addColumn('status', lf.Type.INTEGER)
   .addColumn('paymentStatus', lf.Type.INTEGER)
   .addColumn('quantity', lf.Type.INTEGER)
