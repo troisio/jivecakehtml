@@ -15,7 +15,7 @@ if [ ! -d $SOURCE_DIRECTORY ]; then
   cp ~/settings.js $SOURCE_DIRECTORY/app/src/settings.js
   cp ~/server-settings.json $SOURCE_DIRECTORY/server-settings.json
 
-  $(npm bin)/webpack
+  npm run build
 fi
 
 cd $SOURCE_DIRECTORY
@@ -26,4 +26,4 @@ else
   nginx -c /root/nginx.conf
 fi
 
-/usr/local/go/bin/go run server.go
+node server.js

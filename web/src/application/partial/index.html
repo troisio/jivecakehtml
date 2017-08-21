@@ -1,0 +1,85 @@
+<md-sidenav class="md-sidenav-left md-whiteframe-2dp" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
+  <md-list ng-show="uiReady">
+    <md-item ng-show="storage.auth !== null && organizationPermissions.length > 0">
+      <a ng-click="closeSideNav('left')" ui-sref="application.internal.organization.read">
+        <md-item-content md-ink-ripple layout="row" layout-align="start center">
+          <div class="inset">
+            <ng-md-icon icon="dashboard"></ng-md-icon>
+          </div>
+          <div class="inset">Organizations</div>
+        </md-item-content>
+      </a>
+    </md-item>
+    <md-item ng-show="storage.auth !== null">
+      <a ng-click="closeSideNav('left')" ui-sref="application.internal.myTransaction({user_id: this.storage.profile.user_id})">
+        <md-item-content md-ink-ripple layout="row" layout-align="start center">
+          <div class="inset">
+            <ng-md-icon icon="local_offer"></ng-md-icon>
+          </div>
+          <div class="inset">My Transactions</div>
+        </md-item-content>
+      </a>
+    </md-item>
+    <md-item ng-show="storage.auth !== null">
+      <a ng-click="closeSideNav('left')" ui-sref="application.internal.account()">
+        <md-item-content md-ink-ripple layout="row" layout-align="start center">
+          <div class="inset">
+            <ng-md-icon icon="account_box"></ng-md-icon>
+          </div>
+          <div class="inset">My Account</div>
+        </md-item-content>
+      </a>
+    </md-item>
+    <md-item ng-show="storage.auth !== null && organizationPermissions.length === 0">
+      <a href="" ng-click="closeSideNav('left'); controller.createEvent();">
+        <md-item-content md-ink-ripple layout="row" layout-align="start center">
+          <div class="inset">
+            <ng-md-icon icon="event"></ng-md-icon>
+          </div>
+          <div class="inset">Create an Event</div>
+        </md-item-content>
+      </a>
+    </md-item>
+    <md-item>
+      <a href="/">
+        <md-item-content md-ink-ripple layout="row" layout-align="start center">
+          <div class="inset">
+            <ng-md-icon icon="home"></ng-md-icon>
+          </div>
+          <div class="inset">Home</div>
+        </md-item-content>
+      </a>
+    </md-item>
+    <md-item ng-show="storage.auth === null">
+      <a ng-click="controller.oauthSignIn()" href="">
+        <md-item-content md-ink-ripple layout="row" layout-align="start center">
+          <div class="inset">
+            <ng-md-icon icon="login"></ng-md-icon>
+          </div>
+          <div class="inset">Login</div>
+        </md-item-content>
+      </a>
+    </md-item>
+    <md-item ng-show="storage.auth !== null">
+      <a ng-click="controller.logout()" href="">
+        <md-item-content md-ink-ripple layout="row" layout-align="start center">
+          <div class="inset">
+            <ng-md-icon icon="logout"></ng-md-icon>
+          </div>
+          <div class="inset">Logout</div>
+        </md-item-content>
+      </a>
+    </md-item>
+  </md-list>
+  <div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
+    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+  </div>
+</md-sidenav>
+<md-content flex layout="column">
+  <div hide-gt-md>
+    <md-button ng-click="toggleSidenav('left')" aria-label="Menu">
+      <ng-md-icon icon="menu"></ng-md-icon>
+    </md-button>
+  </div>
+  <ui-view flex layout="column"></ui-view>
+</md-content>
