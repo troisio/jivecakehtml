@@ -12,8 +12,7 @@ if [ ! -d $SOURCE_DIRECTORY ]; then
 
   cd $SOURCE_DIRECTORY
   npm install
-  cp ~/settings.js $SOURCE_DIRECTORY/app/src/settings.js
-  cp ~/server-settings.json $SOURCE_DIRECTORY/server-settings.json
+  cp ~/settings.js $SOURCE_DIRECTORY/web/src/settings.js
 
   npm run build
 fi
