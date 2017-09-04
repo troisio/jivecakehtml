@@ -10,4 +10,12 @@
   .md-toolbar-tools > div:not(:first-child) {
     margin-left: 1em;
   }
+
+  @media screen and (max-width: 500px) {
+    .consent {
+      span {
+        font-size: 0.7em;
+    }
+    }
+  }
 }

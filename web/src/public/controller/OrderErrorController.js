@@ -4,6 +4,18 @@ export default class OrderErrorController {
     this.errors = errors;
     this.messages = [
       {
+        error: 'nameRequired',
+        message: 'First and last name required'
+      },
+      {
+        error: 'photoRequired',
+        message: 'Your photo is required. Please upload a photo to your account'
+      },
+      {
+        error: 'emailRequired',
+        message: 'Email is required'
+      },
+      {
         error: 'profile',
         message: 'Invalid payment profile'
       },

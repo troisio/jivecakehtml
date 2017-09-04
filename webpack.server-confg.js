@@ -6,7 +6,7 @@ module.exports = function() {
     target: 'node',
     externals: [nodeExternals()],
     entry: [
-      path.resolve(__dirname, 'server/index.jsx')
+      path.resolve(__dirname, 'server/index.js')
     ],
     output: {
       path: path.resolve(__dirname, 'dist'),

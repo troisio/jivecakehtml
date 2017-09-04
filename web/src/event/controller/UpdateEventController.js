@@ -5,7 +5,6 @@ export default class UpdateEventController {
     $q,
     $scope,
     $state,
-    $stateParams,
     $mdDialog,
     storageService,
     eventService,
@@ -20,7 +19,6 @@ export default class UpdateEventController {
     this.$q = $q;
     this.$scope = $scope;
     this.$state = $state;
-    this.$stateParams = $stateParams;
     this.$mdDialog = $mdDialog;
     this.eventService = eventService;
     this.assetService = assetService;
@@ -60,7 +58,7 @@ export default class UpdateEventController {
           this.$scope.organizationIds = rows.filter(row => hasPermission.call(row, this.permissionService.READ))
             .map(row => row.objectId);
 
-          return this.eventService.read(this.storage.auth.idToken, this.$stateParams.eventId).then((event) => {
+          return this.eventService.read(this.storage.auth.idToken, this.$state.params.eventId).then((event) => {
             const paymentProfileFuture = this.paymentProfileService.search(this.storage.auth.idToken, {
               organizationId: event.organizationId
             });
@@ -99,6 +97,10 @@ export default class UpdateEventController {
 
               this.$scope.timeEnd.hour = this.$scope.timeEnd.time.getHours();
               this.$scope.timeEnd.minute = this.$scope.timeEnd.time.getMinutes();
+            }
+
+            if (event.facebookEventId !== null) {
+              event.facebookEventId = 'https://facebook.com/events/' + event.facebookEventId;
             }
 
             this.$scope.event = event;
@@ -199,6 +201,18 @@ export default class UpdateEventController {
       eventCopy.timeEnd = date.getTime();
     }
 
+    for (let key of ['facebookEventId', 'twitterUrl', 'websiteUrl', 'previewImageUrl']) {
+      if (eventCopy[key] === '') {
+        eventCopy[key] = null;
+      }
+    }
+
+    if (eventCopy.facebookEventId !== null) {
+      const numberIndex = eventCopy.facebookEventId.search(new RegExp('\\d'));
+      const eventId = eventCopy.facebookEventId.substring(numberIndex);
+      eventCopy.facebookEventId = eventId;
+    }
+
     if (invalidPaymentDetails) {
       this.uiService.notify('Payment Profile and currency are required');
       this.$scope.loading = false;
@@ -252,7 +266,6 @@ UpdateEventController.$inject = [
   '$q',
   '$scope',
   '$state',
-  '$stateParams',
   '$mdDialog',
   'StorageService',
   'EventService',

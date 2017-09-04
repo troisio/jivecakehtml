@@ -5,6 +5,13 @@ export default class Event {
     this.hash = null;
     this.description = null;
     this.status = null;
+    this.requireName = null;
+    this.assignIntegerToRegistrant = null;
+    this.requirePhoto = null;
+    this.facebookEventId = null;
+    this.twitterUrl = null;
+    this.websiteUrl = null;
+    this.previewImageUrl = null;
     this.organizationId = null;
     this.entityAssetConsentId = null;
     this.paymentProfileId = null;

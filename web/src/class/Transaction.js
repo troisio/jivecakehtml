@@ -26,7 +26,7 @@ export default class Transaction {
   }
 
   canRefund() {
-    return this.isVendorTransaction() && this.status === 0 && this.leaf;
+    return this.isVendorTransaction() && this.status === 0 && this.leaf && this.amount !== 0;
   }
 
   canDelete() {

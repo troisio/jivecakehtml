@@ -1,5 +1,6 @@
 import express from 'express';
 import fs from 'fs';
+import packageJson from '../package.json';
 
 import indexTemplate from './template/index.js';
 import applicationTemplate from './template/application.js';
@@ -21,7 +22,9 @@ const indexBody = indexTemplate({
   locale: 'en_US',
   title: 'JiveCake',
   content: indexHtml,
-  header: headerHtml
+  header: headerHtml,
+  image: 'https://jivecake.com/assets/chrome/icon144.png',
+  version: packageJson.version
 });
 
 application.get('/', function(_, response) {
@@ -33,12 +36,17 @@ application.get('/e/:hash', function(request, response) {
   response.setHeader('Content-Type', 'text/html; charset=utf-8');
 
   eventService.getByHash(request.params.hash).then((event) => {
+    const description = event.description === null ? '' : event.description;
+    const image = event.previewImageUrl === null ?
+      'https://jivecake.com/assets/chrome/icon144.png' : event.previewImageUrl;
+
     return applicationTemplate({
       lang: 'en',
       locale: 'en_US',
-      description: event.name,
+      description: description,
       title: event.name,
-      image: 'https://jivecake.com/assets/chrome/icon144.png'
+      image: image,
+      version: packageJson.version
     });
   }, () => {
     return applicationTemplate({
@@ -46,7 +54,8 @@ application.get('/e/:hash', function(request, response) {
       locale: 'en-US',
       description: 'Event registration',
       title: 'JiveCake',
-      image: 'https://jivecake.com/assets/chrome/icon144.png'
+      image: 'https://jivecake.com/assets/chrome/icon144.png',
+      version: packageJson.version
     });
   }).then((body) => {
     response.send(body);
@@ -60,7 +69,8 @@ application.get('/privacy', function(_, response) {
     locale: 'en_US',
     title: 'Privacy',
     content: privacyHtml,
-    header: ''
+    header: '',
+    version: packageJson.version
   });
 
   response.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -74,7 +84,8 @@ application.get('/faq', function(_, response) {
     locale: 'en_US',
     title: 'Frequently Asked Questions',
     content: faqHtml,
-    header: ''
+    header: '',
+    version: packageJson.version
   });
 
   response.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -88,7 +99,8 @@ application.get('/terms', function(_, response) {
     locale: 'en_US',
     title: 'Terms of Service',
     content: termsHtml,
-    header: ''
+    header: '',
+    version: packageJson.version
   });
 
   response.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -107,7 +119,8 @@ application.get('/blog/:id', function(request, response) {
         locale: 'en_US',
         title: 'Not Found',
         content: html404,
-        header: headerHtml
+        header: headerHtml,
+        version: packageJson.version
       };
     } else {
       options = {
@@ -116,7 +129,8 @@ application.get('/blog/:id', function(request, response) {
         locale: 'en_US',
         title: 'Blog',
         content: data,
-        header: headerHtml
+        header: headerHtml,
+        version: packageJson.version
       }
     }
 

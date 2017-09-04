@@ -12,6 +12,9 @@ export default class CreateOrganizationAndEventController {
     this.$scope.organization = new Organization();
     this.$scope.event = new Event();
     this.$scope.hide = $mdDialog.hide;
+
+    const storage = this.storageService.read();
+    this.$scope.organization.email = storage.profile.email;
   }
 
   submit(organization, event) {

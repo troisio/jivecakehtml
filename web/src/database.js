@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 5);
+const builder = lf.schema.create('jivecake', 6);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)
@@ -19,6 +19,7 @@ builder.createTable('Organization')
   .addColumn('children', lf.Type.ARRAY_BUFFER)
   .addColumn('name', lf.Type.STRING)
   .addColumn('email', lf.Type.STRING)
+  .addColumn('emailConfirmed', lf.Type.BOOLEAN)
   .addColumn('timeUpdated', lf.Type.INTEGER)
   .addColumn('timeCreated', lf.Type.INTEGER)
   .addColumn('lastActivity', lf.Type.INTEGER)
@@ -35,6 +36,13 @@ builder.createTable('Event')
   .addColumn('name', lf.Type.STRING)
   .addColumn('description', lf.Type.STRING)
   .addColumn('status', lf.Type.STRING)
+  .addColumn('requireName', lf.Type.BOOLEAN)
+  .addColumn('assignIntegerToRegistrant', lf.Type.BOOLEAN)
+  .addColumn('requirePhoto', lf.Type.BOOLEAN)
+  .addColumn('facebookEventId', lf.Type.STRING)
+  .addColumn('twitterUrl', lf.Type.STRING)
+  .addColumn('websiteUrl', lf.Type.STRING)
+  .addColumn('previewImageUrl', lf.Type.STRING)
   .addColumn('timeStart', lf.Type.INTEGER)
   .addColumn('timeEnd', lf.Type.INTEGER)
   .addColumn('timeCreated', lf.Type.INTEGER)
@@ -50,6 +58,10 @@ builder.createTable('Event')
     'paymentProfileId',
     'description',
     'currency',
+    'facebookEventId',
+    'twitterUrl',
+    'websiteUrl',
+    'previewImageUrl',
     'timeUpdated',
     'timeStart',
     'timeEnd'
@@ -101,7 +113,6 @@ builder.createTable('Transaction')
   .addColumn('user_id', lf.Type.STRING)
   .addColumn('linkedId', lf.Type.STRING)
   .addColumn('linkedObjectClass', lf.Type.STRING)
-  .addColumn('linkedFee', lf.Type.NUMBER)
   .addColumn('status', lf.Type.INTEGER)
   .addColumn('paymentStatus', lf.Type.INTEGER)
   .addColumn('quantity', lf.Type.INTEGER)

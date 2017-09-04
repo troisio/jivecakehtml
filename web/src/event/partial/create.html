@@ -6,7 +6,7 @@
     <form name="form" ng-submit="!loading && controller.createEvent(event)">
       <md-input-container class="md-block">
         <label>Name</label>
-        <input ng-model="event.name" name="name" autocomplete="off" title="Letters, Numbers Dashes" maxlength="255" required>
+        <input ng-model="event.name" name="name" autocomplete="off" title="Letters, Numbers Dashes" maxlength="100" required>
       </md-input-container>
       <md-input-container ng-show="data.length > 1" class="md-block">
         <label>Organization</label>

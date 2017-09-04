@@ -50,8 +50,7 @@ export default class OAuthRedirectController {
         .title(text)
         .ariaLabel('Unable to load data')
         .clickOutsideToClose(false)
-        .ok('Ok')
-        .cancel('Cancel');
+        .ok('Ok');
 
       this.$mdDialog.show(confirm).then(() => {
         location.href = '/';

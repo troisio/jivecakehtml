@@ -18,6 +18,7 @@ export default class ApplicationController {
     connectionService,
     storageService,
     db,
+    lock,
     Permission
   ) {
     this.$scope = $scope;
@@ -38,6 +39,7 @@ export default class ApplicationController {
     this.storageService = storageService;
     this.Permission = Permission;
     this.db = db;
+    this.lock = lock;
 
     this.$scope.storage = storageService.read();
     this.$scope.selectedTab = 0;
@@ -82,7 +84,7 @@ export default class ApplicationController {
     } else {
       const exp = storage.auth.idTokenPayload.exp * 1000;
       if (new Date().getTime() < exp) {
-        ready = this.getApplicationFutures();
+        ready = this.loadUserData();
       } else {
         ready = this.$q.reject();
       }
@@ -137,17 +139,29 @@ export default class ApplicationController {
       });
   }
 
-  getApplicationFutures() {
+  loadUserData() {
     const storage = this.storageService.read();
     this.connectionService.closeEventSources();
     this.connectionService.deleteEventSources();
+
+    const profileFuture = new Promise((resolve) => {
+      this.lock.getUserInfo(storage.auth.accessToken, (error, profile) => {
+        if (!error) {
+          const storage = this.storageService.read();
+          storage.profile = profile;
+          this.storageService.write(storage);
+        }
+
+        resolve();
+      });
+    });
 
     const eventSource = this.connectionService.getEventSource(storage.auth.idToken, storage.auth.idTokenPayload.sub);
     this.downstreamService.bootstrapEventSource(eventSource);
 
     const userCacheStart = new Date().getTime();
 
-    return this.downstreamService.cacheUserData(storage.auth).then(() => {
+    const cacheFuture = this.downstreamService.cacheUserData(storage.auth).then(() => {
       const userCacheEnd = new Date().getTime();
 
       this.uiService.logInteraction(storage.auth.idToken, {
@@ -157,6 +171,8 @@ export default class ApplicationController {
         }
       });
     });
+
+    return Promise.all([cacheFuture, profileFuture]);
   }
 
   createEvent() {
@@ -196,5 +212,6 @@ ApplicationController.$inject = [
   'ConnectionService',
   'StorageService',
   'db',
+  'lock',
   'Permission'
 ];

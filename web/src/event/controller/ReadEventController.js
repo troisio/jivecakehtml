@@ -5,7 +5,6 @@ export default class ReadEventController {
   constructor(
     $scope,
     $timeout,
-    $q,
     $state,
     $mdDialog,
     organizationService,
@@ -19,7 +18,6 @@ export default class ReadEventController {
   ) {
     this.$scope = $scope;
     this.$timeout = $timeout;
-    this.$q = $q;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.organizationService = organizationService;
@@ -34,7 +32,6 @@ export default class ReadEventController {
     const storage = storageService.read();
     this.$scope.$parent.$parent.selectedTab = 1;
     this.$scope.token = storage.auth.idToken;
-    this.$scope.apiUri = settings.jivecakeapi.uri;
     this.$scope.selected = [];
 
     [
@@ -183,6 +180,29 @@ export default class ReadEventController {
     });
   }
 
+  downloadTransactions(event) {
+    const storage = this.storageService.read();
+
+    const loader = this.uiService.load();
+
+    this.eventService.getExcel(storage.auth.idToken, event.id).then((asset) => {
+      loader.close.resolve();
+
+      this.$mdDialog.show({
+        template: `
+        <md-dialog flex="80" layout-align="center center">
+          <div layout-padding layout-margin>
+            <a href="https://storage.googleapis.com/${asset.assetId}">download file</a>
+          </div>
+        </md-dialog>
+        `
+      });
+    }, () => {
+      loader.close.resolve();
+      this.uiService.notify('Unable to generate file');
+    });
+  }
+
   createEvent() {
     this.$mdDialog.show({
       controller: 'CreateEventController',
@@ -196,7 +216,6 @@ export default class ReadEventController {
 ReadEventController.$inject = [
   '$scope',
   '$timeout',
-  '$q',
   '$state',
   '$mdDialog',
   'OrganizationService',

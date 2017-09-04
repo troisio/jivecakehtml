@@ -6,6 +6,21 @@ export default class UserService {
     this.db = db;
   }
 
+  hasFirstAndLastName(profile) {
+    let result;
+
+    if (profile.hasOwnProperty('given_name') && profile.hasOwnProperty('family_name')) {
+      result = true;
+    } else if (profile.hasOwnProperty('user_metadata')) {
+      result = profile.user_metadata.hasOwnProperty('given_name') &&
+        profile.user_metadata.hasOwnProperty('family_name');
+    } else {
+      result = false;
+    }
+
+    return result;
+  }
+
   uploadSelfie(token, user_id, data, contentType) {
     const url = [this.settings.jivecakeapi.uri, 'user', user_id, 'selfie'].join('/');
 

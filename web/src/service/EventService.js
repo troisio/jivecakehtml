@@ -34,6 +34,16 @@ export default class EventService {
     });
   }
 
+  getExcel(token, id) {
+    const url = [this.settings.jivecakeapi.uri, 'event', id, 'excel'].join('/');
+
+    return fetch(url, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.ok ? response.json() : Promise.reject(response));
+  }
+
   read(token, id) {
     const url = [this.settings.jivecakeapi.uri, 'event', id].join('/');
 
@@ -49,24 +59,6 @@ export default class EventService {
 
     return this.$http.get(url, {
       params: params,
-    }).then(response => {
-      return {
-        entity: response.data.entity.map((event) => {
-          return this.toolsService.toObject(event, this.Event);
-        }),
-        count: response.data.count
-      };
-    });
-  }
-
-  search(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'event'].join('/');
-
-    return this.$http.get(url, {
-      params: params,
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
     }).then(response => {
       return {
         entity: response.data.entity.map((event) => {

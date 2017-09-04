@@ -14,7 +14,8 @@ export default class EventService {
         uri: path,
         qs: {
           hash: hash
-        }
+        },
+        timeout: 5000
       }, function (error, response, body) {
         if (error === null) {
           if (response.statusCode === 200) {

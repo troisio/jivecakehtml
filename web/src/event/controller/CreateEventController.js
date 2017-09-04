@@ -32,7 +32,12 @@ export default class CreateEventController {
   }
 
   run() {
-    this.$scope.event = new this.Event();
+    this.$scope.loading = true;
+
+    const event = new this.Event();
+    event.requireName = false;
+    event.assignIntegerToRegistrant = false;
+    event.requirePhoto = false;
 
     const organizationTable = this.db.getSchema().table('Organization');
     const permissionTable = this.db.getSchema().table('Permission');
@@ -48,10 +53,12 @@ export default class CreateEventController {
         const data = rows.filter(row => hasPermission.call(row.Permission, this.permissionService.WRITE));
 
         if (data.length > 0) {
-          this.$scope.event.organizationId = data[0].Organization.id;
+          event.organizationId = data[0].Organization.id;
         }
 
         this.$scope.data = data;
+        this.$scope.event = event;
+        this.$scope.loading = false;
       });
   }
 

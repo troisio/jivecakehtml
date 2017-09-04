@@ -322,6 +322,10 @@ p, a {
 		padding: 16px 15px !important;
   }
 
+	.navbar-default .navbar-brand:not(.title) {
+    display: none;
+  }
+
 	.navbar-default .navbar-brand.nav-white {
 		color: #FFFFFF;
 	}
@@ -400,7 +404,7 @@ p, a {
 .hero-section {
 	height: 100%;
 	background: #FFFFFF;
-	padding: 150px 0 0 0;
+	padding: 100px 0 0 0;
 }
 
 .hero-content {

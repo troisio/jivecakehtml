@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const LiveReloadPlugin = require('webpack-livereload-plugin');
+const packageJson = require('./package.json');
 
 module.exports = function(env) {
   const sourceMap = typeof env !== 'undefined' && typeof env.sourceMap !== 'undefined';
@@ -14,7 +15,7 @@ module.exports = function(env) {
     },
     output: {
       path: path.resolve(__dirname, 'web/dist'),
-      filename: '[name].js'
+      filename: `[name]-${packageJson.version}.js`
     },
     module: {
       rules: [
@@ -85,7 +86,7 @@ module.exports = function(env) {
       new webpack.optimize.UglifyJsPlugin({
         sourceMap: sourceMap
       }),
-      new ExtractTextPlugin('[name].css'),
+      new ExtractTextPlugin(`[name]-${packageJson.version}.css`),
       new LiveReloadPlugin({
         ignore: /node_modules/
       })

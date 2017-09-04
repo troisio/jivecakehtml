@@ -14,7 +14,7 @@ export default (page) => {
       <meta property="og:title" content="JiveCake">
       <meta property="og:site_name" content="JiveCake">
       <meta property="og:description" content="${page.description}">
-      <meta property="og:image" content="https://jivecake.com/assets/chrome/icon144.png">
+      <meta property="og:image" content="${page.image}">
       <meta property="og:image:width" content="144">
       <meta property="og:image:height" content="144">
       <meta property="og:locale" content="${page.locale}">
@@ -36,7 +36,7 @@ export default (page) => {
       <link rel="stylesheet" href="/assets/advent-v1.2/assets/css/owl.theme.css">
       <link rel="stylesheet" href="/assets/advent-v1.2/assets/css/ionicons.min.css"> <!-- Resource style -->
       <link href="/assets/advent-v1.2/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
-      <link href="/dist/landingcss.css" rel="stylesheet" type="text/css" />
+      <link href="/dist/landingcss-${page.version}.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
       <div class="wrapper">
@@ -70,7 +70,7 @@ export default (page) => {
       </div>
       <div>
         <script src="https://cdn.auth0.com/js/lock/10.20.0/lock.min.js"></script>
-        <script src="/dist/landingjs.js"></script>
+        <script src="/dist/landingjs-${page.version}.js"></script>
         <script>
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

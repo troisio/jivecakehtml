@@ -3,13 +3,13 @@
 #### Watch your server files for changes
 
 ```sh
-$(npm bin)/webpack --config webpack.server-confg.js
+$(npm bin)/webpack --watch --config webpack.server-confg.js
 ```
 
 #### Watch your web files for changes
 
 ```sh
-$(npm bin)/webpack --config webpack.web-confg.js
+$(npm bin)/webpack --watch --config webpack.web-config.js
 ```
 
 #### Install

@@ -31,7 +31,7 @@
                 </md-button>
               </md-menu-item>
               <md-menu-item>
-                <md-button ng-href="{{apiUri + '/transaction/excel?eventId=' + eventData.Event.id + '&Authorization=Bearer ' + token}}">
+                <md-button ng-click="controller.downloadTransactions(eventData.Event)">
                   <span md-menu-align-target>download transactions</span>
                 </md-button>
               </md-menu-item>

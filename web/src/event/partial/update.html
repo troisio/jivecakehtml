@@ -8,12 +8,43 @@
     <form ng-submit="form.$valid && controller.submit(event, timeStart, timeEnd)" name="form">
       <md-input-container class="md-block">
         <label>Name</label>
-        <input ng-model="event.name" maxlength="255" placeholder="name" required>
+        <input ng-model="event.name" maxlength="100" placeholder="name" required>
       </md-input-container>
       <md-input-container class="md-block">
         <label>Description</label>
         <textarea ng-model="event.description" maxlength="1000" rows="3" md-select-on-focus>
         </textarea>
+      </md-input-container>
+      <div>
+        <h4>Social Media</h4>
+      </div>
+      <md-input-container class="md-block">
+        <label>FaceBook Event Url</label>
+        <input title="https://facebook.com/events/12345" pattern="https://facebook\.com/events/\d+" ng-model="event.facebookEventId">
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Twitter URL</label>
+        <input title="https://twitter.com/example" pattern="https://twitter\.com/.+" ng-model="event.twitterUrl">
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Your Event Website Url</label>
+        <input title="https://website.com/example" pattern="^(http(|s)://).+" ng-model="event.websiteUrl">
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Social Media Preview Image URL</label>
+        <input title="https://website.com/image.png" pattern="^(http(|s)://).+" ng-model="event.previewImageUrl">
+      </md-input-container>
+      <div>
+        <h4>Registration requirements</h4>
+      </div>
+      <md-input-container class="md-block" layout="row">
+        <md-checkbox ng-true-value="true" ng-true-value="false" ng-model="event.requireName" aria-label="Free">Require Name</md-checkbox>
+      </md-input-container>
+      <md-input-container class="md-block" layout="row">
+        <md-checkbox ng-true-value="true" ng-true-value="false" ng-model="event.requirePhoto" aria-label="Free">Require Photo</md-checkbox>
+      </md-input-container>
+      <md-input-container class="md-block" layout="row">
+        <md-checkbox ng-true-value="true" ng-true-value="false" ng-model="event.assignIntegerToRegistrant" aria-label="Free">Assign Integer to Registrants</md-checkbox>
       </md-input-container>
       <md-input-container class="md-block">
         <label>Consent Acknowledgement Document</label>
@@ -22,6 +53,32 @@
           <md-option ng-repeat="asset in consentAssets" ng-value="asset.id">{{asset.name}}</md-option>
         </md-select>
         <a ng-show="consentAssets.length === 0" href="" ng-click="controller.addConsentAcknowledgement(event)">add consent document</a>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Payment Profile</label>
+        <a href="" ng-click="controller.createPaymentProfile()" ng-show="paymentProfiles.length === 0">Create a Payment Profile</a>
+        <md-select ng-if="paymentProfiles !== null" ng-show="paymentProfiles.length > 0" ng-model="event.paymentProfileId" ng-required="event.currency" aria-label="Payment Profile" name="paymentProfile">
+          <md-option ng-value="null"></md-option>
+          <md-option ng-repeat="profile in paymentProfiles track by profile.id" ng-value="profile.id">
+            {{profile.email || profile.stripe_publishable_key}}
+            <i ng-show="!profile.hasOwnProperty('stripe_publishable_key')" class="fa fa-paypal" aria-hidden="true"></i>
+            <i ng-show="profile.hasOwnProperty('stripe_publishable_key')" class="fa fa-cc-stripe" aria-hidden="true"></i>
+          </md-option>
+        </md-select>
+        <div ng-messages="form.paymentProfile.$error">
+          <p ng-message="required">Payment Profile is required</p>
+        </div>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>Currency</label>
+        <md-select ng-model="event.currency" ng-required="event.paymentProfileId" name="currency">
+          <md-option ng-selected="true" ng-value="null"></md-option>
+          <md-option value="USD">US Dollars</md-option>
+          <md-option value="EUR">Euro</md-option>
+        </md-select>
+        <div class="errors" ng-messages="form.currency.$error">
+          <div ng-message="required">Currency is required</div>
+        </div>
       </md-input-container>
       <div>
         <h5>Start and End Time - Timezone: {{currentDate| browserTimeZoneAbbreviation}}</h5>
@@ -56,32 +113,6 @@
           </md-select>
         </md-input-container>
       </div>
-      <md-input-container class="md-block">
-        <label>Payment Profile</label>
-        <a href="" ng-click="controller.createPaymentProfile()" ng-show="paymentProfiles.length === 0">Create a Payment Profile</a>
-        <md-select ng-if="paymentProfiles !== null" ng-show="paymentProfiles.length > 0" ng-model="event.paymentProfileId" ng-required="event.currency" aria-label="Payment Profile" name="paymentProfile">
-          <md-option ng-value="null"></md-option>
-          <md-option ng-repeat="profile in paymentProfiles track by profile.id" ng-value="profile.id">
-            {{profile.email || profile.stripe_publishable_key}}
-            <i ng-show="!profile.hasOwnProperty('stripe_publishable_key')" class="fa fa-paypal" aria-hidden="true"></i>
-            <i ng-show="profile.hasOwnProperty('stripe_publishable_key')" class="fa fa-cc-stripe" aria-hidden="true"></i>
-          </md-option>
-        </md-select>
-        <div ng-messages="form.paymentProfile.$error">
-          <p ng-message="required">Payment Profile is required</p>
-        </div>
-      </md-input-container>
-      <md-input-container class="md-block">
-        <label>Currency</label>
-        <md-select ng-model="event.currency" ng-required="event.paymentProfileId" name="currency">
-          <md-option ng-selected="true" ng-value="null"></md-option>
-          <md-option value="USD">US Dollars</md-option>
-          <md-option value="EUR">Euro</md-option>
-        </md-select>
-        <div class="errors" ng-messages="form.currency.$error">
-          <div ng-message="required">Currency is required</div>
-        </div>
-      </md-input-container>
       <div layout layout-sm="row">
         <md-input-container class="md-block">
           <md-button ui-sref="application.internal.event.read" class="md-raised">Cancel</md-button>

@@ -31,7 +31,7 @@ export default (page) => {
       <link rel="apple-touch-icon" sizes="76x76" href="/assets/safari/apple-touch-76x76.png">
       <meta name="apple-mobile-web-app-title" content="JiveCake">
 
-      <link rel="stylesheet" href="dist/index.css">
+      <link rel="stylesheet" href="/dist/index-${page.version}.css">
     </head>
     <body layout="column">
       <ui-view flex layout="row"></ui-view>
@@ -41,7 +41,7 @@ export default (page) => {
       <script src="https://js.stripe.com/v3/"></script>
       <script src="https://checkout.stripe.com/checkout.js"></script>
       <script src="https://cdn.auth0.com/js/lock/10.20.0/lock.min.js"></script>
-      <script src="dist/bundle.js"></script>
+      <script src="/dist/bundle-${page.version}.js"></script>
     </body>
   </html>`
 };

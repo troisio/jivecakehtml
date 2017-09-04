@@ -2,26 +2,34 @@
   <md-toolbar class="md-hue-2">
     <div ng-show="uiReady" class="md-toolbar-tools">
       <div>
-        <p ng-show="groupData.event !== null">{{groupData.event.name}}</p>
-        <p ng-show="groupData.event === null">Not found</p>
+        <p ng-show="group.event !== null">{{group.event.name}}</p>
+        <p ng-show="group.event === null">Not found</p>
       </div>
       <div>
-        <ng-md-icon ng-show="groupData.event !== null" size="30" ng-click="controller.showInformation(groupData.event, organization)" icon="info"></ng-md-icon>
+        <a ng-show="group.event.websiteUrl !== null" ng-href="{{group.event.websiteUrl}}">
+          <ng-md-icon icon="info"></ng-md-icon>
+        </a>
+        <a ng-show="group.event.facebookEventId !== null" ng-href="https://facebook.com/events/{{group.event.facebookEventId}}">
+          <ng-md-icon size="30" icon="facebook"></ng-md-icon>
+        </a>
+        <a ng-show="group.event.twitterUrl !== null" ng-href="{{group.event.twitterUrl}}">
+          <ng-md-icon size="30" icon="twitter"></ng-md-icon>
+        </a>
       </div>
     </div>
   </md-toolbar>
-  <div class="public-item-page" ng-show="uiReady">
-    <section ng-show="!isPaypalCheckoutView && groupData.event.currency !== null && groupData.event.paymentProfileId !== null">
+  <div class="public-item-page" ng-show="uiReady && isOnSelectionStep">
+    <section ng-show="!isPaypalCheckoutView && group.event.currency !== null && group.event.paymentProfileId !== null">
       <md-table-container>
         <table ng-model="selected" md-table multiple>
           <tbody md-body>
-            <tr md-row md-auto-select ng-repeat="itemData in groupData.itemData track by itemData.item.id">
+            <tr md-row md-auto-select ng-repeat="itemData in group.itemData track by itemData.item.id">
               <td md-cell>
                 <a href="" ng-click="controller.viewItem(itemData.item)">{{itemData.item.name}}</a>
               </td>
               <td md-cell>
                 <div ng-show="itemData.amount !== 0" class="amount" layout-align="column">
-                  <span ng-show="groupData.event.currency === 'USD'">&#36;</span><span ng-show="groupData.event.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
+                  <span ng-show="group.event.currency === 'USD'">&#36;</span><span ng-show="group.event.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
                 </div>
                 <span ng-show="itemData.amount === 0">free</span>
               </td>
@@ -30,51 +38,75 @@
                 We're using ng-if here since if the login href is clicked, a dropdown from the (hidden) md-select is shown
                 Bug in angular material
                 -->
-                <md-input-container ng-if="!controller.itemIsBlocked(groupData, itemData, auth)">
-                  <md-select aria-label="Quantity" ng-model="itemFormData[itemData.item.id].amount">
+                <md-input-container ng-if="!controller.itemIsBlocked(group, itemData, auth) && !controller.requiresLogin(group, itemData, auth)">
+                  <md-select aria-label="Quantity" ng-model="itemData.selected">
                     <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
                   </md-select>
                 </md-input-container>
-                <a href="" ng-click="controller.login()" ng-show="(itemData.item.requiresAccountForRegistration() && auth === null) && !controller.itemIsBlocked(groupData, itemData)">requires login</a>
+                <a href="" ng-click="controller.login()" ng-show="controller.requiresLogin(group, itemData, auth)">requires login</a>
               </td>
               <td md-cell>
-                <ng-md-icon ng-show="controller.itemIsBlocked(groupData, itemData)" icon="block"></ng-md-icon>
+                <ng-md-icon ng-show="controller.itemIsBlocked(group, itemData, auth)" icon="block"></ng-md-icon>
               </td>
             </tr>
           </tbody>
         </table>
       </md-table-container>
     </section>
-    <div ng-show="groupData.itemData.length === 0" layout-padding>
+    <div ng-show="group.itemData.length === 0" layout-padding>
       <p>Sorry, this event does not have any items to display</p>
     </div>
-    <div ng-show="groupData.event.currency === null || groupData.event.paymentProfileId === null || groupData.profile === null" layout-padding>
+    <div ng-show="group.event.currency === null || group.event.paymentProfileId === null || group.profile === null" layout-padding>
       <p>Sorry, this event does not have any valid payment options</p>
     </div>
-    <div class="consent" ng-show="!isPaypalCheckoutView && groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections && groupData.assets.length > 0" layout="row" layout-align="end start" layout-padding>
+    <div ng-show="group.event.hasCurrencyAndPaymentProfile() && hasAnySelections" layout layout-padding layout-align="end start">
       <div>
-        <md-checkbox ng-true-value="true" ng-true-value="false" ng-checked="hasConsented" ng-model="hasConsented" aria-label="Consent to terms">
+        <md-button ng-click="controller.goToInformationStep(group)" class="md-raised md-primary">next</md-button>
+      </div>
+    </div>
+  </div>
+  <div class="information" layout-padding ng-show="isOnInformationStep">
+    <form ng-submit="controller.submitInformation(group, information)">
+      <div ng-show="controller.showFirstNameAndLastName(group, auth)">
+        <h4 ng-show="controller.mustUpdateAccountName(group)">Your Account Information</h4>
+        <h4 ng-show="!controller.mustUpdateAccountName(group)">Your Information</h4>
+      </div>
+      <md-input-container ng-show="controller.showFirstNameAndLastName(group, auth)" class="md-block">
+        <label>First Name</label>
+        <input ng-model="information.firstName" maxlength="100" ng-required="controller.showFirstNameAndLastName(group, auth)">
+      </md-input-container>
+      <md-input-container ng-show="controller.showFirstNameAndLastName(group, auth)" class="md-block">
+        <label>Last Name</label>
+        <input ng-model="information.lastName" maxlength="100" ng-required="controller.showFirstNameAndLastName(group, auth)">
+      </md-input-container>
+      <md-input-container ng-show="auth === null" class="md-block">
+        <label>Email</label>
+        <input type="email" ng-model="information.email" maxlength="100" ng-required="auth === null">
+      </md-input-container>
+      <md-input-container class="md-block consent" ng-show="group.assets.length > 0">
+        <md-checkbox ng-checked="hasConsented" ng-required="group.event.entityAssetConsentId !== null" ng-model="hasConsented" aria-label="Consent to terms">
         </md-checkbox>
-        <span ng-show="groupData.assets.length > 0 && groupData.assets[0].assetType === 2">I have read and consent to <a href="" ng-click="controller.showAsset($event, groupData.assets[0])">the terms</a> of this event</span>
-        <span ng-show="groupData.assets.length > 0 && groupData.assets[0].assetType === 1">I have read and consent to <a target="_blank" ng-href="https://storage.googleapis.com/{{groupData.assets[0].assetId}}">the terms</a> of this event</span>
+        <span ng-show="group.assets.length > 0 && group.assets[0].assetType === 2">I have read and consent to <a href="" ng-click="controller.showAsset($event, group.assets[0])">the terms</a> of this event</span>
+        <span ng-show="group.assets.length > 0 && group.assets[0].assetType === 1">I have read and consent to <a target="_blank" ng-href="https://storage.googleapis.com/{{group.assets[0].assetId}}">the terms</a> of this event</span>
+      </md-input-container>
+      <div layout="row">
+        <md-input-container>
+          <md-button ng-click="controller.cancel()" class="md-raised">cancel</md-button>
+        </md-input-container>
+        <md-input-container class="md-block">
+          <md-button type="submit" class="md-raised md-primary">checkout</md-button>
+        </md-input-container>
       </div>
-    </div>
-    <div ng-show="isPaypalCheckoutView" layout="row" layout-padding layout-align="space-between center">
       <div>
-        <a href="" ng-click="isPaypalCheckoutView = false;">return to selection</a>
+        <div id="paypal-button"></div>
       </div>
-      <div id="paypal-button"></div>
-    </div>
-    <div ng-show="!isPaypalCheckoutView && groupData.event.hasCurrencyAndPaymentProfile() && hasAnySelections" layout layout-padding layout-align="end start">
-      <div>
-        <a ng-click="controller.checkout(groupData, itemFormData)" href="">checkout</a>
-      </div>
-    </div>
+    </form>
   </div>
   <div ng-show="!uiReady" layout="row" layout-margin layout-align="center">
     <md-progress-circular md-mode="indeterminate"></md-progress-circular>
   </div>
-  <div ng-show="uiReady && event === null" layout-padding>
+  <div ng-show="uiReady && group.event === null" layout-padding>
     <p class="message">Sorry, this event does not exist or is not availible</p>
+    <p class="message">return to <a href="/">home page</a></p>
   </div>
 </div>

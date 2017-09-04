@@ -4,14 +4,14 @@
     <form ng-submit="!loading && controller.submit(organization, event)">
       <div layout="row">
         <md-input-container flex>
-          <label>Your Organization</label>
-          <input ng-model="organization.name" autocomplete="off" pattern="[a-zA-Z0-9\- ]+" title="Letters, Numbers Dashes" maxlength="255" required>
+          <label>Organization Email</label>
+          <input ng-model="organization.email" type="email" autocomplete="off" maxlength="255" required>
         </md-input-container>
       </div>
       <div layout="row">
         <md-input-container flex>
-          <label>Organization Email</label>
-          <input ng-model="organization.email" type="email" autocomplete="off" maxlength="255" required>
+          <label>Your Organization</label>
+          <input ng-model="organization.name" autocomplete="off" pattern="[a-zA-Z0-9\- ]+" title="Letters, Numbers Dashes" maxlength="255" required>
         </md-input-container>
       </div>
       <div layout="row">
