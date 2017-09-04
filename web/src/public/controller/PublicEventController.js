@@ -16,6 +16,7 @@ export default class PublicEventController {
     userService,
     StripePaymentProfile,
     PaypalPaymentProfile,
+    Event,
     settings
   ) {
     this.$q = $q;
@@ -34,6 +35,7 @@ export default class PublicEventController {
     this.userService = userService;
     this.StripePaymentProfile = StripePaymentProfile;
     this.PaypalPaymentProfile = PaypalPaymentProfile;
+    this.Event = Event;
     this.settings = settings;
 
     this.$scope.ready = this.$scope.$parent.ready;
@@ -534,13 +536,25 @@ export default class PublicEventController {
     this.$scope.isOnInformationStep = false;
     this.$scope.hasConsented = false;
 
-    this.$scope.group = {
-      event: {}
-    };
     this.$scope.information = {
       firstName: '',
       lastName: '',
       email: ''
+    };
+
+    /*
+      These defaults are set to prevent the UI
+      from 'flashing' elements with an ng-show condition
+      todo: stop using angular :(
+    */
+
+    const defaultEvent = new this.Event();
+    defaultEvent.currency = 'USD';
+    defaultEvent.paymentProfileId = '';
+
+    this.$scope.group = {
+      event: defaultEvent,
+      profile: {}
     };
   }
 
@@ -569,5 +583,6 @@ PublicEventController.$inject = [
   'UserService',
   'StripePaymentProfile',
   'PaypalPaymentProfile',
+  'Event',
   'settings'
 ];
