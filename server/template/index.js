@@ -46,9 +46,16 @@ export default (page) => {
           <div class="container">
             <div class="col-md-6">
               <div class="footer-text">
-                <p><a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy</a></p>
-                <p><a href="/faq">Frequently Asked Questions</a></p>
-                <p>We are <a href="https://github.com/troisio">open source</a></p>
+
+                <p>
+                  <a href="https://facebook.com/jivecake" class="btn btn-social-icon btn-facebook">
+                  <span class="fa fa-facebook"></span>
+                  </a>
+                  <a href="https://github.com/troisio" class="btn btn-social-icon btn-github">
+                    <span class="fa fa-github"></span>
+                  </a>
+                </p>
+                <p><a href="/terms">Terms of Service</a> / <a href="/privacy">Privacy</a> / <a href="/faq">Frequently Asked Questions</a></p>
                 <p>Copyright 2017 <a href="http://trois.io">Trois Inc</a>. All Rights Reserved.</p>
               </div>
             </div>
@@ -67,6 +74,7 @@ export default (page) => {
         <script src="/assets/advent-v1.2/assets/js/plugins.js"></script>
         <script src="/assets/advent-v1.2/assets/js/menu.js"></script>
         <script src="/assets/advent-v1.2/assets/js/custom.js"></script>
+        <script src="https://use.fontawesome.com/4248578432.js"></script>
       </div>
       <div>
         <script src="https://cdn.auth0.com/js/lock/10.20.0/lock.min.js"></script>
