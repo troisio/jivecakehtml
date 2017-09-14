@@ -54,6 +54,9 @@ export default (page) => {
                   <a href="https://github.com/troisio" class="btn btn-social-icon btn-github">
                     <span class="fa fa-github"></span>
                   </a>
+                  <a href="https://twitter.com/jivecake" class="btn btn-social-icon btn-twitter">
+                    <span class="fa fa-twitter"></span>
+                  </a>
                 </p>
                 <p><a href="/terms">Terms of Service</a> / <a href="/privacy">Privacy</a> / <a href="/faq">Frequently Asked Questions</a></p>
                 <p>Copyright 2017 <a href="http://trois.io">Trois Inc</a>. All Rights Reserved.</p>
