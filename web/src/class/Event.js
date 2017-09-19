@@ -5,6 +5,7 @@ export default class Event {
     this.hash = null;
     this.description = null;
     this.status = null;
+    this.requireOrganizationName = null;
     this.requireName = null;
     this.assignIntegerToRegistrant = null;
     this.requirePhoto = null;

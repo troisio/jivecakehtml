@@ -14,6 +14,7 @@
               <div>
                 <span ng-show="transactionData.User.user_id === null">{{transactionData.Transaction.given_name}} {{transactionData.Transaction.family_name}}</span>
                 <span ng-show="transactionData.User.user_id !== null">{{transactionData.User | userIdentificationFilter: false}}</span>
+                <span ng-show="transactionData.Transaction.organizationName !== null">{{transactionData.Transaction.organizationNam}}</span>
               </div>
               <div>
                 <a href="" ui-sref="application.internal.item.read({highlight: transactionData.Item.id})">{{transactionData.Item.name}}</a>

@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 6);
+const builder = lf.schema.create('jivecake', 7);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)
@@ -37,6 +37,7 @@ builder.createTable('Event')
   .addColumn('description', lf.Type.STRING)
   .addColumn('status', lf.Type.STRING)
   .addColumn('requireName', lf.Type.BOOLEAN)
+  .addColumn('requireOrganizationName', lf.Type.BOOLEAN)
   .addColumn('assignIntegerToRegistrant', lf.Type.BOOLEAN)
   .addColumn('requirePhoto', lf.Type.BOOLEAN)
   .addColumn('facebookEventId', lf.Type.STRING)
@@ -119,6 +120,7 @@ builder.createTable('Transaction')
   .addColumn('given_name', lf.Type.STRING)
   .addColumn('middleName', lf.Type.STRING)
   .addColumn('family_name', lf.Type.STRING)
+  .addColumn('organizationName', lf.Type.STRING)
   .addColumn('amount', lf.Type.NUMBER)
   .addColumn('currency', lf.Type.STRING)
   .addColumn('email', lf.Type.STRING)
@@ -137,6 +139,7 @@ builder.createTable('Transaction')
     'given_name',
     'middleName',
     'family_name',
+    'organizationName',
     'email'
   ])
   .addPrimaryKey(['id'])

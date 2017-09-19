@@ -4,6 +4,10 @@ export default class OrderErrorController {
     this.errors = errors;
     this.messages = [
       {
+        errro: 'organizationNameRequired',
+        message: 'Organization name is required'
+      },
+      {
         error: 'nameRequired',
         message: 'First and last name required'
       },

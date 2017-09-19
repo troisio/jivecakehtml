@@ -262,6 +262,7 @@ export default class PublicEventController {
             order: itemData,
             firstName: information.firstName,
             lastName: information.lastName,
+            organizationName: information.organizationName,
             email: information.email
           }
         }).then(() => {
@@ -334,6 +335,7 @@ export default class PublicEventController {
             order: itemData,
             firstName: information.firstName,
             lastName: information.lastName,
+            organizationName: information.organizationName,
             email: information.email
           }).then(data => {
             resolve(data.id);
@@ -362,7 +364,8 @@ export default class PublicEventController {
         const payload = Object.assign({
           firstName: information.firstName,
           lastName: information.lastName,
-          email: information.email
+          email: information.email,
+          organizationName: information.organizationName
         }, authorization);
 
         this.paypalService.execute(token, payload).then(() => {

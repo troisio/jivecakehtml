@@ -79,6 +79,10 @@
         <label>Last Name</label>
         <input ng-model="information.lastName" maxlength="100" ng-required="controller.showFirstNameAndLastName(group, auth)">
       </md-input-container>
+      <md-input-container ng-show="group.event.requireOrganizationName" class="md-block">
+        <label>Organization Name</label>
+        <input ng-model="information.organizationName" maxlength="100" ng-required="group.event.requireOrganizationName">
+      </md-input-container>
       <md-input-container ng-show="auth === null" class="md-block">
         <label>Email</label>
         <input type="email" ng-model="information.email" maxlength="100" ng-required="auth === null">

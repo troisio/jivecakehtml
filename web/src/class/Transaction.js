@@ -14,6 +14,7 @@ export default class Transaction {
     this.given_name = null;
     this.middleName = null;
     this.family_name = null;
+    this.organizationName = null;
     this.amount = null;
     this.currency = null;
     this.email = null;
