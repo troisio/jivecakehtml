@@ -63,8 +63,7 @@ module.exports = function(env) {
                   'atob',
                   'FileReader',
                   'ga',
-                  'paypal',
-                  'indexedDB',
+                  'paypal'
                 ],
                 baseConfig: {
                   extends: ['eslint:recommended']

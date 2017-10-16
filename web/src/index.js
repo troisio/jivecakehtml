@@ -60,7 +60,7 @@ import ItemController from './item/controller/ItemController';
 import ReadItemController from './item/controller/ReadItemController';
 import UpdateItemController from './item/controller/UpdateItemController';
 
-import AddUserOrganizationPermissionController from './organization/controller/AddUserOrganizationPermissionController';
+import CreateOrganizationInvitationController from './organization/controller/CreateOrganizationInvitationController';
 import CreateConsentAssetController from './organization/controller/CreateConsentAssetController';
 import CreateOrganizationController from './organization/controller/CreateOrganizationController';
 import OrganizationController from './organization/controller/OrganizationController';
@@ -70,7 +70,6 @@ import UpdateOrganizationController from './organization/controller/UpdateOrgani
 import CreatePaymentProfileController from './payment/profile/controller/CreatePaymentProfileController';
 
 import OrderErrorController from './public/controller/OrderErrorController';
-import PublicController from './public/controller/PublicController';
 import PublicEventController from './public/controller/PublicEventController';
 import MyTransactionController from './transaction/controller/MyTransactionController';
 
@@ -134,7 +133,7 @@ const module = angular.module('jivecakeweb', [
 .controller('ReadItemController', ReadItemController)
 .controller('UpdateItemController', UpdateItemController)
 
-.controller('AddUserOrganizationPermissionController', AddUserOrganizationPermissionController)
+.controller('CreateOrganizationInvitationController', CreateOrganizationInvitationController)
 .controller('CreateConsentAssetController', CreateConsentAssetController)
 .controller('CreateOrganizationController', CreateOrganizationController)
 .controller('OrganizationController', OrganizationController)
@@ -144,7 +143,6 @@ const module = angular.module('jivecakeweb', [
 .controller('CreatePaymentProfileController', CreatePaymentProfileController)
 
 .controller('OrderErrorController', OrderErrorController)
-.controller('PublicController', PublicController)
 .controller('PublicEventController', PublicEventController)
 .controller('MyTransactionController', MyTransactionController)
 

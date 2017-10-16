@@ -1,8 +1,6 @@
 export default class ApplicationController {
   constructor(
-    $rootScope,
     $scope,
-    $q,
     $mdDialog,
     $state,
     $mdSidenav,
@@ -22,7 +20,6 @@ export default class ApplicationController {
     Permission
   ) {
     this.$scope = $scope;
-    this.$q = $q;
     this.$mdDialog = $mdDialog;
     this.$state = $state;
     this.$mdSidenav = $mdSidenav;
@@ -44,6 +41,7 @@ export default class ApplicationController {
     this.$scope.storage = storageService.read();
     this.$scope.selectedTab = 0;
     this.$scope.uiReady = false;
+    this.$scope.invitations = [];
 
     this.$scope.permissionService = permissionService;
 
@@ -80,15 +78,18 @@ export default class ApplicationController {
     let ready;
 
     if (storage.auth === null) {
-      ready = this.$q.reject();
+      ready = Promise.reject();
     } else {
       const exp = storage.auth.idTokenPayload.exp * 1000;
+
       if (new Date().getTime() < exp) {
         ready = this.loadUserData();
       } else {
-        ready = this.$q.reject();
+        ready = Promise.reject();
       }
     }
+
+    this.$scope.ready = ready;
 
     ready.then(() => {
       const showEmailUnverified = storage.profile.user_id.startsWith('auth0') &&
@@ -110,22 +111,35 @@ export default class ApplicationController {
     }, () => {
       this.storageService.reset();
       this.$scope.storage = this.storageService.read();
-
-      if (!this.$state.$current.name.startsWith('application.public')) {
-        this.$state.go('application.public.home');
-      }
-
       this.$scope.uiReady = true;
-    });
 
-    this.$scope.ready = ready;
+      const isAuthenticatedPage = this.$state.$current.name.startsWith('application.internal');
+
+      if (isAuthenticatedPage) {
+        //this.$state.go('application.public.home');
+      }
+    });
   }
 
   refreshPermissions() {
     const hasPermission = new this.Permission().has;
     const permissionTable = this.db.getSchema().table('Permission');
 
-    return this.db.select()
+    const organizationInvitationTable = this.db.getSchema().table('OrganizationInvitation');
+    const sevenDaysAhead = new Date();
+    sevenDaysAhead.setDate(sevenDaysAhead.getDate() + 7);
+    const organizationInvitationFuture = this.db.select()
+      .from(organizationInvitationTable)
+      .where(
+        organizationInvitationTable.timeAccepted.eq(null)
+        //organizationInvitationTable.timeCreated.lt(sevenDaysAhead.getTime())
+      ).exec()
+      .then(rows => {
+        const storage = this.storageService.read();
+        this.$scope.invitations = rows.filter(row => row.userIds.includes(storage.auth.idTokenPayload.sub));
+      });
+
+    const permissionFuture = this.db.select()
       .from(permissionTable)
       .exec()
       .then(rows => {
@@ -137,6 +151,8 @@ export default class ApplicationController {
 
         return rows;
       });
+
+    return Promise.all([organizationInvitationFuture, permissionFuture]);
   }
 
   loadUserData() {
@@ -194,9 +210,7 @@ export default class ApplicationController {
 }
 
 ApplicationController.$inject = [
-  '$rootScope',
   '$scope',
-  '$q',
   '$mdDialog',
   '$state',
   '$mdSidenav',

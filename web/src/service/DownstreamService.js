@@ -5,6 +5,7 @@ export default class DownstreamService {
     $rootScope,
     permissionService,
     organizationService,
+    organizationInvitationService,
     transactionService,
     storageService,
     assetService,
@@ -14,6 +15,7 @@ export default class DownstreamService {
     this.$rootScope = $rootScope;
     this.permissionService = permissionService;
     this.organizationService = organizationService;
+    this.organizationInvitationService = organizationInvitationService;
     this.transactionService = transactionService;
     this.storageService = storageService;
     this.assetService = assetService;
@@ -322,6 +324,111 @@ export default class DownstreamService {
           });
       });
     });
+
+    source.addEventListener('organizationInvitation.create', (sse) => {
+      const entities = JSON.parse(sse.data);
+      const table = this.db.getSchema().table('OrganizationInvitation');
+      const rows = entities.map(table.createRow, table);
+
+      return this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('organizationInvitation.create', entities);
+        });
+    });
+
+    source.addEventListener('organizationInvitation.delete', (sse) => {
+      const entities = JSON.parse(sse.data);
+      const table = this.db.getSchema().table('OrganizationInvitation');
+      const ids = entities.map(entity => entity.id);
+
+      this.db.delete()
+        .from(table)
+        .where(table.id.in(ids))
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('organizationInvitation.delete', entities);
+        });
+    });
+
+    source.addEventListener('organizationInvitation.update', (sse) => {
+      const entities = JSON.parse(sse.data);
+      const table = this.db.getSchema().table('OrganizationInvitation');
+      const rows = entities.map(table.createRow, table);
+
+      return this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec()
+        .then(() => {
+          this.$rootScope.$broadcast('organizationInvitation.update', entities);
+        });
+    });
+  }
+
+  writeOrganizationTreeToLocalDatabase(token, organizationIds) {
+    const treeFutures = organizationIds.map((organizationId) => {
+      return this.organizationService.getTree(token, organizationId).then((tree) => {
+        const organizationTable = this.db.getSchema().table('Organization');
+        const paymentProfileTable = this.db.getSchema().table('PaymentProfile');
+        const eventTable = this.db.getSchema().table('Event');
+        const itemTable = this.db.getSchema().table('Item');
+        const transactionTable = this.db.getSchema().table('Transaction');
+
+        const events = tree.event.map(eventTable.createRow, eventTable);
+        const paymentProfiles = tree.event.map(paymentProfileTable.createRow, paymentProfileTable);
+        const items = tree.item.map(itemTable.createRow, itemTable);
+        const transactions = tree.transaction.map(transactionTable.createRow, transactionTable);
+
+        const organizationInsertFuture = this.db.insert()
+          .into(organizationTable)
+          .values([organizationTable.createRow(tree.organization)])
+          .exec()
+          .then(() => {
+            return this.db.insert().into(paymentProfileTable).values(paymentProfiles).exec();
+          });
+        const treeInsertFuture = this.db.insert().into(eventTable).values(events).exec()
+          .then(() => {
+            return this.db.insert().into(itemTable).values(items).exec()
+              .then(() => {
+                return this.db.insert().into(transactionTable).values(transactions).exec()
+              });
+          });
+
+        let userFuture;
+        let assetFuture;
+
+        const transactionIdsUserSearch = this.transactionService.getMinimalUserIdCovering(tree.transaction)
+          .map(transaction => transaction.id);
+
+        if (transactionIdsUserSearch.length > 0) {
+          assetFuture = this.transactionService.getUserAssets(token, {
+            id: transactionIdsUserSearch
+          }).then((assets) => {
+            const assetTable = this.db.getSchema().table('EntityAsset');
+            const rows = assets.map(assetTable.createRow, assetTable);
+            return this.db.insertOrReplace().into(assetTable).values(rows).exec();
+          });
+
+          userFuture = this.transactionService.searchUsers(token, {
+            id: transactionIdsUserSearch
+          }).then((users) => {
+            const userTable = this.db.getSchema().table('User');
+            const rows = users.map(userTable.createRow, userTable);
+            return this.db.insertOrReplace().into(userTable).values(rows).exec();
+          });
+        } else {
+          userFuture = Promise.resolve();
+          assetFuture = Promise.resolve();
+        }
+
+        return Promise.all([organizationInsertFuture, treeInsertFuture, userFuture, assetFuture]);
+      });
+    });
+
+    return Promise.all(treeFutures);
   }
 
   cacheUserData(auth) {
@@ -333,70 +440,21 @@ export default class DownstreamService {
       const permissionRows = permissions.map(permissionTable.createRow, permissionTable);
       const permissionFuture = this.db.insert().into(permissionTable).values(permissionRows).exec();
 
+      const invitationFuture = this.organizationInvitationService.getUserInvitations(
+        auth.idToken,
+        auth.idTokenPayload.sub
+      ).then((invitations) => {
+        const table = this.db.getSchema().table('OrganizationInvitation');
+        const rows = invitations.map(invitation => table.createRow(invitation));
+        return this.db.insert().into(table).values(rows).exec();
+      });
+
       const organizationIds = permissions
         .filter(permission => permission.objectClass === 'Organization')
         .map(permission => permission.objectId);
 
-      const treeFutures = organizationIds.map((organizationId) => {
-        return this.organizationService.getTree(auth.idToken, organizationId).then((tree) => {
-          const organizationTable = this.db.getSchema().table('Organization');
-          const paymentProfileTable = this.db.getSchema().table('PaymentProfile');
-          const eventTable = this.db.getSchema().table('Event');
-          const itemTable = this.db.getSchema().table('Item');
-          const transactionTable = this.db.getSchema().table('Transaction');
-
-          const events = tree.event.map(eventTable.createRow, eventTable);
-          const paymentProfiles = tree.event.map(paymentProfileTable.createRow, paymentProfileTable);
-          const items = tree.item.map(itemTable.createRow, itemTable);
-          const transactions = tree.transaction.map(transactionTable.createRow, transactionTable);
-
-          const organizationInsertFuture = this.db.insert()
-            .into(organizationTable)
-            .values([organizationTable.createRow(tree.organization)])
-            .exec()
-            .then(() => {
-              return this.db.insert().into(paymentProfileTable).values(paymentProfiles).exec();
-            });
-          const treeInsertFuture = this.db.insert().into(eventTable).values(events).exec()
-            .then(() => {
-              return this.db.insert().into(itemTable).values(items).exec()
-                .then(() => {
-                  return this.db.insert().into(transactionTable).values(transactions).exec()
-                });
-            });
-
-          let userFuture;
-          let assetFuture;
-
-          const transactionIdsUserSearch = this.transactionService.getMinimalUserIdCovering(tree.transaction)
-            .map(transaction => transaction.id);
-
-          if (transactionIdsUserSearch.length > 0) {
-            assetFuture = this.transactionService.getUserAssets(auth.idToken, {
-              id: transactionIdsUserSearch
-            }).then((assets) => {
-              const assetTable = this.db.getSchema().table('EntityAsset');
-              const rows = assets.map(assetTable.createRow, assetTable);
-              return this.db.insertOrReplace().into(assetTable).values(rows).exec();
-            });
-
-            userFuture = this.transactionService.searchUsers(auth.idToken, {
-              id: transactionIdsUserSearch
-            }).then((users) => {
-              const userTable = this.db.getSchema().table('User');
-              const rows = users.map(userTable.createRow, userTable);
-              return this.db.insertOrReplace().into(userTable).values(rows).exec();
-            });
-          } else {
-            userFuture = Promise.resolve();
-            assetFuture = Promise.resolve();
-          }
-
-          return Promise.all([organizationInsertFuture, treeInsertFuture, userFuture, assetFuture]);
-        });
-      });
-
-      return Promise.all(treeFutures.concat([permissionFuture]));
+      const treeFuture = this.writeOrganizationTreeToLocalDatabase(auth.idToken, organizationIds);
+      return Promise.all([invitationFuture, permissionFuture, treeFuture]);
     });
   }
 }
@@ -405,6 +463,7 @@ DownstreamService.$inject = [
   '$rootScope',
   'PermissionService',
   'OrganizationService',
+  'OrganizationInvitationService',
   'TransactionService',
   'StorageService',
   'AssetService',

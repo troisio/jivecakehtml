@@ -36,7 +36,6 @@ export default class ReadEventController {
 
     [
       'event.create',
-      'event.update',
       'event.delete'
     ].forEach((name) => {
       $scope.$on(name, () => {
@@ -195,7 +194,8 @@ export default class ReadEventController {
             <a href="https://storage.googleapis.com/${asset.assetId}">download file</a>
           </div>
         </md-dialog>
-        `
+        `,
+        clickOutsideToClose: true
       });
     }, () => {
       loader.close.resolve();

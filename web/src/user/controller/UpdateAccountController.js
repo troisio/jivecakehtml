@@ -1,7 +1,18 @@
 import angular from 'angular';
 
 export default class UpdateAccountController {
-  constructor($q, $timeout, $scope, auth0Service, storageService, userService, uiService, assetService) {
+  constructor(
+    $q,
+    $timeout,
+    $scope,
+    auth0Service,
+    storageService,
+    userService,
+    uiService,
+    assetService,
+    organizationService,
+    lock
+  ) {
     this.$q = $q;
     this.$timeout = $timeout;
     this.$scope = $scope;
@@ -10,7 +21,10 @@ export default class UpdateAccountController {
     this.userService = userService;
     this.uiService = uiService;
     this.assetService = assetService;
+    this.organizationService = organizationService;
+    this.lock = lock;
 
+    this.$scope.selected = [];
     this.$scope.uiReady = false;
     $scope.$parent.showTabs = false;
     $scope.assets = [];
@@ -27,24 +41,31 @@ export default class UpdateAccountController {
     this.$scope.$parent.ready.then(() => {
       const storage = this.storageService.read();
 
-      const userFuture = this.auth0Service.getUser(storage.auth.idToken, storage.auth.idTokenPayload.sub).then((user) => {
-        this.$scope.isIdentityProviderAccount = user.user_id.startsWith('facebook') || user.user_id.startsWith('google');
+      const userFuture = new Promise((resolve, reject) => {
+        this.lock.getUserInfo(storage.auth.accessToken, (error, user) => {
+          if (error) {
+            reject(error);
+          } else {
+            this.$scope.isIdentityProviderAccount = user.user_id.startsWith('facebook') ||
+              user.user_id.startsWith('google');
 
-        this.$scope.user = {
-          email: user.email
-        };
+            this.$scope.user = {
+              email: user.email
+            };
 
-        if (this.$scope.isIdentityProviderAccount) {
-          this.$scope.user.given_name = user.given_name;
-          this.$scope.user.family_name = user.family_name;
-        } else {
-          if ('user_metadata' in user) {
-            this.$scope.user.given_name = user.user_metadata.given_name;
-            this.$scope.user.family_name = user.user_metadata.family_name;
+            if (this.$scope.isIdentityProviderAccount) {
+              this.$scope.user.given_name = user.given_name;
+              this.$scope.user.family_name = user.family_name;
+            } else {
+              if ('user_metadata' in user) {
+                this.$scope.user.given_name = user.user_metadata.given_name;
+                this.$scope.user.family_name = user.user_metadata.family_name;
+              }
+            }
+
+            resolve();
           }
-        }
-      }, () => {
-        this.uiService.notify('Unable to get user information');
+        });
       });
 
       const assetFuture = this.assetService.search(storage.auth.idToken, {
@@ -152,4 +173,15 @@ export default class UpdateAccountController {
   }
 }
 
-UpdateAccountController.$inject = ['$q', '$timeout', '$scope', 'Auth0Service', 'StorageService', 'UserService', 'UIService', 'AssetService'];
+UpdateAccountController.$inject = [
+  '$q',
+  '$timeout',
+  '$scope',
+  'Auth0Service',
+  'StorageService',
+  'UserService',
+  'UIService',
+  'AssetService',
+  'OrganizationService',
+  'lock'
+];

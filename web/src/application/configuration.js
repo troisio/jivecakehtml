@@ -42,21 +42,15 @@ export default [
     $stateProvider.state('application', {
       controller: 'ApplicationController',
       controllerAs: 'controller',
-      abstract: true,
-      templateUrl: '/src/application/partial/index.html'
-    })
-    .state('application.public.home', {
-      url: '/',
-      templateUrl: '/src/application/partial/home.html',
-      controller: 'HomeController',
-      controllerAs: 'controller'
+      templateUrl: '/src/application/partial/index.html',
+      abstract: true
     })
     .state('application.internal', {
       controller: 'InternalApplicationController',
       templateUrl: '/src/application/partial/internal.html'
     })
-    .state('application.public.oauthRedirect', {
-      url: '/oauth/redirect?scope&code&state',
+    .state('application.oauthRedirect', {
+      url: '/oauth/redirect?state&code',
       controller: 'OAuthRedirectController',
       templateUrl: '/src/access/partial/oauthRedirect.html'
     })
@@ -142,7 +136,7 @@ export default [
       template: '<ui-view></ui-view>',
       controller: 'PublicController'
     })
-    .state('application.public.event', {
+    .state('application.event', {
       url: '/e/{hash}',
       templateUrl: '/src/public/partial/event.html',
       controller: 'PublicEventController',
@@ -154,7 +148,7 @@ export default [
       controller: 'MyTransactionController',
       controllerAs: 'controller'
     })
-    .state('application.public.checkoutConfirmation', {
+    .state('application.checkoutConfirmation', {
       url: '/confirmation',
       templateUrl: '/src/checkout/partial/confirmation.html',
       controller: 'ConfirmationController',
@@ -163,10 +157,7 @@ export default [
 
     lockProvider.init({
       domain: settings.oauth.auth0.domain,
-      clientID: settings.oauth.auth0.client_id,
-      auth: {
-        redirectUrl: window.location.origin + '/oauth/redirect'
-      }
+      clientID: settings.oauth.auth0.client_id
     });
   }
 ];

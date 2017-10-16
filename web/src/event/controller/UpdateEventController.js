@@ -62,7 +62,7 @@ export default class UpdateEventController {
             const paymentProfileFuture = this.paymentProfileService.search(this.storage.auth.idToken, {
               organizationId: event.organizationId
             });
-            const organizationFuture = this.organizationService.read(this.storage.auth.idToken, event.organizationId);
+            const organizationFuture = this.organizationService.read(event.organizationId);
             const consentFuture = this.assetService.search(this.storage.auth.idToken, {
               entityId: event.organizationId,
               entityType: this.assetService.ORGANIZATION_TYPE,

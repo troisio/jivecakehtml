@@ -10,10 +10,10 @@ export default class UpdateOrganizationController {
     $stateParams,
     storageService,
     assetService,
-    auth0Service,
     paymentProfileService,
     applicationService,
     organizationService,
+    organizationInvitationService,
     permissionService,
     uiService,
     relationalService,
@@ -30,10 +30,10 @@ export default class UpdateOrganizationController {
     this.storageService = storageService;
     this.assetService = assetService;
     this.storageService = storageService;
-    this.auth0Service = auth0Service;
     this.paymentProfileService = paymentProfileService;
     this.applicationService = applicationService;
     this.organizationService = organizationService;
+    this.organizationInvitationService = organizationInvitationService;
     this.permissionService = permissionService;
     this.uiService = uiService;
     this.relationalService = relationalService;
@@ -124,7 +124,7 @@ export default class UpdateOrganizationController {
   }
 
   loadUI(organizationId) {
-    return this.organizationService.read(this.storage.auth.idToken, organizationId).then((organization) => {
+    return this.organizationService.read(organizationId).then((organization) => {
       this.$scope.organization = organization;
 
       const paymentProfileFutures = this.paymentProfileService.search(this.storage.auth.idToken, {
@@ -144,31 +144,29 @@ export default class UpdateOrganizationController {
         order: '-timeCreated'
       });
 
+      const organizationInvitationFuture = this.organizationInvitationService.getOrganizationInvitations(
+        this.storage.auth.idToken,
+        organization.id
+      );
+
       return this.$q.all({
         asset: assetFuture,
         permissions: permission,
         subscription: subscriptionFuture,
-        paymentProfile: paymentProfileFutures
+        paymentProfile: paymentProfileFutures,
+        organizationInvitation: organizationInvitationFuture
       }).then((resolve) => {
-        let userPromise;
         const permissions = resolve.permissions.entity;
         const permissionTypes = this.permissionService.getTypes();
+        const storage = this.storageService.read();
 
         this.$scope.organizationPermissionTypes = permissionTypes.find(type => type.class === 'Organization').permissions;
         this.$scope.assets = resolve.asset.entity;
         this.$scope.paymentProfiles = resolve.paymentProfile.entity;
         this.$scope.subscriptions = resolve.subscription;
+        this.$scope.invitations = resolve.organizationInvitation;
 
-        if (permissions.length === 0) {
-          userPromise = this.$q.resolve([]);
-        } else {
-          const query = permissions.map(permission => 'user_id: "' + permission.user_id + '"').join(' OR ');
-
-          userPromise = this.auth0Service.searchUsers(this.storage.auth.idToken, {
-            search_engine: 'v2',
-            q: query
-          });
-        }
+        const userPromise = permissions.length === 0 ? Promise.resolve([]) : this.organizationService.getUsers(storage.auth.idToken, organization.id);
 
         return userPromise.then((users) => {
           this.$scope.users = this.relationalService.oneToOneJoin(users, 'id', permissions, 'user_id').map(function(relation) {
@@ -215,13 +213,27 @@ export default class UpdateOrganizationController {
 
   addUserPermission() {
     this.$mdDialog.show({
-      controller: 'AddUserOrganizationPermissionController',
-      templateUrl: '/src/organization/partial/addUserPermission.html',
+      controller: 'CreateOrganizationInvitationController',
+      templateUrl: '/src/organization/partial/createOrganizationInvitationController.html',
       controllerAs: 'controller',
       clickOutsideToClose: true,
       locals: {
         organization: this.$scope.organization
       }
+    });
+  }
+
+  deleteInvitation(invitation) {
+    const storage = this.storageService.read();
+    this.organizationInvitationService.delete(storage.auth.idToken, invitation.id).then(response => {
+      if (response.status === 200 || response.status === 404) {
+        this.$scope.invitations = this.$scope.invitations.filter(subject => subject !== invitation);
+        this.$timeout();
+      } else {
+        this.uiService.notify('Unable to decline invitation');
+      }
+    }, () => {
+      this.uiService.notify('Unable to decline invitation');
     });
   }
 
@@ -331,10 +343,10 @@ UpdateOrganizationController.$inject = [
   '$stateParams',
   'StorageService',
   'AssetService',
-  'Auth0Service',
   'PaymentProfileService',
   'ApplicationService',
   'OrganizationService',
+  'OrganizationInvitationService',
   'PermissionService',
   'UIService',
   'RelationalService',

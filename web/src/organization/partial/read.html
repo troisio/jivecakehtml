@@ -1,6 +1,19 @@
 <md-table-container ng-show="uiReady">
   <table ng-model="selected" md-table md-row-select multiple>
     <tbody md-body>
+      <tr ng-repeat="invitation in invitations track by invitation.id" md-row md-auto-select>
+        <td md-cell>
+          <span>{{invitation.organization.name}}</span>
+        </td>
+        <td md-cell>
+          <div>
+            <a href="" ng-click="controller.acceptInvitation(invitation)">accept invitation</a>
+          </div>
+          <div>
+            <a href="" ng-click="controller.declineInvitation(invitation)">decline invitation</a>
+          </div>
+        </td>
+      </tr>
       <tr md-row md-auto-select ng-repeat="organizationData in data track by organizationData.Organization.id">
         <td md-cell>
           <span>{{organizationData.Organization.name}}</span>
@@ -11,7 +24,7 @@
               <ng-md-icon icon="more_vert"></ng-md-icon>
             </md-button>
             <md-menu-content width="2">
-              <md-menu-item ng-show="hasPermission(organizationData.Permission, permissionService.READ)">
+              <md-menu-item ng-show="hasPermission(organizationData.Permission, permissionService.WRITE)">
                 <md-button ui-sref="application.internal.organization.update({organizationId: organizationData.Organization.id})">
                   <span md-menu-align-target>update</span>
                 </md-button>
@@ -28,7 +41,7 @@
           </md-button>
         </td>
       </tr>
-      <tr ng-show="data.length === 0" md-row>
+      <tr ng-show="data.length === 0 && invitations.length === 0" md-row>
         <td md-cell colspan="2">
           <span class="md-subheader">No organizations found</span>
         </td>

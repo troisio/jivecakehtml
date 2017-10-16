@@ -4,7 +4,7 @@
       <tr md-row md-auto-select ng-repeat="eventData in data track by eventData.Event.id">
         <td md-cell>
           <div>
-            <a ui-sref="application.public.event({hash: eventData.Event.hash})" ng-show="eventData.Event.status === 1">{{eventData.Event.name}}</a>
+            <a ui-sref="application.event({hash: eventData.Event.hash})" ng-show="eventData.Event.status === 1">{{eventData.Event.name}}</a>
             <p ng-show="eventData.Event.status !== 1">{{eventData.Event.name}}</p>
           </div>
           <a ui-sref="application.internal.organization.read({id: eventData.Organization.id})">{{eventData.Organization.name}}</a>
@@ -17,7 +17,7 @@
         <td md-cell>
           <md-menu md-position-mode="target-right target">
             <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
-            <ng-md-icon icon="more_vert"></ng-md-icon>
+              <ng-md-icon icon="more_vert"></ng-md-icon>
             </md-button>
             <md-menu-content width="2">
               <md-menu-item>

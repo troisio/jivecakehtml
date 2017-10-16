@@ -4,28 +4,8 @@
   </div>
 </md-toolbar>
 <div layout-padding class="md-inline-form">
-  <form name="form" ng-submit="!loading && controller.submit(transaction, item, selectedUser, event)">
-    <md-autocomplete
-    ng-show="!(transaction.given_name || transaction.middleName || transaction.family_name)"
-    autocomplete="off"
-    md-selected-item-change="controller.select(selected)"
-    md-no-cache="true"
-    md-selected-item="selectedUser"
-    md-search-text="text"
-    md-items="user in controller.query(text)"
-    md-delay="700"
-    md-min-length="2"
-    md-item-text="user| userIdentificationFilter: true"
-    placeholder="Search for an existing user..."
-    >
-      <md-item-template>
-        <span md-highlight-text="searchText" md-highlight-flags="^i">{{user| userIdentificationFilter: true}}</span>
-        <i ng-show="userService.hasFacebookIdentity(user)" class="fa fa-facebook" aria-hidden="true"></i>
-        <i ng-show="userService.hasGoogleIdentity(user)" class="fa fa-google" aria-hidden="true"></i>
-      </md-item-template>
-      <md-not-found>No users found</md-not-found>
-    </md-autocomplete>
-    <div ng-show="!selectedUser" layout layout-sm="column">
+  <form name="form" ng-submit="!loading && controller.submit(transaction, item, event)">
+    <div layout layout-sm="column">
       <md-input-container flex class="md-block">
         <label>First Name</label>
         <input ng-model="transaction.given_name" maxlength="255">
@@ -39,7 +19,7 @@
         <input ng-model="transaction.family_name" maxlength="255">
       </md-input-container>
     </div>
-    <md-input-container ng-show="!selectedUser" class="md-block">
+    <md-input-container class="md-block">
       <label>Email</label>
       <input ng-model="transaction.email" type="email" class="form-control" maxlength="255" placeholder="Email" autocomplete="off">
     </md-input-container>

@@ -153,6 +153,7 @@ export default class ReadTransactionController {
               this.itemTable.name.match(regex),
               this.userTable.given_name.match(regex),
               this.userTable.family_name.match(regex),
+              this.userTable.organizationName.match(regex),
               this.userTable.email.match(regex),
               this.userTable.name.match(regex),
               this.userTable.nickname.match(regex)

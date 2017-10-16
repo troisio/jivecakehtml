@@ -66,7 +66,8 @@ export default (page) => {
               <div id="contact" class="contact text-center">
                 <i class="ion-ios-chatboxes-outline"></i>
                 <h1>Need Help?</h1>
-                <a href="mailto:contact@jivecake.com">contact@jivecake.com</a>
+                <p>Send us a message on <a href="https://facebook.com/jivecake">facebook</a></p>
+                <a href="mailto:contact@jivecake.com">contact@jivecake.com</a>\
               </div>
             </div>
           </div>

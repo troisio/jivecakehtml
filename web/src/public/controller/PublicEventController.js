@@ -38,7 +38,6 @@ export default class PublicEventController {
     this.Event = Event;
     this.settings = settings;
 
-    this.$scope.ready = this.$scope.$parent.ready;
     this.$scope.selected = [];
     this.defaultAmountSize = uiService.getDefaultItemCartSelectionSize();
     this.$scope.time = new Date();
@@ -247,6 +246,7 @@ export default class PublicEventController {
       currency: group.event.currency,
       email: email,
       token: (token) => {
+        this.uiService.notify('Processing your order...');
         const storage = this.storageService.read();
         const itemData = group.itemData
           .filter(itemData => itemData.selected > 0)

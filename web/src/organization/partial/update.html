@@ -18,6 +18,16 @@
         <md-table-container>
           <table ng-model="controller.selected" md-table md-row-select multiple>
             <tbody md-body>
+              <tr md-row md-auto-select ng-repeat="invitation in invitations track by invitation.id">
+                <td md-cell colspan="2">
+                  <span>{{invitation.email}}</span>
+                </td>
+                <td md-cell>
+                  <md-button aria-label="Delete invitation" ng-click="controller.deleteInvitation(invitation)">
+                    <ng-md-icon icon="delete"></ng-md-icon>
+                  </md-button>
+                </td>
+              </tr>
               <tr md-row md-auto-select ng-repeat="user in users track by user.user_id">
                 <td md-cell>
                   <h5>{{user| userIdentificationFilter: true}}</h5>

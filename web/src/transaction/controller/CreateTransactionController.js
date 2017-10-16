@@ -5,7 +5,6 @@ export default class CreateTransactionController {
     $q,
     $scope,
     $state,
-    auth0Service,
     $stateParams,
     Transaction,
     itemService,
@@ -18,7 +17,6 @@ export default class CreateTransactionController {
     this.$q = $q;
     this.$scope = $scope;
     this.$state = $state;
-    this.auth0Service = auth0Service;
     this.$stateParams = $stateParams;
     this.Transaction = Transaction;
     this.itemService = itemService;
@@ -54,7 +52,6 @@ export default class CreateTransactionController {
     this.$scope.form.$setPristine();
 
     this.$scope.selected = '';
-    this.$scope.text = '';
 
     this.$scope.transaction = new this.Transaction();
     this.$scope.transaction.quantity = 1;
@@ -75,36 +72,7 @@ export default class CreateTransactionController {
     });
   }
 
-  query(search) {
-    const storage = this.storageService.read();
-
-    const terms = search.split(new RegExp('\\s+', 'g')).join(' ');
-    const queryParts = [
-      'user_metadata.given_name',
-      'user_metadata.family_name',
-      'family_name',
-      'given_name',
-      'email',
-      'name'
-    ].map(field => field + ':' + terms + '*');
-
-    let query = queryParts.join(' OR ');
-
-    return this.auth0Service.searchUsers(storage.auth.idToken, {
-      q: query,
-      search_engine: 'v2'
-    });
-  }
-
-  select(user) {
-    if (user === null || typeof user === 'undefined') {
-      this.$scope.transaction.user_id = null;
-    } else {
-      this.$scope.transaction.user_id = user.user_id;
-    }
-  }
-
-  submit(transaction, item, selectedUser, event) {
+  submit(transaction, item, event) {
     const storage = this.storageService.read();
 
     this.$scope.loading = true;
@@ -113,14 +81,6 @@ export default class CreateTransactionController {
     this.transactionService.search(storage.auth.idToken, {
       itemId: item.id
     }).then(() => {
-      if (selectedUser !== null) {
-        transactionCopy.user_id = selectedUser.user_id;
-        transactionCopy.given_name = null;
-        transactionCopy.middleName = null;
-        transactionCopy.family_name = null;
-        transactionCopy.email = null;
-      }
-
       if (event.currency !== null) {
         transactionCopy.currency = event.currency;
       }
@@ -153,7 +113,6 @@ CreateTransactionController.$inject = [
   '$q',
   '$scope',
   '$state',
-  'Auth0Service',
   '$stateParams',
   'Transaction',
   'ItemService',

@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 7);
+const builder = lf.schema.create('jivecake', 8);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)
@@ -177,6 +177,18 @@ builder.createTable('EntityAsset')
   .addColumn('name', lf.Type.INTEGER)
   .addColumn('timeCreated', lf.Type.INTEGER)
   .addNullable(['data', 'name'])
+  .addPrimaryKey(['id']);
+
+builder.createTable('OrganizationInvitation')
+  .addColumn('id', lf.Type.STRING)
+  .addColumn('organizationId', lf.Type.STRING)
+  .addColumn('permissions', lf.Type.ARRAY_BUFFER)
+  .addColumn('include', lf.Type.INTEGER)
+  .addColumn('email', lf.Type.STRING)
+  .addColumn('userIds', lf.Type.ARRAY_BUFFER)
+  .addColumn('timeCreated', lf.Type.INTEGER)
+  .addColumn('timeAccepted', lf.Type.INTEGER)
+  .addNullable(['timeAccepted'])
   .addPrimaryKey(['id']);
 
 export default builder;

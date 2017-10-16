@@ -8,7 +8,9 @@ export default class ReadOrganizationController {
     $state,
     $mdDialog,
     storageService,
+    downstreamService,
     organizationService,
+    organizationInvitationService,
     uiService,
     Permission,
     db
@@ -17,11 +19,12 @@ export default class ReadOrganizationController {
     this.$timeout = $timeout;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
+    this.storageService = storageService;
+    this.downstreamService = downstreamService;
     this.organizationService = organizationService;
+    this.organizationInvitationService = organizationInvitationService;
     this.uiService = uiService;
     this.db = db;
-
-    this.storage = storageService.read();
 
     this.$scope.selected = [];
     this.$scope.$parent.$parent.selectedTab = 0;
@@ -39,9 +42,37 @@ export default class ReadOrganizationController {
   run() {
     this.$scope.$parent.ready.then(() => {
       const organizationTable = this.db.getSchema().table('Organization');
+      const organizationInvitation = this.db.getSchema().table('OrganizationInvitation');
       const permissionTable = this.db.getSchema().table('Permission');
 
-      return this.db.select()
+      const sevenDaysAhead = new Date();
+      sevenDaysAhead.setDate(sevenDaysAhead.getDate() + 7);
+
+      const invitationFutures = this.db.select()
+        .from(organizationInvitation)
+        .where(
+          organizationInvitation.timeAccepted.eq(null),
+          organizationInvitation.timeCreated.gt(sevenDaysAhead.getTime())
+        )
+        .exec()
+        .then(invitations => {
+          const storage = this.storageService.read();
+          const invitationFutures = invitations
+            .filter(invitations => invitations.userIds.includes(storage.auth.idTokenPayload.sub))
+            .map(invitation => {
+              return this.organizationService.read(invitation.organizationId).then(organization => {
+                return Object.assign({
+                  organization: organization,
+                }, invitation);
+              });
+            });
+          return Promise.all(invitationFutures);
+        })
+        .then(invitations => {
+          this.$scope.invitations = invitations;
+        });
+
+      const searchFuture = this.db.select()
         .from(organizationTable)
         .innerJoin(permissionTable, permissionTable.objectId.eq(organizationTable.id))
         .orderBy(organizationTable.lastActivity, lf.Order.DESC)
@@ -49,7 +80,6 @@ export default class ReadOrganizationController {
         .exec()
         .then(rows => {
           const data = angular.copy(rows);
-
           const organization = data.find(datum => datum.Organization.id === this.$state.params.highlight);
           const index = data.indexOf(organization);
 
@@ -60,9 +90,12 @@ export default class ReadOrganizationController {
 
           this.$scope.data = data;
         });
-    }).then(() => {
-    }, () => {
-    }).then(() => {
+
+      return Promise.all([
+        searchFuture,
+        invitationFutures
+      ]);
+    }).then(() => {}, () => {}).then(() => {
       this.$scope.uiReady = true;
       this.$timeout();
     });
@@ -80,7 +113,9 @@ export default class ReadOrganizationController {
     this.$mdDialog.show(confirm).then(() => {
       this.$scope.uiReady = false;
 
-      this.organizationService.delete(this.storage.auth.idToken, organizationData.Organization.id).then(() => {
+      const storage = this.storageService.read();
+
+      this.organizationService.delete(storage.auth.idToken, organizationData.Organization.id).then(() => {
         this.uiService.notify('Organization deleted');
       }, () => {
         this.uiService.notify('Unable to delete organization');
@@ -98,6 +133,43 @@ export default class ReadOrganizationController {
       clickOutsideToClose: true
     });
   }
+
+  acceptInvitation(invitation) {
+    const storage = this.storageService.read();
+    this.organizationInvitationService.accept(storage.auth.idToken, invitation.id).then(permission => {
+      const treeFuture = this.downstreamService.writeOrganizationTreeToLocalDatabase(storage.auth.idToken, [invitation.organizationId]);
+      const permissionTable = this.db.getSchema().table('Permission');
+      const permissionFuture = this.db.insertOrReplace()
+        .into(permissionTable)
+        .values([permissionTable.createRow(permission)])
+        .exec();
+
+      this.$scope.invitations = this.$scope.invitations.filter(subject => subject !== invitation);
+
+      Promise.all([
+        permissionFuture,
+        treeFuture
+      ]).then(() => {
+        this.run();
+      });
+    }, () => {
+      this.uiService.notify('Unable to accept invitation');
+    });
+  }
+
+  declineInvitation(invitation) {
+    const storage = this.storageService.read();
+    this.organizationInvitationService.delete(storage.auth.idToken, invitation.id).then(response => {
+      if (response.status === 200 || response.status === 404) {
+        this.$scope.invitations = this.$scope.invitations.filter(subject => subject !== invitation);
+        this.$timeout();
+      } else {
+        this.uiService.notify('Unable to decline invitation');
+      }
+    }, () => {
+      this.uiService.notify('Unable to decline invitation');
+    });
+  }
 }
 
 ReadOrganizationController.$inject = [
@@ -106,7 +178,9 @@ ReadOrganizationController.$inject = [
   '$state',
   '$mdDialog',
   'StorageService',
+  'DownstreamService',
   'OrganizationService',
+  'OrganizationInvitationService',
   'UIService',
   'Permission',
   'db'

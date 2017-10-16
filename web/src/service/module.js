@@ -10,6 +10,7 @@ import EventService from './EventService';
 import ItemService from './ItemService';
 import TransactionService from './TransactionService';
 import NotificationService from './NotificationService';
+import OrganizationInvitationService from './OrganizationInvitationService';
 import OrganizationService from './OrganizationService';
 import Paging from './Paging';
 import PaymentProfileService from './PaymentProfileService';
@@ -33,6 +34,7 @@ export default angular.module('jivecakeservice', [])
   .service('ItemService', ItemService)
   .service('TransactionService', TransactionService)
   .service('NotificationService', NotificationService)
+  .service('OrganizationInvitationService', OrganizationInvitationService)
   .service('OrganizationService', OrganizationService)
   .constant('Paging', Paging)
   .service('PaymentProfileService', PaymentProfileService)

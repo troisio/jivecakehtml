@@ -40,7 +40,6 @@ export default class ReadItemController {
       'event.update',
       'item.create',
       'item.delete',
-      'item.update',
       'transaction.create',
       'transaction.update',
       'transaction.revoke',
@@ -230,6 +229,7 @@ export default class ReadItemController {
         this.uiService.notify('Item deleted');
       }, (response) => {
         let message;
+
         if (typeof response.data === 'object' && response.data.error === 'transaction') {
           message = 'Can not delete. Item has transactions';
         } else {

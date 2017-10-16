@@ -96,14 +96,11 @@ export default class OrganizationService {
     });
   }
 
-  read(token, id) {
-    const url = [this.settings.jivecakeapi.uri, 'organization', id].join('/');
-
-    return this.$http.get(url, {
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).then(response => this.toolsService.toObject(response.data, this.Organization));
+  read(id) {
+    const url = `${this.settings.jivecakeapi.uri}/organization/${id}`;
+    return fetch(url)
+      .then(response => response.ok ? response.json() : Promise.reject(response))
+      .then(data => this.toolsService.toObject(data, this.Organization));
   }
 
   getOrganizationsByUser(token, user_id, params) {
@@ -156,6 +153,16 @@ export default class OrganizationService {
     });
 
     return organizations.map(organization => organizationIdToData[organization.id]);
+  }
+
+  getUsers(token, id) {
+    const url = `${this.settings.jivecakeapi.uri}/organization/${id}/user`;
+
+    return fetch(url, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.ok ? response.json() : Promise.reject(response));
   }
 }
 

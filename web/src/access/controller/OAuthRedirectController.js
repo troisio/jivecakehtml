@@ -1,15 +1,11 @@
 export default class OAuthRedirectController {
-  constructor($scope, $state, $mdDialog, $timeout, $mdSidenav, $q, paymentProfileService, storageService, permissionService, uiService, transactionService, JiveCakeLocalStorage, SearchEntity) {
+  constructor($scope, $state, $mdDialog, paymentProfileService, storageService, permissionService, transactionService, JiveCakeLocalStorage, SearchEntity) {
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
-    this.$timeout = $timeout;
-    this.$mdSidenav = $mdSidenav;
-    this.$q = $q;
     this.paymentProfileService = paymentProfileService;
     this.storageService = storageService;
     this.permissionService = permissionService;
-    this.uiService = uiService;
     this.transactionService = transactionService;
     this.JiveCakeLocalStorage = JiveCakeLocalStorage;
     this.SearchEntity = SearchEntity;
@@ -18,7 +14,7 @@ export default class OAuthRedirectController {
       this.onAuthenticated(subject.auth, subject.error, subject.profile);
     });
 
-    this.$scope.$parent.$parent.ready.then(() => this.run());
+    this.$scope.$parent.ready.then(() => this.run());
   }
 
   run() {
@@ -31,9 +27,7 @@ export default class OAuthRedirectController {
     }
 
     if (state !== null && state.flow === 'stripe') {
-      if (this.$state.params.code === null) {
-        this.$q.resolve();
-      } else {
+      if (this.$state.params.code !== null) {
         const storage = this.storageService.read();
         this.paymentProfileService.createStripePaymentProfile(storage.auth.idToken, state.subject, {
           code: this.$state.params.code
@@ -63,7 +57,6 @@ export default class OAuthRedirectController {
       storage.auth = auth;
       storage.profile = profile;
       this.storageService.write(storage);
-
       this.permissionService.search(auth.idToken, {
         user_id: auth.idTokenPayload.sub,
         objectClass: 'Organization'
@@ -125,13 +118,9 @@ OAuthRedirectController.$inject = [
   '$scope',
   '$state',
   '$mdDialog',
-  '$timeout',
-  '$mdSidenav',
-  '$q',
   'PaymentProfileService',
   'StorageService',
   'PermissionService',
-  'UIService',
   'TransactionService',
   'JiveCakeLocalStorage',
   'SearchEntity'
