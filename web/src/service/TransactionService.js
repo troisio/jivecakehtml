@@ -1,7 +1,10 @@
 export default class TransactionService {
-  constructor($q, $http, Transaction, settings, toolsService, relationalService, SearchEntity) {
+  constructor($q, $http, Organization, Item, Event, Transaction, settings, toolsService, relationalService, SearchEntity) {
     this.$q = $q;
     this.$http = $http;
+    this.Organization = Organization;
+    this.Item = Item;
+    this.Event = Event;
     this.Transaction = Transaction;
     this.settings = settings;
     this.toolsService = toolsService;
@@ -173,57 +176,34 @@ export default class TransactionService {
     });
   }
 
-  getTransactionData(itemService, token, query) {
-    return this.search(token, query).then((searchResult) => {
-      const transactions = searchResult.entity;
-      const userCompressedTransactionIds = this.getMinimalUserIdCovering(transactions)
-        .map(transaction => transaction.id);
+  getOrganization(token, id) {
+    const url = `${this.settings.jivecakeapi.uri}/transaction/${id}/organization`;
+    return fetch(url, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.ok ? response.json() : Promise.reject(response))
+    .then(json => this.toolsService.toObject(json, this.Organization));
+  }
 
-      const itemIdsSet = new Set();
-      transactions.forEach(transaction => itemIdsSet.add(transaction.itemId));
-      const itemIds = Array.from(itemIdsSet);
+  getEvent(token, id) {
+    const url = `${this.settings.jivecakeapi.uri}/transaction/${id}/event`;
+    return fetch(url, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.ok ? response.json() : Promise.reject(response))
+    .then(json => this.toolsService.toObject(json, this.Event));
+  }
 
-      const usersFuture = userCompressedTransactionIds.length === 0 ? this.$q.resolve([]) : this.searchUsers(token, {
-        id: userCompressedTransactionIds
-      });
-      const itemsFuture = itemIds.length === 0 ? this.$q.resolve(new this.SearchEntity()) : itemService.publicSearch({
-        id: itemIds
-      });
-
-      return this.$q.all({
-        user: usersFuture,
-        item: itemsFuture
-      }).then((resolve) => {
-        const users = resolve.user;
-        const items = resolve.item.entity;
-
-        const itemMap = this.relationalService.groupBy(items, true, item => item.id);
-        const userMap = this.relationalService.groupBy(users, true, user => user.user_id);
-
-        const transactionData = transactions.map(transaction => {
-          const result = {
-            transaction: transaction,
-            user: null,
-            item: null
-          };
-
-          if (transaction.user_id in userMap) {
-            result.user = userMap[transaction.user_id];
-          }
-
-          if (transaction.itemId in itemMap) {
-            result.item = itemMap[transaction.itemId];
-          }
-
-          return result;
-        });
-
-        return {
-          entity: transactionData,
-          count: searchResult.count
-        };
-      });
-    });
+  getItem(token, id) {
+    const url = `${this.settings.jivecakeapi.uri}/transaction/${id}/item`;
+    return fetch(url, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.ok ? response.json() : Promise.reject(response))
+    .then(json => this.toolsService.toObject(json, this.Item));
   }
 
   /*
@@ -245,4 +225,4 @@ export default class TransactionService {
   }
 }
 
-TransactionService.$inject = ['$q', '$http', 'Transaction', 'settings', 'ToolsService', 'RelationalService', 'SearchEntity'];
+TransactionService.$inject = ['$q', '$http', 'Organization', 'Item', 'Event', 'Transaction', 'settings', 'ToolsService', 'RelationalService', 'SearchEntity'];

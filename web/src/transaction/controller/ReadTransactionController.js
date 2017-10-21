@@ -61,9 +61,10 @@ export default class ReadTransactionController {
     this.transactionTable = this.db.getSchema().table('Transaction');
     this.userTable = this.db.getSchema().table('User');
     this.itemTable = this.db.getSchema().table('Item');
+    this.eventTable = this.db.getSchema().table('Event');
     this.assetTable = this.db.getSchema().table('EntityAsset');
 
-    [this.transactionTable, this.itemTable, this.assetTable, this.userTable].forEach(table => {
+    [this.transactionTable, this.itemTable, this.eventTable, this.assetTable, this.userTable].forEach(table => {
       table.getColumns()
         .map(column => table[column.getName()])
         .forEach(column => this.selectColumns.push(column));
@@ -86,6 +87,18 @@ export default class ReadTransactionController {
 
             for (let row of rows) {
               row.Transaction = this.toolsService.toObject(row.Transaction, this.Transaction);
+
+              /* This is slow, need to pre-process with lookup map */
+
+              if (row.Event.assignIntegerToRegistrant && row.Transaction.user_id !== null) {
+                const userData = row.Event.userData.find(userData => row.Transaction.user_id === userData.userId);
+
+                if (typeof userData !== 'undefined') {
+                  row.userData = userData;
+                }
+              } else {
+                row.userData = null;
+              }
             }
 
             this.$scope.data = rows;
@@ -107,6 +120,7 @@ export default class ReadTransactionController {
     return this.db.select(...this.selectColumns)
       .from(this.transactionTable)
       .innerJoin(this.itemTable, this.itemTable.id.eq(this.transactionTable.itemId))
+      .innerJoin(this.eventTable, this.eventTable.id.eq(this.itemTable.eventId))
       .leftOuterJoin(this.userTable, this.userTable.user_id.eq(this.transactionTable.user_id))
       .leftOuterJoin(this.assetTable, this.assetTable.entityId.eq(this.transactionTable.user_id))
       .where(whereClause)
@@ -149,11 +163,11 @@ export default class ReadTransactionController {
               this.transactionTable.family_name.match(regex),
               this.transactionTable.middleName.match(regex),
               this.transactionTable.given_name.match(regex),
+              this.transactionTable.organizationName.match(regex),
               this.transactionTable.email.match(regex),
               this.itemTable.name.match(regex),
               this.userTable.given_name.match(regex),
               this.userTable.family_name.match(regex),
-              this.userTable.organizationName.match(regex),
               this.userTable.email.match(regex),
               this.userTable.name.match(regex),
               this.userTable.nickname.match(regex)

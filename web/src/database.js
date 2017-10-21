@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 8);
+const builder = lf.schema.create('jivecake', 9);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)
@@ -32,6 +32,7 @@ builder.createTable('Event')
   .addColumn('organizationId', lf.Type.STRING)
   .addColumn('entityAssetConsentId', lf.Type.STRING)
   .addColumn('paymentProfileId', lf.Type.STRING)
+  .addColumn('userData', lf.Type.ARRAY_BUFFER)
   .addColumn('currency', lf.Type.STRING)
   .addColumn('name', lf.Type.STRING)
   .addColumn('description', lf.Type.STRING)

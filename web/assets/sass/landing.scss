@@ -50,3 +50,23 @@
   color: #fff;
   border-color: rgba(0,0,0,0.2);
 }
+
+.blog {
+  margin-bottom: 2em;
+
+  h1 {
+    font-weight: bold;
+    font-size: 1.8em;
+  }
+
+  .container > div {
+    margin-top: 1em;
+  }
+
+  &.rugby {
+    img {
+      border: 2px solid black;
+      width: 60%;
+    }
+  }
+}

@@ -116,7 +116,7 @@ export default class ApplicationController {
       const isAuthenticatedPage = this.$state.$current.name.startsWith('application.internal');
 
       if (isAuthenticatedPage) {
-        //this.$state.go('application.public.home');
+        location.href = '/';
       }
     });
   }
@@ -126,13 +126,13 @@ export default class ApplicationController {
     const permissionTable = this.db.getSchema().table('Permission');
 
     const organizationInvitationTable = this.db.getSchema().table('OrganizationInvitation');
-    const sevenDaysAhead = new Date();
-    sevenDaysAhead.setDate(sevenDaysAhead.getDate() + 7);
+    const sevenDaysBefore = new Date();
+    sevenDaysBefore.setDate(sevenDaysBefore.getDate() - 7);
     const organizationInvitationFuture = this.db.select()
       .from(organizationInvitationTable)
       .where(
-        organizationInvitationTable.timeAccepted.eq(null)
-        //organizationInvitationTable.timeCreated.lt(sevenDaysAhead.getTime())
+        organizationInvitationTable.timeAccepted.eq(null),
+        organizationInvitationTable.timeCreated.gt(sevenDaysBefore.getTime())
       ).exec()
       .then(rows => {
         const storage = this.storageService.read();

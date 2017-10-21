@@ -108,30 +108,28 @@ application.get('/terms', function(_, response) {
 });
 
 application.get('/blog/:id', function(request, response) {
-  const path = 'service/partial/blog/' + request.params.id;
+  const path = 'server/partial/blog/' + request.params.id + '.html';
+
   fs.readFile(path, 'utf8', function (error, data) {
-    let options;
+    const options = {
+      lang: 'en',
+      header: '',
+      title: 'JiveCake',
+      description: 'Event registration',
+      locale: 'en_US',
+      version: packageJson.version
+    };
 
     if (error) {
-      options = {
-        lang: 'en',
-        description: 'Event registration',
-        locale: 'en_US',
-        title: 'Not Found',
-        content: html404,
-        header: headerHtml,
-        version: packageJson.version
-      };
+      options.title = 'Not Found';
+      options.content = html404;
     } else {
-      options = {
-        lang: 'en',
-        description: 'Event registration',
-        locale: 'en_US',
-        title: 'Blog',
-        content: data,
-        header: headerHtml,
-        version: packageJson.version
-      }
+      options.content = data;
+    }
+
+    if (request.params.id.includes('rugby')) {
+      options.title = 'Your Next Rugby Event';
+      options.image = 'https://jivecake.com/assets/images/rugby1.jpg';
     }
 
     const body = indexTemplate(options);

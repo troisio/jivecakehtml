@@ -23,6 +23,10 @@
       <label>Email</label>
       <input ng-model="transaction.email" type="email" class="form-control" maxlength="255" placeholder="Email" autocomplete="off">
     </md-input-container>
+    <md-input-container ng-show="event.requireOrganizationName" class="md-block">
+      <label>Organization Name</label>
+      <input ng-model="transaction.organizationName" ng-required="event.requireOrganizationName" class="form-control" maxlength="255" placeholder="Organization Name" autocomplete="off">
+    </md-input-container>
     <md-input-container class="md-block">
       <label>Total Amount Paid</label>
       <input ng-model="transaction.amount" type="number" min="0" step="0.01" class="form-control" placeholder="Amount" autocomplete="off" required>

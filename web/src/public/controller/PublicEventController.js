@@ -5,6 +5,7 @@ export default class PublicEventController {
     $mdDialog,
     $timeout,
     auth0Service,
+    downstreamService,
     $scope,
     eventService,
     transactionService,
@@ -24,6 +25,7 @@ export default class PublicEventController {
     this.$mdDialog = $mdDialog;
     this.$timeout = $timeout;
     this.auth0Service = auth0Service;
+    this.downstreamService = downstreamService;
     this.$scope = $scope;
     this.eventService = eventService;
     this.transactionService = transactionService;
@@ -277,9 +279,14 @@ export default class PublicEventController {
             this.run();
           } else {
             this.uiService.notify('Payment complete');
-            this.$state.go('application.internal.myTransaction', {
-              user_id: storage.auth.idTokenPayload.sub
-            });
+
+            this.downstreamService.cacheUserTransactions(storage.auth)
+              .then(() => {}, () => {})
+              .then(() => {
+                this.$state.go('application.internal.myTransaction', {
+                  user_id: storage.auth.idTokenPayload.sub
+                });
+              });
           }
         }, (response) => {
           if (response.status == 400 && Array.isArray(response.data)) {
@@ -380,9 +387,14 @@ export default class PublicEventController {
             this.run();
           } else {
             this.uiService.notify('Payment complete');
-            this.$state.go('application.internal.myTransaction', {
-              user_id: storage.auth.idTokenPayload.sub
-            });
+
+            this.downstreamService.cacheUserTransactions(storage.auth)
+              .then(() => {}, () => {})
+              .then(() => {
+                this.$state.go('application.internal.myTransaction', {
+                  user_id: storage.auth.idTokenPayload.sub
+                });
+              });
           }
         }, () => {
           this.uiService.notify('Unable to complete payment');
@@ -575,6 +587,7 @@ PublicEventController.$inject = [
   '$mdDialog',
   '$timeout',
   'Auth0Service',
+  'DownstreamService',
   '$scope',
   'EventService',
   'TransactionService',

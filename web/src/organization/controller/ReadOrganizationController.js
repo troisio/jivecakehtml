@@ -46,7 +46,7 @@ export default class ReadOrganizationController {
       const permissionTable = this.db.getSchema().table('Permission');
 
       const sevenDaysAhead = new Date();
-      sevenDaysAhead.setDate(sevenDaysAhead.getDate() + 7);
+      sevenDaysAhead.setDate(sevenDaysAhead.getDate() - 7);
 
       const invitationFutures = this.db.select()
         .from(organizationInvitation)

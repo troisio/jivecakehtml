@@ -29,9 +29,7 @@ export default class ReadEventController {
     this.uiService = uiService;
     this.db = db;
 
-    const storage = storageService.read();
     this.$scope.$parent.$parent.selectedTab = 1;
-    this.$scope.token = storage.auth.idToken;
     this.$scope.selected = [];
 
     [
@@ -50,6 +48,9 @@ export default class ReadEventController {
     this.$scope.uiReady = false;
 
     return this.$scope.$parent.ready.then(() => {
+      const storage = this.storageService.read();
+      this.$scope.token = storage.auth.idToken;
+
       const permissionTable = this.db.getSchema().table('Permission');
       const eventTable = this.db.getSchema().table('Event');
       const organizationTable = this.db.getSchema().table('Organization');
@@ -132,7 +133,7 @@ export default class ReadEventController {
       });
     }
 
-    updateFuture.then(function() {
+    updateFuture.then(() => {
     }, (response) => {
       this.$mdDialog.hide().then(() => {
         if (eventData.Event.status === this.eventService.getActiveEventStatus()) {
@@ -147,7 +148,15 @@ export default class ReadEventController {
             clickOutsideToClose: true,
             locals: {
               subscriptions: response.data,
-              organization: eventData.Organization
+              organization: eventData.Organization,
+              onSubscribe: () => {
+                this.eventService.fieldUpdate(storage.auth.idToken, eventData.Event.id, {
+                  status: this.eventService.getActiveEventStatus()
+                }).then(() => {
+                  eventData.Event.status = this.eventService.getActiveEventStatus();
+                  this.$timeout();
+                })
+              }
             }
           });
         } else {

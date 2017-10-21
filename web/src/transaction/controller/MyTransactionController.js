@@ -1,20 +1,24 @@
+import lf from 'lovefield';
+
 export default class MyTransactionController {
   constructor(
+    $timeout,
     $scope,
-    $state,
     $mdDialog,
     storageService,
     itemService,
     transactionService,
-    uiService
+    uiService,
+    db
   ) {
+    this.$timeout = $timeout;
     this.$scope = $scope;
-    this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.storageService = storageService;
     this.itemService = itemService;
     this.transactionService = transactionService;
     this.uiService = uiService;
+    this.db = db;
 
     this.$scope.$parent.showTabs = false;
     this.$scope.uiReady = false;
@@ -31,31 +35,51 @@ export default class MyTransactionController {
       });
     });
 
-    this.run();
+    this.$scope.$parent.ready.then(() => {
+      this.run();
+    });
   }
 
   run() {
     this.$scope.uiReady = false;
-    const storage = this.storageService.read();
 
-    this.$scope.$parent.ready.then(() => {
-      this.transactionService.getTransactionData(this.itemService, storage.auth.idToken, {
-        status: [this.transactionService.SETTLED, this.transactionService.PENDING],
-        limit: 100,
-        leaf: true,
-        order: '-timeCreated',
-        user_id: this.$state.params.user_id
-      }).then((data) => {
-        this.$scope.data = data.entity;
-        this.$scope.uiReady = true;
-      }, () => {
-        this.$scope.uiReady = true;
-        this.uiService.notify('Unable to retrieve transactions');
-      });
+    const storage = this.storageService.read();
+    const transactionTable = this.db.getSchema().table('Transaction');
+    const eventTable = this.db.getSchema().table('Event');
+    const itemTable = this.db.getSchema().table('Item');
+    const selectColumns = [];
+
+    [transactionTable, itemTable, eventTable].forEach(table => {
+      table.getColumns()
+        .map(column => table[column.getName()])
+        .forEach(column => selectColumns.push(column));
     });
+
+    this.db.select(...selectColumns)
+      .from(transactionTable)
+      .innerJoin(itemTable, itemTable.id.eq(transactionTable.itemId))
+      .innerJoin(eventTable, eventTable.id.eq(transactionTable.eventId))
+      .where(
+        transactionTable.user_id.eq(storage.auth.idTokenPayload.sub),
+        transactionTable.leaf.eq(true),
+        lf.op.or(
+          transactionTable.paymentStatus.eq(this.transactionService.SETTLED),
+          transactionTable.paymentStatus.eq(this.transactionService.PENDING)
+        )
+      )
+      .orderBy(transactionTable.timeCreated, lf.Order.DESC)
+      .exec()
+      .then((rows) => {
+        this.$scope.rows = rows;
+      })
+      .then(() => {}, () => {})
+      .then(() => {
+        this.$scope.uiReady = true;
+        this.$timeout();
+      });
   }
 
-  readTransaction(transaction, item) {
+  readTransaction(row) {
     const storage = this.storageService.read();
 
     this.$mdDialog.show({
@@ -64,8 +88,8 @@ export default class MyTransactionController {
       templateUrl: '/src/transaction/partial/view.html',
       clickOutsideToClose: true,
       locals: {
-        transaction: transaction,
-        item: item,
+        transaction: row.Transaction,
+        item: row.Item,
         user: storage.profile
       }
     });
@@ -88,11 +112,12 @@ export default class MyTransactionController {
 }
 
 MyTransactionController.$inject = [
+  '$timeout',
   '$scope',
-  '$state',
   '$mdDialog',
   'StorageService',
   'ItemService',
   'TransactionService',
-  'UIService'
+  'UIService',
+  'db'
 ];

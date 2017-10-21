@@ -1,5 +1,5 @@
 export default class InsufficientSubscriptionsController {
-  constructor($scope, $mdDialog, uiService, $state, storageService, subscriptions, organization, stripeService) {
+  constructor($scope, $mdDialog, uiService, $state, storageService, subscriptions, organization, stripeService, onSubscribe) {
     this.$mdDialog = $mdDialog;
     this.uiService = uiService;
     this.$state = $state;
@@ -7,6 +7,7 @@ export default class InsufficientSubscriptionsController {
     $scope.subscriptions = subscriptions;
     $scope.organization = organization;
     this.stripeService = stripeService;
+    this.onSubscribe = onSubscribe;
   }
 
   subscribe(organization) {
@@ -18,7 +19,8 @@ export default class InsufficientSubscriptionsController {
       this.stripeService.subscribe(storage.auth.idToken, organization.id, {
         email: token.email,
         source: token.id
-      }).then(() => {
+      }).then((data) => {
+        this.onSubscribe(data);
         this.uiService.notify('Sucessfully added subscription');
       }, () => {
         this.uiService.notify('Unable to subcribe');
@@ -27,4 +29,4 @@ export default class InsufficientSubscriptionsController {
   }
 }
 
-InsufficientSubscriptionsController.$inject = ['$scope', '$mdDialog', 'UIService', '$state', 'StorageService', 'subscriptions', 'organization', 'StripeService'];
+InsufficientSubscriptionsController.$inject = ['$scope', '$mdDialog', 'UIService', '$state', 'StorageService', 'subscriptions', 'organization', 'StripeService', 'onSubscribe'];

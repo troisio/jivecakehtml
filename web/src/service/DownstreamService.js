@@ -382,18 +382,18 @@ export default class DownstreamService {
         const items = tree.item.map(itemTable.createRow, itemTable);
         const transactions = tree.transaction.map(transactionTable.createRow, transactionTable);
 
-        const organizationInsertFuture = this.db.insert()
+        const organizationInsertFuture = this.db.insertOrReplace()
           .into(organizationTable)
           .values([organizationTable.createRow(tree.organization)])
           .exec()
           .then(() => {
-            return this.db.insert().into(paymentProfileTable).values(paymentProfiles).exec();
+            return this.db.insertOrReplace().into(paymentProfileTable).values(paymentProfiles).exec();
           });
-        const treeInsertFuture = this.db.insert().into(eventTable).values(events).exec()
+        const treeInsertFuture = this.db.insertOrReplace().into(eventTable).values(events).exec()
           .then(() => {
-            return this.db.insert().into(itemTable).values(items).exec()
+            return this.db.insertOrReplace().into(itemTable).values(items).exec()
               .then(() => {
-                return this.db.insert().into(transactionTable).values(transactions).exec()
+                return this.db.insertOrReplace().into(transactionTable).values(transactions).exec()
               });
           });
 
@@ -431,8 +431,108 @@ export default class DownstreamService {
     return Promise.all(treeFutures);
   }
 
+  cacheUserTransactions(auth) {
+    return this.transactionService.search(
+      auth.idToken,
+      {
+        userId: auth.idTokenPayload.sub,
+        limit: 100
+      }
+    ).then((search) => {
+      const transctions = search.entity;
+      const minimumCoveringOrganizationIds = new Set();
+      const transactionsForOrganization = [];
+      const minimumCoveringItemIds = new Set();
+      const transactionsForItems = [];
+      const minimumCoveringEventIds = new Set();
+      const transactionsForEvents = [];
+
+      for (let transaction of transctions) {
+        if (!minimumCoveringOrganizationIds.has(transaction.organizationId)) {
+          transactionsForOrganization.push(transaction);
+          minimumCoveringOrganizationIds.add(transaction.organizationId);
+        }
+
+        if (!minimumCoveringItemIds.has(transaction.itemId)) {
+          transactionsForItems.push(transaction);
+          minimumCoveringItemIds.add(transaction.itemId);
+        }
+
+        if (!minimumCoveringEventIds.has(transaction.eventId)) {
+          transactionsForEvents.push(transaction);
+          minimumCoveringEventIds.add(transaction.eventId);
+        }
+      }
+
+      const organizationPromises = transactionsForOrganization.map(transaction => {
+        return this.transactionService.getOrganization(auth.idToken, transaction.id);
+      });
+      const eventPromises = transactionsForEvents.map(transaction => {
+        return this.transactionService.getEvent(auth.idToken, transaction.id);
+      });
+      const itemPromises = transactionsForItems.map(transaction => {
+        return this.transactionService.getItem(auth.idToken, transaction.id);
+      });
+
+      const organizationPromise = Promise.all(organizationPromises).then((entities) => {
+        const table = this.db.getSchema().table('Organization');
+        const rows = entities.map(entity => table.createRow(entity));
+
+        return this.db.insertOrReplace()
+          .into(table)
+          .values(rows)
+          .exec();
+      });
+
+      const eventPromise = Promise.all(
+        [
+          Promise.all(eventPromises),
+          organizationPromise
+        ]
+      ).then((resolve) => {
+        const entities = resolve[0];
+        const table = this.db.getSchema().table('Event');
+        const rows = entities.map(entity => table.createRow(entity));
+
+        return this.db.insertOrReplace()
+          .into(table)
+          .values(rows)
+          .exec();
+      });
+
+      const itemPromise = Promise.all(
+        [
+          Promise.all(itemPromises),
+          eventPromise
+        ]
+      ).then((resolve) => {
+        const entities = resolve[0];
+        const table = this.db.getSchema().table('Item');
+        const rows = entities.map(entity => table.createRow(entity));
+
+        return this.db.insertOrReplace()
+          .into(table)
+          .values(rows)
+          .exec();
+      });
+
+      const transactionPromise = itemPromise.then(() => {
+        const table = this.db.getSchema().table('Transaction');
+        const rows = transctions.map(entity => table.createRow(entity));
+
+        return this.db.insertOrReplace()
+          .into(table)
+          .values(rows)
+          .exec();
+      });
+
+      return transactionPromise;
+    });
+  }
+
   cacheUserData(auth) {
-    return this.permissionService.search(auth.idToken, {
+    const transactionFuture = this.cacheUserTransactions(auth);
+    const permissionFuture = this.permissionService.search(auth.idToken, {
       user_id: auth.idTokenPayload.sub
     }).then(permissionSearchResult => {
       const permissions = permissionSearchResult.entity;
@@ -454,8 +554,18 @@ export default class DownstreamService {
         .map(permission => permission.objectId);
 
       const treeFuture = this.writeOrganizationTreeToLocalDatabase(auth.idToken, organizationIds);
-      return Promise.all([invitationFuture, permissionFuture, treeFuture]);
+      return Promise.all([
+        invitationFuture,
+        permissionFuture,
+        treeFuture,
+        transactionFuture
+      ]);
     });
+
+    return Promise.all([
+      transactionFuture,
+      permissionFuture
+    ]);
   }
 }
 

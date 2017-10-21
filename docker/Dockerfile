@@ -16,11 +16,6 @@ RUN \
     chmod +x /init.sh && \
     mkdir ~/.ssh && \
 
-    wget -O go.tar.gz https://storage.googleapis.com/golang/go1.8.1.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go.tar.gz && \
-    rm -f go.tar.gz && \
-    /usr/local/go/bin/go get github.com/julienschmidt/httprouter && \
-
     git clone -b master https://github.com/troisio/jivecakehtml.git $SOURCE_DIRECTORY && \
     cd $SOURCE_DIRECTORY && \
     npm install && \

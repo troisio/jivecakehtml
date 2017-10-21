@@ -11,7 +11,7 @@ export default (page) => {
 
       <meta name="twitter:card" content="${page.title}">
 
-      <meta property="og:title" content="JiveCake">
+      <meta property="og:title" content="${page.title}">
       <meta property="og:site_name" content="JiveCake">
       <meta property="og:description" content="${page.description}">
       <meta property="og:image" content="${page.image}">

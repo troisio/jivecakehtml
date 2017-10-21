@@ -16,6 +16,7 @@ export default class Event {
     this.organizationId = null;
     this.entityAssetConsentId = null;
     this.paymentProfileId = null;
+    this.userData = null;
     this.currency = null;
     this.timeStart = null;
     this.timeEnd = null;

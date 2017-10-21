@@ -19,17 +19,17 @@
           <span>{{organizationData.Organization.name}}</span>
         </td>
         <td md-cell>
-          <md-menu md-position-mode="target-right target">
+          <md-menu ng-show="hasPermission(organizationData.Permission, permissionService.WRITE)" md-position-mode="target-right target">
             <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
               <ng-md-icon icon="more_vert"></ng-md-icon>
             </md-button>
             <md-menu-content width="2">
-              <md-menu-item ng-show="hasPermission(organizationData.Permission, permissionService.WRITE)">
+              <md-menu-item>
                 <md-button ui-sref="application.internal.organization.update({organizationId: organizationData.Organization.id})">
                   <span md-menu-align-target>update</span>
                 </md-button>
               </md-menu-item>
-              <md-menu-item ng-show="hasPermission(organizationData.Permission, permissionService.WRITE) && organizationData.Organization.parentId !== null">
+              <md-menu-item ng-show="organizationData.Organization.parentId !== null">
                 <md-button ng-click="controller.delete(organizationData, $event)">
                   <span md-menu-align-target>delete</span>
                 </md-button>

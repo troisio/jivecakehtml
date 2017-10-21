@@ -1,9 +1,9 @@
 <md-table-container ng-show="uiReady">
   <table ng-model="controller.selected" md-table multiple>
     <tbody md-body>
-      <tr md-row md-auto-select ng-repeat="transactionData in data track by transactionData.transaction.id">
+      <tr md-row md-auto-select ng-repeat="row in rows track by row.Transaction.id">
         <td md-cell>
-          <a href="" ng-click="controller.viewItem(transactionData.item)">{{transactionData.item.name}}</a>
+          <a href="" ng-click="controller.viewItem(row.Item)">{{row.Item.name}}</a>
         </td>
         <td md-cell>
           <md-menu md-position-mode="target-right target">
@@ -12,7 +12,7 @@
             </md-button>
             <md-menu-content width="2">
               <md-menu-item>
-                <md-button ng-click="controller.readTransaction(transactionData.transaction, transactionData.item)">
+                <md-button ng-click="controller.readTransaction(row)">
                   <span md-menu-align-target>view transaction</span>
                 </md-button>
               </md-menu-item>
@@ -22,7 +22,7 @@
       </tr>
       <tr md-row>
         <td md-cell colspan="2">
-          <span class="md-subheader" ng-show="data.length === 0">You have no transactions</span>
+          <span class="md-subheader" ng-show="rows.length === 0">You have no transactions</span>
         </td>
       </tr>
     </tbody>
