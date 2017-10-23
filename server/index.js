@@ -128,7 +128,8 @@ application.get('/blog/:id', function(request, response) {
     }
 
     if (request.params.id.includes('rugby')) {
-      options.title = 'Your Next Rugby Event';
+      options.title = 'Registration for your next rugby tournament';
+      options.description = 'Getting paid on time is easier than you think';
       options.image = 'https://jivecake.com/assets/images/rugby1.jpg';
     }
 
