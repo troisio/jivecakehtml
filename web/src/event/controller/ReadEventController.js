@@ -8,10 +8,12 @@ export default class ReadEventController {
     $state,
     $mdDialog,
     organizationService,
+    userService,
     eventService,
     itemService,
     storageService,
     toolsService,
+    stripeService,
     settings,
     uiService,
     db
@@ -21,10 +23,12 @@ export default class ReadEventController {
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.organizationService = organizationService;
+    this.userService = userService;
     this.eventService = eventService;
     this.itemService = itemService;
     this.storageService = storageService;
     this.toolsService = toolsService;
+    this.stripeService = stripeService;
     this.settings = settings;
     this.uiService = uiService;
     this.db = db;
@@ -101,6 +105,12 @@ export default class ReadEventController {
       status: eventData.Event.status
     });
 
+    const subscriptionIdFuture = this.stripeService.getMonthlySubscriptionId(
+      storage.auth.idToken,
+      storage.profile,
+      eventData.Organization.id
+    );
+
     if (eventData.Event.status === this.eventService.getActiveEventStatus()) {
       this.$mdDialog.show({
         controller: ['$window', '$scope', '$mdDialog', 'EventService', 'event', function($window, $scope, $mdDialog, eventService, event) {
@@ -141,24 +151,29 @@ export default class ReadEventController {
         }
 
         if (typeof response.data === 'object' && response.data.error === 'subscription') {
-          this.$mdDialog.show({
-            controllerAs: 'controller',
-            controller: 'InsufficientSubscriptionController',
-            templateUrl: '/src/event/partial/insufficientSubscriptions.html',
-            clickOutsideToClose: true,
-            locals: {
-              subscriptions: response.data,
-              organization: eventData.Organization,
-              onSubscribe: () => {
-                this.eventService.fieldUpdate(storage.auth.idToken, eventData.Event.id, {
-                  status: this.eventService.getActiveEventStatus()
-                }).then(() => {
-                  eventData.Event.status = this.eventService.getActiveEventStatus();
-                  this.$timeout();
-                })
+          subscriptionIdFuture.then((subscriptionId) => {
+            this.$mdDialog.show({
+              controllerAs: 'controller',
+              controller: 'InsufficientSubscriptionController',
+              templateUrl: '/src/event/partial/insufficientSubscriptions.html',
+              clickOutsideToClose: true,
+              locals: {
+                subscriptionId: subscriptionId,
+                subscriptions: response.data,
+                organization: eventData.Organization,
+                onSubscribe: () => {
+                  this.eventService.fieldUpdate(storage.auth.idToken, eventData.Event.id, {
+                    status: this.eventService.getActiveEventStatus()
+                  }).then(() => {
+                    eventData.Event.status = this.eventService.getActiveEventStatus();
+                    this.$timeout();
+                  })
+                }
               }
-            }
-          });
+            });
+          }, () => {
+            this.uiService.notify('Unable to subscribe');
+          })
         } else {
           const message = response.status === 401 ? 'You do not have permission to update this event' : 'Unable to update event';
           this.uiService.notify(message);
@@ -190,7 +205,6 @@ export default class ReadEventController {
 
   downloadTransactions(event) {
     const storage = this.storageService.read();
-
     const loader = this.uiService.load();
 
     this.eventService.getExcel(storage.auth.idToken, event.id).then((asset) => {
@@ -228,10 +242,12 @@ ReadEventController.$inject = [
   '$state',
   '$mdDialog',
   'OrganizationService',
+  'UserService',
   'EventService',
   'ItemService',
   'StorageService',
   'ToolsService',
+  'StripeService',
   'settings',
   'UIService',
   'db'

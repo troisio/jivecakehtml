@@ -1,8 +1,54 @@
+import URLSearchParams from 'url-search-params';
+
 export default class StripeService {
   constructor($q, $http, settings) {
     this.$q = $q;
     this.$http = $http;
     this.settings = settings;
+
+    this.MONTHLY_ID = 'monthly10';
+    this.MONTHLY_TRIAL_ID = 'monthly10trial';
+  }
+
+  getMonthlySubscriptionId(token, user, organizationId) {
+    const queries = [
+      {
+        organizationId: organizationId,
+        plan: this.MONTHLY_TRIAL_ID,
+        limit: 100
+      },
+      {
+        email: user.email,
+        plan: this.MONTHLY_TRIAL_ID,
+        limit: 100
+      },
+      {
+        email: user.email,
+        plan: this.MONTHLY_TRIAL_ID,
+        limit: 100
+      }
+    ];
+
+    const futures = queries.map(query => this.searchSubscriptions(token, query));
+
+    return Promise.all(futures).then((resolve) => {
+      const subscriptions = [];
+
+      for (let array of resolve) {
+        subscriptions.push(...array);
+      }
+
+      let hasFreeSubscription = false;
+
+      for (let subscription of subscriptions) {
+        if (subscription.plan.id === this.MONTHLY_TRIAL_ID) {
+          hasFreeSubscription = true;
+          break;
+        }
+      }
+
+      return hasFreeSubscription ? this.MONTHLY_ID : this.MONTHLY_TRIAL_ID;
+    });
   }
 
   refund(token, id) {
@@ -25,14 +71,57 @@ export default class StripeService {
     }).then(response => response.data);
   }
 
-  subscribe(token, organizationId, body) {
-    const url = [this.settings.jivecakeapi.uri, 'stripe', organizationId, 'subscribe'].join('/');
+  subscribe(token, organizationId, planId, body) {
+    const url = `${this.settings.jivecakeapi.uri}/stripe/${organizationId}/subscribe/${planId}`;
 
-    return this.$http.post(url, body, {
+    return fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
       headers: {
-        Authorization : 'Bearer ' + token
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
       }
-    }).then(response => response.data);
+    }).then(response => response.ok ? response.json() : Promise.reject(response));
+  }
+
+  getOrganizationTrialingOrActiveSubscriptions(token, organizationId) {
+    const queries = [
+      {
+        organizationId: organizationId,
+        plan: this.MONTHLY_ID,
+        status: 'active',
+        limit: 100
+      },
+      {
+        organizationId: organizationId,
+        plan: this.MONTHLY_TRIAL_ID,
+        status: 'active',
+        limit: 100
+      },
+      {
+        organizationId: organizationId,
+        plan: this.MONTHLY_TRIAL_ID,
+        status: 'trialing',
+        limit: 100
+      }
+    ];
+
+    const futures = queries.map(query => this.searchSubscriptions(token, query));
+    return Promise.all(futures).then((resolve) => {
+      const result = [];
+      const idSet = new Set();
+
+      for (let array of resolve) {
+        for (let subscription of array) {
+          if (!idSet.has(subscription.id)) {
+            result.push(subscription);
+            idSet.add(subscription.id);
+          }
+        }
+      }
+
+      return result;
+    });
   }
 
   cancelSubscription(token, id) {
@@ -45,7 +134,7 @@ export default class StripeService {
     });
   }
 
-  showStripeMonthlySubscription() {
+  showStripeMonthlySubscription(displayOptions) {
     const defer = this.$q.defer();
 
     const checkout = StripeCheckout.configure({
@@ -63,23 +152,28 @@ export default class StripeService {
       }
     });
 
-    checkout.open({
+    const options = Object.assign({
       name: 'JiveCake',
       description: '$10 Monthly Subscription',
       amount: 1000
-    });
+    }, displayOptions);
 
+    checkout.open(options);
     return defer.promise;
   }
 
-  getSubscriptions(token, organizationId) {
-    const url = [this.settings.jivecakeapi.uri, 'stripe', organizationId, 'subscription'].join('/');
+  searchSubscriptions(token, query) {
+    const params = new URLSearchParams();
 
-    return this.$http.get(url, {
+    for (let key in query) {
+      params.append(key, query[key]);
+    }
+
+    return fetch(`${this.settings.jivecakeapi.uri}/stripe/subscription?${params.toString()}`, {
       headers: {
-        Authorization : 'Bearer ' + token
+        Authorization: 'Bearer ' + token
       }
-    }).then(response => response.data);
+    }).then(response => response.ok ? response.json() : Promise.reject(response));
   }
 }
 

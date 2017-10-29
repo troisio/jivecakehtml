@@ -2,5 +2,6 @@
   <h4>Sorry you don't have enough subscriptions</h4>
   <p ng-show="subscriptions.length === 1">{{organization.name}} only has 1 subscription</p>
   <p ng-show="subscriptions.length > 1">{{organization.name}} only has {{subscriptions.length}} subscriptions</p>
-  <p>Add a <a href="" ng-click="controller.subscribe(organization)">subscription</a>, first month is on us</p>
+  <p>Add a <a href="" ng-click="controller.subscribe(organization)">subscription</a></p>
+  <strong ng-show="subscriptionId === 'monthly10trial'">First month is free!</strong>
 </md-dialog>

@@ -131,7 +131,10 @@ export default class UpdateOrganizationController {
         organizationId: organizationId
       });
 
-      const subscriptionFuture = this.stripeService.getSubscriptions(this.storage.auth.idToken, organizationId);
+      const subscriptionFuture = this.stripeService.getOrganizationTrialingOrActiveSubscriptions(
+        this.storage.auth.idToken,
+        organizationId
+      );
 
       const permission = this.permissionService.search(this.storage.auth.idToken, {
         objectId: organization.id,
@@ -238,20 +241,39 @@ export default class UpdateOrganizationController {
   }
 
   subscribe(organization) {
-    this.stripeService.showStripeMonthlySubscription().then((token) => {
-      const storage = this.storageService.read();
+    const storage = this.storageService.read();
+    this.stripeService.getMonthlySubscriptionId(
+      storage.auth.idToken,
+      storage.profile,
+      organization.id
+    ).then((subscriptionId) => {
+      const description = subscriptionId === this.stripeService.MONTHLY_TRIAL_ID ?
+        '$10 Monthly Subscription, (1st Month Free)' : '$10 Monthly Subscription';
 
-      this.stripeService.subscribe(storage.auth.idToken, organization.id, {
-        email: token.email,
-        source: token.id
-      }).then(() => {
-        return this.stripeService.getSubscriptions(storage.auth.idToken, organization.id).then((subscriptions) => {
-          this.$scope.subscriptions = subscriptions;
-        }).finally(() => {
+      this.stripeService.showStripeMonthlySubscription({
+        description: description
+      }).then((token) => {
+        const storage = this.storageService.read();
+        this.stripeService.subscribe(
+          storage.auth.idToken,
+          organization.id,
+          subscriptionId,
+          {
+            email: token.email,
+            source: token.id
+          }
+        ).then(() => {
+          this.stripeService.getOrganizationTrialingOrActiveSubscriptions(
+            this.storage.auth.idToken,
+            organization.id
+          ).then((subscriptions) => {
+            this.$scope.subscriptions = subscriptions;
             this.uiService.notify('Sucessfully added subscription');
+            this.$timeout();
+          });
+        }, () => {
+          this.uiService.notify('Unable to subcribe');
         });
-      }, () => {
-        this.uiService.notify('Unable to subcribe');
       });
     });
   }
@@ -259,11 +281,15 @@ export default class UpdateOrganizationController {
   unsubscribe(subscription) {
     const storage = this.storageService.read();
 
+    this.uiService.notify('Unsubscribing...');
+
     this.stripeService.cancelSubscription(storage.auth.idToken, subscription.id).then(() => {
-      return this.stripeService.getSubscriptions(storage.auth.idToken, this.$stateParams.organizationId).then((subscriptions) => {
+      return this.stripeService.getOrganizationTrialingOrActiveSubscriptions(
+        this.storage.auth.idToken,
+        this.$stateParams.organizationId
+      ).then((subscriptions) => {
         this.$scope.subscriptions = subscriptions;
-      }).finally(() => {
-        this.uiService.notify('Subscription cancelled');
+        this.$timeout();
       });
     }, () => {
       this.uiService.notify('Unable to cancel subscription');
