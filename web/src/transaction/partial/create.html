@@ -37,11 +37,9 @@
     </md-input-container>
     <md-input-container class="md-block">
       <label>Currency</label>
-      <p ng-show="event.currency === 'USD'">US Dollars</p>
-      <p ng-show="event.currency === 'EUR'">Euro</p>
+      <p ng-show="event.currency === currency.id" ng-repeat="currency in currencies">{{currency.label}}</p>
       <md-select ng-show="event.currency === null" name="paymentProfile" ng-model="transaction.currency" required aria-label="Currency">
-        <md-option value="USD">US Dollars</md-option>
-        <md-option value="EUR">Euro</md-option>
+        <md-option ng-value="currency.id" ng-repeat="currency in currencies">{{currency.label}}</md-option>
       </md-select>
       <div class="errors" ng-messages="form.paymentProfile.$error">
         <div ng-message="required">required</div>

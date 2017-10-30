@@ -19,6 +19,7 @@ export default class TransactionService {
     this.REFUNDED = 3;
     this.UNKNOWN = 4;
 
+
     this.settings = settings;
     this.countingFilter = transaction => transaction.leaf && (transaction.status === this.SETTLED || transaction.status === this.PENDING);
   }
@@ -222,6 +223,88 @@ export default class TransactionService {
     }
 
     return result;
+  }
+
+  static getSupportedCurrencies() {
+    return [
+      {
+        id: 'AUD',
+        label: 'Australian Dollar',
+        symbol: '$'
+      },
+      {
+        id: 'BBD',
+        label: 'Barbadian dollar',
+        symbol: 'Bds$'
+      },
+      {
+        id: 'BRL',
+        label: 'Brazilian Real',
+        symbol: 'R$'
+      },
+      {
+        id: 'BSD',
+        label: 'Bahamian dollar',
+        symbol: '$'
+      },
+      {
+        id: 'CAD',
+        label: 'Canadian Dollar',
+        symbol: '$'
+      },
+      {
+        id: 'EUR',
+        label: 'Euro',
+        symbol: '€'
+      },
+      {
+        id: 'GBP',
+        label: 'Pound Sterling',
+        symbol: '£'
+      },
+      {
+        id: 'ILS',
+        label: 'Israeli Shekel',
+        symbol: '₪',
+        html: '&#8362;'
+      },
+      {
+        id: 'ISK',
+        label: 'Icelandic Krona',
+        symbol: 'kr'
+      },
+      {
+        id: 'NZD',
+        label: 'New Zealand Dollar',
+        symbol: '$'
+      },
+      {
+        id: 'RUS',
+        label: 'Russian Ruble',
+        symbol: '₽',
+        html: '&#x20bd;'
+      },
+      {
+        id: 'SEK',
+        label: 'Swedish Kronner',
+        symbol: 'kr'
+      },
+      {
+        id: 'TTD',
+        label: 'Trinidad and Tobago Dollar',
+        symbol: '$'
+      },
+      {
+        id: 'USD',
+        label: 'US Dollar',
+        symbol: '$'
+      },
+      {
+        id: 'ZAR',
+        label: 'South African Rand',
+        symbol: 'R'
+      }
+    ];
   }
 }
 

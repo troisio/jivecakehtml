@@ -76,8 +76,7 @@
         <label>Currency</label>
         <md-select ng-model="event.currency" ng-required="event.paymentProfileId" name="currency">
           <md-option ng-selected="true" ng-value="null"></md-option>
-          <md-option value="USD">US Dollars</md-option>
-          <md-option value="EUR">Euro</md-option>
+          <md-option ng-repeat="currency in currencies track by currency.id" ng-value="currency.id">{{currency.label}}</md-option>
         </md-select>
         <div class="errors" ng-messages="form.currency.$error">
           <div ng-message="required">Currency is required</div>

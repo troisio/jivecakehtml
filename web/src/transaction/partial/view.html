@@ -43,8 +43,7 @@
           <h3 ng-show="transaction.status !== 3">Total Paid</h3>
           <h3 ng-show="transaction.status === 3">Amount Refunded</h3>
           <div>
-            <span ng-show="transaction.currency === 'USD'">&#36;</span>
-            <span ng-show="transaction.currency === 'EUR'">&#128;</span>
+            <span>{{transaction.currency | currencySymbolFilter}}</span>
             <span>{{transaction.amount| number: 2}}</span>
           </div>
         </div>

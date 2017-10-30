@@ -161,6 +161,9 @@ export default class ReadEventController {
                 subscriptionId: subscriptionId,
                 subscriptions: response.data,
                 organization: eventData.Organization,
+                onSubscribeAttempt: () => {
+                  this.uiService.notify('Subscribing...');
+                },
                 onSubscribe: () => {
                   this.eventService.fieldUpdate(storage.auth.idToken, eventData.Event.id, {
                     status: this.eventService.getActiveEventStatus()

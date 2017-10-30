@@ -14,18 +14,15 @@ export default class StripeService {
     const queries = [
       {
         organizationId: organizationId,
-        plan: this.MONTHLY_TRIAL_ID,
-        limit: 100
+        plan: this.MONTHLY_TRIAL_ID
       },
       {
         email: user.email,
-        plan: this.MONTHLY_TRIAL_ID,
-        limit: 100
+        plan: this.MONTHLY_TRIAL_ID
       },
       {
         email: user.email,
-        plan: this.MONTHLY_TRIAL_ID,
-        limit: 100
+        plan: this.MONTHLY_TRIAL_ID
       }
     ];
 
@@ -89,20 +86,17 @@ export default class StripeService {
       {
         organizationId: organizationId,
         plan: this.MONTHLY_ID,
-        status: 'active',
-        limit: 100
+        status: 'active'
       },
       {
         organizationId: organizationId,
         plan: this.MONTHLY_TRIAL_ID,
-        status: 'active',
-        limit: 100
+        status: 'active'
       },
       {
         organizationId: organizationId,
         plan: this.MONTHLY_TRIAL_ID,
-        status: 'trialing',
-        limit: 100
+        status: 'trialing'
       }
     ];
 

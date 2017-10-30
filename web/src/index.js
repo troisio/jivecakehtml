@@ -33,6 +33,7 @@ import absoluteValue from './angularcomponents/absoluteValue';
 import userIdentificationFilter from './angularcomponents/userIdentificationFilter';
 import transactionCSSClass from './angularcomponents/transactionCSSClass';
 import browserTimeZoneAbbreviation from './angularcomponents/browserTimeZoneAbbreviation';
+import currencySymbolFilter from './angularcomponents/currencySymbolFilter';
 
 import jiveCakeClassModule from './class/module';
 import jiveCakeServiceModule from './service/module';
@@ -108,6 +109,7 @@ const module = angular.module('jivecakeweb', [
 .filter('userIdentificationFilter', userIdentificationFilter)
 .filter('transactionCSSClass', transactionCSSClass)
 .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
+.filter('currencySymbolFilter', currencySymbolFilter)
 .constant('settings', settings)
 .config(configuration)
 .run(run)
@@ -169,13 +171,13 @@ builder.connect({
     return Promise.resolve();
   }
 }).then(function(db) {
+  module.constant('db', db);
+
   const deleteFutures = db.getSchema().tables().map(table => {
     return db.delete()
       .from(db.getSchema().table(table.getName()))
       .exec();
   });
-
-  module.constant('db', db);
 
   Promise.all(deleteFutures).then(function() {
     angular.element(document).ready(() => {

@@ -1,4 +1,5 @@
 import angular from 'angular';
+import TransactionService from '../../service/TransactionService';
 
 export default class CreateTransactionController {
   constructor(
@@ -26,6 +27,7 @@ export default class CreateTransactionController {
     this.uiService = uiService;
 
     $scope.userService = userService;
+    $scope.currencies = TransactionService.getSupportedCurrencies();
 
     const storage = storageService.read();
     this.itemFuture = this.itemService.read(storage.auth.idToken, this.$stateParams.itemId);

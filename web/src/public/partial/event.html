@@ -29,7 +29,8 @@
               </td>
               <td md-cell>
                 <div ng-show="itemData.amount !== 0" class="amount" layout-align="column">
-                  <span ng-show="group.event.currency === 'USD'">&#36;</span><span ng-show="group.event.currency === 'EUR'">&#128;</span><span>{{itemData.amount | number:2}}</span>
+                  <span>{{group.event.currency | currencySymbolFilter}}</span>
+                  <span>{{itemData.amount | number:2}}</span>
                 </div>
                 <span ng-show="itemData.amount === 0">free</span>
               </td>

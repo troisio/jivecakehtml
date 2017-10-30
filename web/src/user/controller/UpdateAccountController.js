@@ -151,15 +151,8 @@ export default class UpdateAccountController {
     this.$q.all([imageFuture, userUpdateFuture]).then(() => {
       this.uiService.notify('Successfully updated');
       this.run();
-    }, (response) => {
-      if  (typeof response.data === 'object' && response.data.error === 'face') {
-        if (response.data.data.annotationsCount === 1) {
-          this.uiService.notify("Sorry, please upload a higher quality photo");
-        } else {
-          const message = response.data.data.annotationsCount === 0 ? 'Sorry, we could not find any faces in your photo' : 'Sorry, we found more than 1 face in your photo';
-          this.uiService.notify(message);
-        }
-      }
+    }, () => {
+      this.uiService.notify('Unable to update user');
     }).finally(() => {
       this.$scope.loading = false;
       this.reset();

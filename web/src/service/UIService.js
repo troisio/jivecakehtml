@@ -65,6 +65,94 @@ export default class UIService {
     );
   }
 
+  getLocalizationSettings(navigator) {
+    let language = 'en-us';
+
+    if (navigator.languages) {
+      language = navigator.languages[0];
+    } else if (navigator.language) {
+      language = navigator.language;
+    }
+
+    language = language.toLowerCase();
+
+    const currencyLanguages = [
+      {
+        currency: 'AUD',
+        languages: ['en-au']
+      },
+      {
+        currency: 'BBD',
+        languages: []
+      },
+      {
+        currency: 'BRL',
+        languages: ['pt-br']
+      },
+      {
+        currency: 'CAD',
+        languages: ['en-CA', 'fr-ca']
+      },
+      {
+        currency: 'EUR',
+        languages: ['en-ie', 'ga', 'it', 'de', 'de-de', 'de-ch', 'nl', 'fr', 'fr-fr', 'fr-mc', 'gd', 'gd-ie', 'es-es', 'pt']
+      },
+      {
+        currency: 'GBP',
+        languages: ['en-gb']
+      },
+      {
+        currency: 'ILS',
+        languages: ['he', 'ji']
+      },
+      {
+        currency: 'ISK',
+        languages: ['is']
+      },
+      {
+        currency: 'NZD',
+        languages: ['en-nz']
+      },
+      {
+        currency: 'RUS',
+        languages: ['ru', 'ru-mo']
+      },
+      {
+        currency: 'SEK',
+        languages: ['sv', 'sv-fl', 'sv-sv']
+      },
+      {
+        currency: 'TTD',
+        languages: ['en-tt']
+      },
+      {
+        currency: 'USD',
+        languages: ['en-us', 'es-pr']
+      },
+      {
+        currency: 'ZAR',
+        languages: ['af', 'en-za', 'zu']
+      }
+    ];
+
+    let currency = null;
+
+    currencyIteration:
+    for (let currencyLanguage of currencyLanguages) {
+      for (let l of currencyLanguage.languages) {
+        if (l === language) {
+          currency = currencyLanguage.currency;
+          break currencyIteration;
+        }
+      }
+    }
+
+    return {
+      language: language,
+      currency: currency
+    };
+  }
+
   getDefaultItemCartSelectionSize() {
     return 30;
   }

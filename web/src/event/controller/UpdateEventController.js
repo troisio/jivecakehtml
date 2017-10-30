@@ -1,4 +1,5 @@
 import angular from 'angular';
+import TransactionService from '../../service/TransactionService';
 
 export default class UpdateEventController {
   constructor(
@@ -40,6 +41,19 @@ export default class UpdateEventController {
     this.storage = storageService.read();
     this.timeSelections = this.uiService.getTimeSelections();
 
+    const currencies = TransactionService.getSupportedCurrencies();
+    const localizationSettings = uiService.getLocalizationSettings(window.navigator);
+
+    currencies.sort((a, b) => {
+      if (a.id === localizationSettings.currency) {
+        return -1;
+      } else if (b.id === localizationSettings.currency) {
+        return 1;
+      } else {
+        return a.label.localeCompare(b.label);
+      }
+    });
+    this.$scope.currencies = currencies;
     this.run();
   }
 

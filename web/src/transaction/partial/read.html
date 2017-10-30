@@ -39,7 +39,9 @@
               </div>
               <div ng-show="transactionData.Transaction.amount !== 0">
                 <strong ng-show="transactionData.Transaction.amount < 0" class="payment-bad">-</strong>
-                <strong ng-show="transactionData.Transaction.amount > 0" class="payment-complete">+</strong><span ng-show="transactionData.Transaction.currency === 'USD'">&#36;</span><span ng-show="transactionData.Transaction.currency === 'EUR'">&#128;</span><span>{{transactionData.Transaction.amount / transactionData.Transaction.quantity | absoluteValue | number: 2}}</span>
+                <strong ng-show="transactionData.Transaction.amount > 0" class="payment-complete">+</strong>
+                <span>{{transactionData.Transaction.currency | currencySymbolFilter}}</span>
+                <span>{{transactionData.Transaction.amount / transactionData.Transaction.quantity | absoluteValue | number: 2}}</span>
                 <span ng-show="transactionData.Transaction.quantity > 1">({{transactionData.Transaction.quantity}})</span>
               </div>
             </div>

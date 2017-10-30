@@ -8,7 +8,8 @@ export default class InsufficientSubscriptionsController {
     organization,
     stripeService,
     subscriptionId,
-    onSubscribe
+    onSubscribe,
+    onSubscribeAttempt
   ) {
     this.$mdDialog = $mdDialog;
     this.uiService = uiService;
@@ -18,6 +19,7 @@ export default class InsufficientSubscriptionsController {
     this.stripeService = stripeService;
     this.subscriptionId = subscriptionId;
     this.onSubscribe = onSubscribe;
+    this.onSubscribeAttempt = onSubscribeAttempt;
 
     $scope.subscriptionId = subscriptionId;
   }
@@ -26,10 +28,11 @@ export default class InsufficientSubscriptionsController {
     this.$mdDialog.hide();
 
     const description = this.subscriptionId === this.stripeService.MONTHLY_TRIAL_ID ?
-      '$10 Monthly Subscription, (1st Month Free)' : '$10 Monthly Subscription';
+      '$10 Monthly Subscription (Trial)' : '$10 Monthly Subscription';
     this.stripeService.showStripeMonthlySubscription({
       description: description
     }).then((token) => {
+      this.onSubscribeAttempt();
       const storage = this.storageService.read();
 
       this.stripeService.subscribe(
@@ -59,5 +62,6 @@ InsufficientSubscriptionsController.$inject = [
   'organization',
   'StripeService',
   'subscriptionId',
-  'onSubscribe'
+  'onSubscribe',
+  'onSubscribeAttempt'
 ];

@@ -248,7 +248,7 @@ export default class UpdateOrganizationController {
       organization.id
     ).then((subscriptionId) => {
       const description = subscriptionId === this.stripeService.MONTHLY_TRIAL_ID ?
-        '$10 Monthly Subscription, (1st Month Free)' : '$10 Monthly Subscription';
+        '$10 Monthly Subscription (Trial)' : '$10 Monthly Subscription';
 
       this.stripeService.showStripeMonthlySubscription({
         description: description
