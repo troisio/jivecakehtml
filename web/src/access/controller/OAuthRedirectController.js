@@ -27,14 +27,20 @@ export default class OAuthRedirectController {
     }
 
     if (state !== null && state.flow === 'stripe') {
-      if (this.$state.params.code !== null) {
+      let future;
+
+      if (this.$state.params.code === null) {
+        future = Promise.resolve();
+      } else {
         const storage = this.storageService.read();
-        this.paymentProfileService.createStripePaymentProfile(storage.auth.idToken, state.subject, {
+        future = this.paymentProfileService.createStripePaymentProfile(storage.auth.idToken, state.subject, {
           code: this.$state.params.code
         });
       }
 
-      this.$state.go(state.name, state.stateParams);
+      future.then(() => {}, () => {}).then(() => {
+        this.$state.go(state.name, state.stateParams);
+      });
     }
   }
 
