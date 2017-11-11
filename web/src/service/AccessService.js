@@ -38,7 +38,6 @@ export default class AccessService {
     const storage = this.storageService.read();
     this.connectionService.closeEventSources();
     this.connectionService.deleteEventSources();
-
     this.storageService.reset();
 
     let returnTo;

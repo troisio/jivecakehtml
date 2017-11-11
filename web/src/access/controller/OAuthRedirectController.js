@@ -1,5 +1,17 @@
 export default class OAuthRedirectController {
-  constructor($scope, $state, $mdDialog, paymentProfileService, storageService, permissionService, transactionService, JiveCakeLocalStorage, SearchEntity) {
+  constructor(
+    $scope,
+    $state,
+    $mdDialog,
+    paymentProfileService,
+    storageService,
+    permissionService,
+    transactionService,
+    eventService,
+    organizationService,
+    JiveCakeLocalStorage,
+    SearchEntity
+  ) {
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
@@ -7,6 +19,8 @@ export default class OAuthRedirectController {
     this.storageService = storageService;
     this.permissionService = permissionService;
     this.transactionService = transactionService;
+    this.eventService = eventService;
+    this.organizationService = organizationService;
     this.JiveCakeLocalStorage = JiveCakeLocalStorage;
     this.SearchEntity = SearchEntity;
 
@@ -58,61 +72,81 @@ export default class OAuthRedirectController {
     };
 
     if (typeof error === 'undefined' || error === null) {
-      const storage = new this.JiveCakeLocalStorage();
-      storage.timeCreated = new Date().getTime();
-      storage.auth = auth;
-      storage.profile = profile;
-      this.storageService.write(storage);
-      this.permissionService.search(auth.idToken, {
-        user_id: auth.idTokenPayload.sub,
-        objectClass: 'Organization'
-      }).then((permissionResult) => {
-        const permissions = permissionResult.entity;
-        const organizationIds = permissions.map(permission => permission.objectId);
+      const storage = this.storageService.read();
 
-        const transactionFuture = organizationIds.length === 0 ? Promise.resolve(new this.SearchEntity()) :
-          this.transactionService.search(auth.idToken, {
-            limit: 1,
-            organizationId: organizationIds,
-            order: '-timeCreated'
-          });
+      let onBoarding;
 
-        transactionFuture.then(transactionSearch => {
-          const millisecondsPerWeek = 604800000;
-          const currentTime = new Date().getTime();
-          const transactionsInPreviousWeek = transactionSearch.entity
-            .filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
+      if (storage.onBoarding === null) {
+        onBoarding = Promise.resolve();
+      } else {
+        onBoarding = this.organizationService.create(auth.idToken, storage.onBoarding.organization).then((organization) => {
+          return this.eventService.create(auth.idToken, organization.id, storage.onBoarding.event);
+        }).then(() => {}, () => {});
+      }
 
-          const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
+      onBoarding.then(() => {
+        const storage = this.storageService.read();
+        storage.onBoarding = null;
+        storage.auth = auth;
+        storage.profile = profile;
 
-          if (routerParameters !== null && routerParameters.name === 'application.public.event') {
-            this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-          } else if (transactionsInPreviousWeek.length > 0) {
-            this.$state.go('application.internal.transaction.read', {}, {reload: true});
-          } else if (permissions.length > 0) {
-            this.$state.go('application.internal.organization.read', {}, {reload: true});
-          } else if (routerParameters === null) {
-            this.$state.go('application.internal.myTransaction', {
-              user_id: auth.idTokenPayload.sub
-            }, {
-              reload: true
+        if (storage.timeCreated === null) {
+          storage.timeCreated = new Date().getTime();
+        }
+
+        this.storageService.write(storage);
+
+        this.permissionService.search(auth.idToken, {
+          user_id: auth.idTokenPayload.sub,
+          objectClass: 'Organization'
+        }).then((permissionResult) => {
+          const permissions = permissionResult.entity;
+          const organizationIds = permissions.map(permission => permission.objectId);
+
+          const transactionFuture = organizationIds.length === 0 ? Promise.resolve(new this.SearchEntity()) :
+            this.transactionService.search(auth.idToken, {
+              limit: 1,
+              organizationId: organizationIds,
+              order: '-timeCreated'
             });
-          } else {
-            if (routerParameters.name === 'landing') {
+
+          transactionFuture.then(transactionSearch => {
+            const millisecondsPerWeek = 604800000;
+            const currentTime = new Date().getTime();
+            const transactionsInPreviousWeek = transactionSearch.entity
+              .filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
+
+            const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
+
+            if (routerParameters !== null && routerParameters.name === 'application.public.event') {
+              this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+            } else if (transactionsInPreviousWeek.length > 0) {
+              this.$state.go('application.internal.transaction.read', {}, {reload: true});
+            } else if (permissions.length > 0) {
+              this.$state.go('application.internal.organization.read', {}, {reload: true});
+            } else if (routerParameters === null) {
               this.$state.go('application.internal.myTransaction', {
                 user_id: auth.idTokenPayload.sub
               }, {
                 reload: true
               });
             } else {
-              this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+              if (routerParameters.name === 'landing') {
+                this.$state.go('application.internal.myTransaction', {
+                  user_id: auth.idTokenPayload.sub
+                }, {
+                  reload: true
+                });
+              } else {
+                this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+              }
             }
-          }
+          }, () => {
+            unableToLoad('Sorry, we were unable to load your data');
+          });
         }, () => {
-          unableToLoad('Sorry, we were unable to load your data');
+          unableToLoad('Sorry, we were unable to load your organizations');
         });
-      }, () => {
-        unableToLoad('Sorry, we were unable to load your organizations');
       });
     } else {
       unableToLoad('Sorry, we were unable to get your data from Auth0');
@@ -128,6 +162,8 @@ OAuthRedirectController.$inject = [
   'StorageService',
   'PermissionService',
   'TransactionService',
+  'EventService',
+  'OrganizationService',
   'JiveCakeLocalStorage',
   'SearchEntity'
 ];

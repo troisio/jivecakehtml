@@ -7,7 +7,7 @@ import UrlSearchParams from 'url-search-params';
 const storageService = new StorageService(JiveCakeLocalStorage);
 const storage = storageService.read();
 
-const hasOrganizaitons = (auth) => {
+const hasOrganizations = (auth) => {
   const params = new UrlSearchParams();
   params.append('user_id', auth.idTokenPayload.sub);
   const path = [settings.jivecakeapi.uri, 'permission'].join('/') + '?' + params.toString();
@@ -43,8 +43,8 @@ const onLogin = (e) => {
       storageService.write(new JiveCakeLocalStorage());
       lock.show();
     } else {
-      hasOrganizaitons(storage.auth).then((hasOrganizaitons) => {
-        if (hasOrganizaitons) {
+      hasOrganizations(storage.auth).then((hasOrganizations) => {
+        if (hasOrganizations) {
           location.href = '/organization';
         } else {
           location.href = '/transaction/' + storage.auth.idTokenPayload.sub;
@@ -75,10 +75,70 @@ const lock = new Auth0Lock(settings.oauth.auth0.client_id, settings.oauth.auth0.
   rememberLastLogin: false
 });
 
+const initializeOnBoading = (form) => {
+  const email = form.querySelector('#email');
+  const eventName = form.querySelector('#eventName');
+  const organizationName = form.querySelector('#organizationName');
+  const sameAsEvent = form.querySelector('#sameAsEvent');
+
+  form.onsubmit = (e) => {
+    e.preventDefault();
+
+    const storage = storageService.read();
+    storage.timeUpdated = new Date().getTime();
+    storage.onBoarding = {
+      event: {
+        name: eventName.value,
+        status: 0
+      },
+      organization: {
+        name: organizationName.value,
+        email: email.value
+      }
+    };
+
+    if (storage.timeCreated === null) {
+      storage.timeCreated = new Date().getTime();
+    }
+
+    storageService.write(storage);
+
+    onLogin(e);
+  };
+
+  sameAsEvent.onchange = () => {
+    organizationName.disabled = sameAsEvent.checked;
+
+    if (sameAsEvent.checked) {
+      organizationName.value = eventName.value;
+    } else {
+      organizationName.value = '';
+    }
+  };
+
+  eventName.oninput = (e) => {
+    if (sameAsEvent.checked) {
+      organizationName.value = e.target.value;
+    }
+  }
+};
+
 $(document).ready(() => {
   const elements = document.querySelectorAll('a.login');
 
   for (let element of elements) {
     element.addEventListener('click', onLogin);
+  }
+
+  const signupForm = document.querySelector('.blog .signup-form');
+
+  if (signupForm !== null) {
+    initializeOnBoading(signupForm);
+    const storage = storageService.read();
+
+    if (storage.auth === null) {
+      const div = document.querySelector('div.signup');
+      div.style.display = 'block';
+    }
   }
 });

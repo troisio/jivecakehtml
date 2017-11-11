@@ -1,6 +1,6 @@
 {
   "name": "jivecakehtml",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "repository": "https://github.com/troisio/jivecakehtml.git",
   "license": "UNLICENSED",
   "authors": [
@@ -44,6 +44,7 @@
     "express": "4.15.4",
     "extract-text-webpack-plugin": "3.0.0",
     "html-loader": "^0.5.1",
+    "html-webpack-plugin": "2.30.1",
     "lovefield": "2.1.12",
     "node-sass": "4.5.3",
     "promise": "^8.0.1",

@@ -3,55 +3,7 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const LiveReloadPlugin = require('webpack-livereload-plugin');
 const packageJson = require('./package.json');
-const fs = require('fs');
-
-const indexFile = `
-<!DOCTYPE html>
-<html class="no-js" lang="en">
-  <head>
-    <base href="/">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Event registration">
-    <link rel="icon" href="/favicon.ico">
-
-    <meta name="twitter:card" content="JiveCake">
-
-    <meta property="og:title" content="JiveCake">
-    <meta property="og:site_name" content="JiveCake">
-    <meta property="og:description" content="Event registration">
-    <meta property="og:image" content="https://jivecake.com/assets/chrome/icon144.png">
-    <meta property="og:image:width" content="144">
-    <meta property="og:image:height" content="144">
-    <meta property="og:locale" content="en_US">
-    <title>JiveCake</title>
-
-    <link rel="manifest" href="manifest.json">
-
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/safari/apple-touch-180x180.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="/assets/safari/apple-touch-167x167.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/assets/safari/apple-touch-152x152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/assets/safari/apple-touch-120x120.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/assets/safari/apple-touch-76x76.png">
-    <meta name="apple-mobile-web-app-title" content="JiveCake">
-
-    <link rel="stylesheet" href="/dist/index-${packageJson.version}.css">
-  </head>
-  <body layout="column">
-    <ui-view flex layout="row"></ui-view>
-    <script src="https://www.paypalobjects.com/api/checkout.min.js" data-version-4></script>
-    <script src="https://use.fontawesome.com/4248578432.js"></script>
-    <script src="https://www.google-analytics.com/analytics.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
-    <script src="https://checkout.stripe.com/checkout.js"></script>
-    <script src="https://cdn.auth0.com/js/lock/10.23.1/lock.min.js"></script>
-    <script src="/dist/bundle-${packageJson.version}.js"></script>
-  </body>
-</html>
-`;
-
-fs.writeFile(path.resolve(__dirname, 'web/index.html'), indexFile);
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = function(env) {
   const sourceMap = typeof env !== 'undefined' && typeof env.sourceMap !== 'undefined';
@@ -126,11 +78,16 @@ module.exports = function(env) {
           use: ExtractTextPlugin.extract({
             fallback: 'style-loader',
             use: ['css-loader', 'sass-loader']
-          }),
+          })
         }
       ]
     },
     plugins: [
+      new HtmlWebpackPlugin({
+        version: packageJson.version,
+        template: path.resolve(__dirname, 'web/index-template.html'),
+        inject: false
+      }),
       new webpack.optimize.UglifyJsPlugin({
         sourceMap: sourceMap
       }),

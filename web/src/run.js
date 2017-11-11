@@ -6,16 +6,8 @@ export default [
   '$transitions',
   '$location',
   '$state',
-  '$q',
   '$mdDialog',
-  'OrganizationService',
-  'PermissionService',
-  'TransactionService',
-  'UIService',
   'StorageService',
-  'Auth0Service',
-  'JiveCakeLocalStorage',
-  'SearchEntity',
   'settings',
   function(
     lock,
@@ -25,16 +17,8 @@ export default [
     $transitions,
     $location,
     $state,
-    $q,
     $mdDialog,
-    organizationService,
-    permissionService,
-    transactionService,
-    uiService,
     storageService,
-    auth0Service,
-    JiveCakeLocalStorage,
-    SearchEntity,
     settings
   ) {
     if (settings.google.analytics.enabled && window.ga) {

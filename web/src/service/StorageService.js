@@ -1,7 +1,6 @@
 export default class StorageService {
   constructor(JiveCakeLocalStorage) {
     this.JiveCakeLocalStorage = JiveCakeLocalStorage;
-
     this.localStorageKey = 'jivecakelocalstorage';
   }
 

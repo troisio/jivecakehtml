@@ -18,7 +18,8 @@
       </div>
       <div class="collapse navbar-collapse navbar-right" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
-            <li><a class="page-scroll" href="#contact">Contact</a></li>
+          <li><a class="page-scroll" href="#contact">Contact</a></li>
+          <li><a class="page-scroll login" href="">My Account</a></li>
         </ul>
       </div>
     </div>
@@ -31,6 +32,7 @@
         <h1>Your rugby tournament is a few months away</h1>
       </div>
       <div>
+        <!-- https://pixabay.com/en/rugby-sport-football-rugby-ball-1054275/ -->
         <img src="/assets/images/rugby1.jpg">
       </div>
       <div>
@@ -48,11 +50,31 @@
       <div>
         <p>For $10 a month you can make getting paid on time easy.</p>
       </div>
-      <div>
-        <a class="btn btn-primary btn-action" href="/">get more information</a>
+      <div class="signup" style="display: none;">
+        <div class="signup-form wow">
+          <form class="registration-form">
+            <div class="form-group">
+              <label for="email" class="sr-only" for="form-name">Email</label>
+              <input id="email" type="email" maxlength="100" required placeholder="Enter your email..." class="form-name form-control">
+            </div>
+            <div class="form-group">
+              <label for="eventName" class="sr-only">Your event name</label>
+              <input id="eventName" type="text" maxlength="100" required placeholder="Enter event name..." class="form-control">
+            </div>
+            <div class="form-group same-as-event">
+              <input id="sameAsEvent" checked type="checkbox" class="form-control">
+              <label for="sameAsEvent">Same as event name</label>
+            </div>
+            <div class="form-group">
+              <label for="organizationName" class="sr-only" for="form-phone">Organization name</label>
+              <input id="organizationName" maxlength="100" required disabled type="text" placeholder="Enter organization name..." class="form-control">
+            </div>
+            <button type="submit" class="btn">Log in and create</button>
+          </form>
+        </div>
       </div>
       <div>
-        <p>Questions? <a href="https://facebook.com/jivecake">Send us a message</a></p>
+        <p>Questions? <a href="https://m.me/jivecake">Send us a message</a> or get <a href="/">more information</a></p>
       </div>
     </div>
   </div>

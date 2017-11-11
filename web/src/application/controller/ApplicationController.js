@@ -81,12 +81,7 @@ export default class ApplicationController {
       ready = Promise.reject();
     } else {
       const exp = storage.auth.idTokenPayload.exp * 1000;
-
-      if (new Date().getTime() < exp) {
-        ready = this.loadUserData();
-      } else {
-        ready = Promise.reject();
-      }
+      ready = new Date().getTime() < exp ? this.loadUserData() : Promise.reject();
     }
 
     this.$scope.ready = ready;
@@ -109,15 +104,18 @@ export default class ApplicationController {
     }).then(() => {
       this.$scope.uiReady = true;
     }, () => {
-      this.storageService.reset();
+      if (this.$state.$current.name !== 'application.oauthRedirect') {
+        this.storageService.reset();
+
+        const isAuthenticatedPage = this.$state.$current.name.startsWith('application.internal');
+
+        if (isAuthenticatedPage) {
+          location.href = '/';
+        }
+      }
+
       this.$scope.storage = this.storageService.read();
       this.$scope.uiReady = true;
-
-      const isAuthenticatedPage = this.$state.$current.name.startsWith('application.internal');
-
-      if (isAuthenticatedPage) {
-        location.href = '/';
-      }
     });
   }
 

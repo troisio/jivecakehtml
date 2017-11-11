@@ -68,5 +68,17 @@
       border: 2px solid black;
       width: 60%;
     }
+
+    [type=checkbox] {
+      height: initial;
+      width: initial;
+      display: inline-block;
+    }
+
+    .same-as-event {
+      label {
+        margin-left: 1em;
+      }
+    }
   }
 }

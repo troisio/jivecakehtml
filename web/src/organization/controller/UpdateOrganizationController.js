@@ -84,8 +84,9 @@ export default class UpdateOrganizationController {
 
     return this.organizationService.update(this.storage.auth.idToken, organization).then(() => {
       this.uiService.notify('Updated organization');
-    }, () => {
-      this.uiService.notify('Unable to update organization');
+    }, (response) => {
+      const text = response.status === 409 ? 'Organization email taken' : 'Unable to update organization';
+      this.uiService.notify(text);
     }).finally(() => {
       this.$scope.loading = false;
       anguar.element(document.querySelector('md-content'))[0].scrollTop = 0;

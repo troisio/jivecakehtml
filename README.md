@@ -1,5 +1,9 @@
 #### JiveCake Web Project
 
+#### Dependencies
+ - [nodejs / npm](https://nodejs.org/en/download/)
+ - [docker](https://www.docker.com/)
+
 #### Watch your server files for changes
 
 ```sh
