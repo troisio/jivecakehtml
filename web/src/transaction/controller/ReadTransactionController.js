@@ -186,6 +186,14 @@ export default class ReadTransactionController {
       });
   }
 
+  onSearchTextClear(text) {
+    if (text.length > 0) {
+      this.onSearchTextChange('');
+    }
+
+    this.$scope.searchText = '';
+  }
+
   onSearchTextChange(text) {
     this.$scope.loading = true;
 

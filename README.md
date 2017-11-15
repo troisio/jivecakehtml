@@ -24,7 +24,7 @@ cd docker
 docker build -t jivecakehtml .
 ```
 
-#### Run the nginx / go server
+#### Run the nginx / nodejs server
 
 ```sh
 docker run \

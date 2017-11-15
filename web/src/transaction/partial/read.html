@@ -3,6 +3,7 @@
     <div class="md-toolbar-tools">
       <ng-md-icon icon="search"></ng-md-icon>
       <input flex ng-model="searchText" ng-change="controller.onSearchTextChange(searchText)" placeholder="search">
+      <ng-md-icon ng-click="controller.onSearchTextClear(searchText)" icon="close"></ng-md-icon>
     </div>
   </md-toolbar>
   <md-table-container>
