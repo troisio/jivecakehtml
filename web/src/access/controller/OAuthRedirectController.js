@@ -77,18 +77,19 @@ export default class OAuthRedirectController {
       let onBoarding;
 
       if (storage.onBoarding === null) {
-        onBoarding = Promise.resolve();
+        onBoarding = Promise.resolve(null);
       } else {
         onBoarding = this.organizationService.create(auth.idToken, storage.onBoarding.organization).then((organization) => {
           return this.eventService.create(auth.idToken, organization.id, storage.onBoarding.event);
-        }).then(() => {}, () => {});
+        }).then((event) => event, () => null);
       }
 
-      onBoarding.then(() => {
+      onBoarding.then((onBoardedEvent) => {
         const storage = this.storageService.read();
         storage.onBoarding = null;
         storage.auth = auth;
         storage.profile = profile;
+        storage.timeUpdated = new Date().getTime();
 
         if (storage.timeCreated === null) {
           storage.timeCreated = new Date().getTime();
@@ -96,57 +97,65 @@ export default class OAuthRedirectController {
 
         this.storageService.write(storage);
 
-        this.permissionService.search(auth.idToken, {
-          user_id: auth.idTokenPayload.sub,
-          objectClass: 'Organization'
-        }).then((permissionResult) => {
-          const permissions = permissionResult.entity;
-          const organizationIds = permissions.map(permission => permission.objectId);
+        if (onBoardedEvent === null) {
+          this.permissionService.search(auth.idToken, {
+            user_id: auth.idTokenPayload.sub,
+            objectClass: 'Organization'
+          }).then((permissionResult) => {
+            const permissions = permissionResult.entity;
+            const organizationIds = permissions.map(permission => permission.objectId);
 
-          const transactionFuture = organizationIds.length === 0 ? Promise.resolve(new this.SearchEntity()) :
-            this.transactionService.search(auth.idToken, {
-              limit: 1,
-              organizationId: organizationIds,
-              order: '-timeCreated'
-            });
-
-          transactionFuture.then(transactionSearch => {
-            const millisecondsPerWeek = 604800000;
-            const currentTime = new Date().getTime();
-            const transactionsInPreviousWeek = transactionSearch.entity
-              .filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
-
-            const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
-
-            if (routerParameters !== null && routerParameters.name === 'application.public.event') {
-              this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-            } else if (transactionsInPreviousWeek.length > 0) {
-              this.$state.go('application.internal.transaction.read', {}, {reload: true});
-            } else if (permissions.length > 0) {
-              this.$state.go('application.internal.organization.read', {}, {reload: true});
-            } else if (routerParameters === null) {
-              this.$state.go('application.internal.myTransaction', {
-                user_id: auth.idTokenPayload.sub
-              }, {
-                reload: true
+            const transactionFuture = organizationIds.length === 0 ? Promise.resolve(new this.SearchEntity()) :
+              this.transactionService.search(auth.idToken, {
+                limit: 1,
+                organizationId: organizationIds,
+                order: '-timeCreated'
               });
-            } else {
-              if (routerParameters.name === 'landing') {
+
+            transactionFuture.then(transactionSearch => {
+              const millisecondsPerWeek = 604800000;
+              const currentTime = new Date().getTime();
+              const transactionsInPreviousWeek = transactionSearch.entity
+                .filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
+
+              const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
+
+              if (routerParameters !== null && routerParameters.name === 'application.public.event') {
+                this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+              } else if (transactionsInPreviousWeek.length > 0) {
+                this.$state.go('application.internal.transaction.read', {}, {reload: true});
+              } else if (permissions.length > 0) {
+                this.$state.go('application.internal.organization.read', {}, {reload: true});
+              } else if (routerParameters === null) {
                 this.$state.go('application.internal.myTransaction', {
                   user_id: auth.idTokenPayload.sub
                 }, {
                   reload: true
                 });
               } else {
-                this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+                if (routerParameters.name === 'landing') {
+                  this.$state.go('application.internal.myTransaction', {
+                    user_id: auth.idTokenPayload.sub
+                  }, {
+                    reload: true
+                  });
+                } else {
+                  this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+                }
               }
-            }
+            }, () => {
+              unableToLoad('Sorry, we were unable to load your data');
+            });
           }, () => {
-            unableToLoad('Sorry, we were unable to load your data');
+            unableToLoad('Sorry, we were unable to load your organizations');
           });
-        }, () => {
-          unableToLoad('Sorry, we were unable to load your organizations');
-        });
+        } else {
+          this.$state.go('application.internal.event.update', {
+            eventId: onBoardedEvent.id
+          }, {
+            reload: true
+          });
+        }
       });
     } else {
       unableToLoad('Sorry, we were unable to get your data from Auth0');

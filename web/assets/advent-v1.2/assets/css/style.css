@@ -123,6 +123,9 @@ p, a {
 	margin-left: 0;
 }
 
+.email-taken {
+	margin-bottom: 10px;
+}
 
 .error-message {
 	color: #FF3333;

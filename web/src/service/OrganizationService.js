@@ -63,21 +63,6 @@ export default class OrganizationService {
     }).then(response => this.toolsService.toObject(response.data, this.Organization));
   }
 
-  publicSearch(params) {
-    const url = [this.settings.jivecakeapi.uri, 'organization', 'search'].join('/');
-
-    return this.$http.get(url, {
-      params : params
-    }).then((response) => {
-      return {
-        entity: response.data.entity.map((entity) => {
-          return this.toolsService.toObject(entity, this.Organization);
-        }),
-        count: response.data.count
-      };
-    });
-  }
-
   search(token, params) {
     const url = [this.settings.jivecakeapi.uri, 'organization'].join('/');
 

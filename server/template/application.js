@@ -42,6 +42,17 @@ export default (page) => {
       <script src="https://checkout.stripe.com/checkout.js"></script>
       <script src="https://cdn.auth0.com/js/lock/10.20.0/lock.min.js"></script>
       <script src="/dist/bundle-${page.version}.js"></script>
+      <!-- Hotjar Tracking Code for https://jivecake.com -->
+      <script>
+        (function(h,o,t,j,a,r){
+          h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+          h._hjSettings={hjid:692418,hjsv:6};
+          a=o.getElementsByTagName('head')[0];
+          r=o.createElement('script');r.async=1;
+          r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+          a.appendChild(r);
+        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+      </script>
     </body>
   </html>`
 };

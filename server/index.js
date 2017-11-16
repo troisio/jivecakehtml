@@ -120,11 +120,15 @@ application.get('/blog/:id', function(request, response) {
       version: packageJson.version
     };
 
+    let status;
+
     if (error) {
       options.title = 'Not Found';
       options.content = html404;
+      status = 404;
     } else {
       options.content = data;
+      status = 200;
     }
 
     if (request.params.id.includes('rugby')) {
@@ -135,7 +139,7 @@ application.get('/blog/:id', function(request, response) {
 
     const body = indexTemplate(options);
     response.setHeader('Content-Type', 'text/html; charset=utf-8');
-    response.status(404).send(body);
+    response.status(status).send(body);
   });
 });
 

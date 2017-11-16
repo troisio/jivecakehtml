@@ -80,9 +80,16 @@ const initializeOnBoading = (form) => {
   const eventName = form.querySelector('#eventName');
   const organizationName = form.querySelector('#organizationName');
   const sameAsEvent = form.querySelector('#sameAsEvent');
+  const emailTaken = form.querySelector('.email-taken');
+  const memoizeEmails = {};
+  let emailAvailable = false;
 
   form.onsubmit = (e) => {
     e.preventDefault();
+
+    if (!emailAvailable) {
+      return;
+    }
 
     const storage = storageService.read();
     storage.timeUpdated = new Date().getTime();
@@ -104,6 +111,34 @@ const initializeOnBoading = (form) => {
     storageService.write(storage);
 
     onLogin(e);
+  };
+
+  email.oninput = (e) => {
+    const email = e.target.value;
+    const url = `${settings.jivecakeapi.uri}/organization/search?email=${email}`;
+
+    let searchFuture;
+
+    if (email in memoizeEmails) {
+      searchFuture = Promise.resolve(memoizeEmails[email]);
+    } else {
+      searchFuture = fetch(url).then(response => response.ok ? response.json() : Promise.reject(response));
+    }
+
+    searchFuture.then((searchResult) => {
+      memoizeEmails[email] = searchResult;
+
+      if (searchResult.count > 0) {
+        emailTaken.style.display = 'block';
+        emailAvailable = false;
+      } else {
+        emailTaken.style.display = 'none';
+        emailAvailable = true;
+      }
+    }, () => {
+      emailTaken.style.display = 'none';
+      emailAvailable = true;
+    });
   };
 
   sameAsEvent.onchange = () => {

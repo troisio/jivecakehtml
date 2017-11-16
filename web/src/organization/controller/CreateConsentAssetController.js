@@ -9,7 +9,7 @@ export default class CreateConsentAssetController {
     this.organization = organization;
     this.onAssetCreate = onAssetCreate;
 
-    this.byteLimit = 100000;
+    this.byteLimit = 1000000;
     this.$scope.isText = false;
     this.fileContent = null;
     this.text = '';
@@ -72,7 +72,7 @@ export default class CreateConsentAssetController {
         this.$scope.loading = false;
       });
     }, () => {
-      this.uiService.notify('Files must be smaller than 100kb');
+      this.uiService.notify('Files must be smaller than 1MB');
       this.$scope.loading = false;
       this.$timeout();
     });

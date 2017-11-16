@@ -91,7 +91,7 @@ export default class UIService {
       },
       {
         currency: 'CAD',
-        languages: ['en-CA', 'fr-ca']
+        languages: ['en-ca', 'fr-ca']
       },
       {
         currency: 'EUR',
