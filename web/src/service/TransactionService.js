@@ -258,6 +258,11 @@ export default class TransactionService {
         symbol: '€'
       },
       {
+        id: 'FJD',
+        label: 'Fijian Dollar',
+        symbol: 'FJ$'
+      },
+      {
         id: 'GBP',
         label: 'Pound Sterling',
         symbol: '£'

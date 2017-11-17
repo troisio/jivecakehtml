@@ -98,6 +98,10 @@ export default class UIService {
         languages: ['en-ie', 'ga', 'it', 'de', 'de-de', 'de-ch', 'nl', 'fr', 'fr-fr', 'fr-mc', 'gd', 'gd-ie', 'es-es', 'pt']
       },
       {
+        currency: 'FJD',
+        languages: ['fj']
+      },
+      {
         currency: 'GBP',
         languages: ['en-gb']
       },
