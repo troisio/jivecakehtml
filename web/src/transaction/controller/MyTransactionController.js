@@ -1,4 +1,6 @@
 import lf from 'lovefield';
+import transactionPartialView from '../partial/view.html';
+import viewItemPartial from '../../public/partial/viewItem.html';
 
 export default class MyTransactionController {
   constructor(
@@ -85,7 +87,7 @@ export default class MyTransactionController {
     this.$mdDialog.show({
       controller: 'ViewTransactionController',
       controllerAs: 'controller',
-      templateUrl: '/src/transaction/partial/view.html',
+      template: transactionPartialView,
       clickOutsideToClose: true,
       locals: {
         transaction: row.Transaction,
@@ -102,7 +104,7 @@ export default class MyTransactionController {
         $scope.item = item;
         $scope.$sanitize = $sanitize;
       }],
-      templateUrl: '/src/public/partial/viewItem.html',
+      template: viewItemPartial,
       clickOutsideToClose: true,
       locals: {
         item: item

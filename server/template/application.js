@@ -40,8 +40,9 @@ export default (page) => {
       <script src="https://www.google-analytics.com/analytics.js"></script>
       <script src="https://js.stripe.com/v3/"></script>
       <script src="https://checkout.stripe.com/checkout.js"></script>
-      <script src="https://cdn.auth0.com/js/lock/10.20.0/lock.min.js"></script>
+      <script src="https://cdn.auth0.com/js/lock/10.24.1/lock.min.js"></script>
       <script src="/dist/bundle-${page.version}.js"></script>
+      <script src="/dist/worker-${page.version}.js"></script>
       <!-- Hotjar Tracking Code for https://jivecake.com -->
       <script>
         (function(h,o,t,j,a,r){

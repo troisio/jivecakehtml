@@ -1,4 +1,5 @@
 import lf from 'lovefield';
+import createItemPartial from '../partial/create.html';
 
 export default class ReadItemController {
   constructor(
@@ -194,7 +195,7 @@ export default class ReadItemController {
 
         if (eventsWithWrite.length > 0) {
           this.$mdDialog.show({
-            templateUrl: '/src/item/partial/create.html',
+            template: createItemPartial,
             controller: 'CreateItemController',
             controllerAs: 'controller',
             clickOutsideToClose: true

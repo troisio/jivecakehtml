@@ -1,10 +1,13 @@
 import anguar from 'angular';
+import createConsentAssetHtml from '../partial/createConsentAsset.html';
+import createInvitationPartial from '../partial/createOrganizationInvitationController.html';
+import consentPartial from '../partial/consent.html';
+import createPaymentProfilePartial from '../../payment/profile/partial/create.html';
 
 export default class UpdateOrganizationController {
   constructor(
     $q,
     $timeout,
-    $window,
     $scope,
     $mdDialog,
     $stateParams,
@@ -23,7 +26,6 @@ export default class UpdateOrganizationController {
   ) {
     this.$q = $q;
     this.$timeout = $timeout;
-    this.$window = $window;
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
     this.$stateParams = $stateParams;
@@ -189,12 +191,13 @@ export default class UpdateOrganizationController {
     this.$mdDialog.show({
       controller: 'CreateConsentAssetController',
       controllerAs: 'controller',
-      templateUrl: '/src/organization/partial/createConsentAsset.html',
+      template: createConsentAssetHtml,
       clickOutsideToClose: true,
       locals: {
         organization: organization,
         onAssetCreate: (asset) => {
           this.$scope.assets.unshift(asset);
+          this.$timeout();
         }
       }
     });
@@ -218,7 +221,7 @@ export default class UpdateOrganizationController {
   addUserPermission() {
     this.$mdDialog.show({
       controller: 'CreateOrganizationInvitationController',
-      templateUrl: '/src/organization/partial/createOrganizationInvitationController.html',
+      template: createInvitationPartial,
       controllerAs: 'controller',
       clickOutsideToClose: true,
       locals: {
@@ -300,13 +303,14 @@ export default class UpdateOrganizationController {
   createPaymentProfile(organization) {
     this.$mdDialog.show({
       controller: 'CreatePaymentProfileController',
-      templateUrl: '/src/payment/profile/partial/create.html',
+      template: createPaymentProfilePartial,
       clickOutsideToClose: true,
       controllerAs: 'controller',
       locals: {
         organization: organization,
         onPaymentProfileCreate: (profile) => {
           this.$scope.paymentProfiles.push(profile);
+          this.$timeout();
         }
       }
     });
@@ -355,7 +359,7 @@ export default class UpdateOrganizationController {
       controller: ['$scope', function($scope) {
         $scope.text = atob(asset.data);
       }],
-      templateUrl: '/src/organization/partial/consent.html',
+      template: consentPartial,
       clickOutsideToClose: true
     });
   }
@@ -364,7 +368,6 @@ export default class UpdateOrganizationController {
 UpdateOrganizationController.$inject = [
   '$q',
   '$timeout',
-  '$window',
   '$scope',
   '$mdDialog',
   '$stateParams',

@@ -1,5 +1,6 @@
 import angular from 'angular';
 import lf from 'lovefield';
+import organizationCreatePartial from '../partial/create.html';
 
 export default class ReadOrganizationController {
   constructor(
@@ -129,7 +130,7 @@ export default class ReadOrganizationController {
     this.$mdDialog.show({
       controller: 'CreateOrganizationController',
       controllerAs: 'controller',
-      templateUrl: '/src/organization/partial/create.html',
+      template: organizationCreatePartial,
       clickOutsideToClose: true
     });
   }

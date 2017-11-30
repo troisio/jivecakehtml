@@ -25,16 +25,19 @@
           <tbody md-body>
             <tr md-row md-auto-select ng-repeat="itemData in group.itemData track by itemData.item.id">
               <td md-cell>
-                <a href="" ng-click="controller.viewItem(itemData.item)">{{itemData.item.name}}</a>
+                <div class="name">
+                  <a href="" ng-click="controller.viewItem(itemData.item)">{{itemData.item.name}}</a>
+                </div>
               </td>
-              <td md-cell>
-                <div ng-show="itemData.amount !== 0" class="amount" layout-align="column">
+              <td class="amount" md-cell>
+                <div ng-show="itemData.amount !== 0">
                   <span>{{group.event.currency | currencySymbolFilter}}</span>
                   <span>{{itemData.amount | number:2}}</span>
                 </div>
                 <span ng-show="itemData.amount === 0">free</span>
               </td>
               <td md-cell>
+                <ng-md-icon ng-show="controller.itemIsBlocked(group, itemData, auth)" icon="block"></ng-md-icon>
                 <!--
                 We're using ng-if here since if the login href is clicked, a dropdown from the (hidden) md-select is shown
                 Bug in angular material
@@ -44,10 +47,7 @@
                     <md-option ng-selected="$first" ng-repeat="number in itemData.amountSelections" ng-value="number">{{number}}</md-option>
                   </md-select>
                 </md-input-container>
-                <a href="" ng-click="controller.login()" ng-show="controller.requiresLogin(group, itemData, auth)">requires login</a>
-              </td>
-              <td md-cell>
-                <ng-md-icon ng-show="controller.itemIsBlocked(group, itemData, auth)" icon="block"></ng-md-icon>
+                <a href="" ng-click="controller.login()" ng-show="!controller.itemIsBlocked(group, itemData, auth) && controller.requiresLogin(group, itemData, auth)">requires login</a>
               </td>
             </tr>
           </tbody>

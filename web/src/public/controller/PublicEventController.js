@@ -1,3 +1,8 @@
+import viewEventPartial from '../partial/viewEvent.html';
+import viewItemPartial from '../partial/viewItem.html';
+import orderErrorPartial from '../partial/orderError.html';
+import consentPartial from '../../organization/partial/consent.html';
+
 export default class PublicEventController {
   constructor(
     $q,
@@ -222,7 +227,7 @@ export default class PublicEventController {
         $scope.time = new Date();
         $scope.$sanitize = $sanitize;
       }],
-      templateUrl: '/src/public/partial/viewEvent.html',
+      template: viewEventPartial,
       clickOutsideToClose: true,
       locals: {
         event: event,
@@ -292,7 +297,7 @@ export default class PublicEventController {
           if (response.status == 400 && Array.isArray(response.data)) {
             this.$mdDialog.show({
               controller: 'OrderErrorController',
-              templateUrl: '/src/public/partial/orderError.html',
+              template: orderErrorPartial,
               clickOutsideToClose: true,
               locals: {
                 errors: response.data
@@ -350,7 +355,7 @@ export default class PublicEventController {
             if (response.status == 400 && Array.isArray(response.data)) {
               this.$mdDialog.show({
                 controller: 'OrderErrorController',
-                templateUrl: '/src/public/partial/orderError.html',
+                template: orderErrorPartial,
                 clickOutsideToClose: true,
                 locals: {
                   errors: response.data
@@ -487,7 +492,7 @@ export default class PublicEventController {
         $scope.item = item;
         $scope.$sanitize = $sanitize;
       }],
-      templateUrl: '/src/public/partial/viewItem.html',
+      template: viewItemPartial,
       clickOutsideToClose: true,
       locals: {
         item: item
@@ -501,7 +506,7 @@ export default class PublicEventController {
       controller: ['$scope', function($scope) {
         $scope.text = atob(asset.data);
       }],
-      templateUrl: '/src/organization/partial/consent.html',
+      template: consentPartial,
       clickOutsideToClose: true
     });
   }

@@ -1,4 +1,5 @@
 import lf from 'lovefield';
+import transactionPartialView from '../partial/view.html';
 
 export default class ReadTransactionController {
   constructor(
@@ -31,6 +32,7 @@ export default class ReadTransactionController {
     this.toolsService = toolsService;
     this.db = db;
     this.Transaction = Transaction;
+    this.DEFAULT_DISPLAY_LIMIT = 100;
 
     $scope.selected = [];
     $scope.searchText = '';
@@ -80,53 +82,52 @@ export default class ReadTransactionController {
 
     this.$scope.$parent.ready.then(() => {
       return this.getWhereClause(this.$scope.searchText).then(whereClause => {
-        const storage = this.storageService.read();
-        return this.userService.refreshUserCacheFromTransactions(storage.auth.idToken, whereClause).then(() => {
-          return this.getRows(whereClause).then(data => {
-            const rows = data.map(datum => Object.assign({}, datum));
-
-            for (let row of rows) {
-              row.Transaction = this.toolsService.toObject(row.Transaction, this.Transaction);
-
-              /* This is slow, need to pre-process with lookup map */
-
-              if (row.Event.assignIntegerToRegistrant && row.Transaction.user_id !== null) {
-                const userData = row.Event.userData.find(userData => row.Transaction.user_id === userData.userId);
-
-                if (typeof userData !== 'undefined') {
-                  row.userData = userData;
-                }
-              } else {
-                row.userData = null;
-              }
-            }
-
-            this.$scope.data = rows;
-          });
+        return this.getRows(whereClause).then(data => {
+          this.$scope.data = data;
         });
       }).then(() => {
       }, () => {
         this.uiService.notify('Unable to retrieve data');
       }).then(() => {
         this.$scope.loading = false;
-        this.$timeout(() => {
-          this.$scope.$apply();
-        });
+        this.$timeout();
       })
     });
   }
 
   getRows(whereClause) {
-    return this.db.select(...this.selectColumns)
-      .from(this.transactionTable)
-      .innerJoin(this.itemTable, this.itemTable.id.eq(this.transactionTable.itemId))
-      .innerJoin(this.eventTable, this.eventTable.id.eq(this.itemTable.eventId))
-      .leftOuterJoin(this.userTable, this.userTable.user_id.eq(this.transactionTable.user_id))
-      .leftOuterJoin(this.assetTable, this.assetTable.entityId.eq(this.transactionTable.user_id))
-      .where(whereClause)
-      .limit(100)
-      .orderBy(this.transactionTable.timeCreated, lf.Order.DESC)
-      .exec();
+    const storage = this.storageService.read();
+
+    return this.userService.refreshUserCacheFromTransactions(storage.auth.idToken, whereClause).then(() => {
+      return this.db.select(...this.selectColumns)
+        .from(this.transactionTable)
+        .innerJoin(this.itemTable, this.itemTable.id.eq(this.transactionTable.itemId))
+        .innerJoin(this.eventTable, this.eventTable.id.eq(this.itemTable.eventId))
+        .leftOuterJoin(this.userTable, this.userTable.user_id.eq(this.transactionTable.user_id))
+        .leftOuterJoin(this.assetTable, this.assetTable.entityId.eq(this.transactionTable.user_id))
+        .where(whereClause)
+        .limit(this.DEFAULT_DISPLAY_LIMIT)
+        .orderBy(this.transactionTable.timeCreated, lf.Order.DESC)
+        .exec()
+        .then(data => {
+          const rows = data.map(datum => Object.assign({}, datum));
+
+          for (let row of rows) {
+            row.Transaction = this.toolsService.toObject(row.Transaction, this.Transaction);
+
+            /* This is slow, need to pre-process with lookup map */
+
+            if (row.Event.assignIntegerToRegistrant && row.Transaction.user_id !== null) {
+              const userData = row.Event.userData.find(userData => row.Transaction.user_id === userData.userId);
+              row.userData = typeof userData === 'undefined' ? null : userData;
+            } else {
+              row.userData = null;
+            }
+          }
+
+          return rows;
+        });
+    });
   }
 
   getWhereClause(text) {
@@ -155,6 +156,13 @@ export default class ReadTransactionController {
           }
         });
 
+        if (!hasFilter) {
+          const organizationIds = rows.map(permission => permission.objectId);
+          ands.push(
+            this.transactionTable.organizationId.in(organizationIds)
+          );
+        }
+
         if (typeof text !== 'undefined' && text.length > 0) {
           const escapedPattern= text.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
           const regex = new RegExp(escapedPattern, 'i');
@@ -175,13 +183,6 @@ export default class ReadTransactionController {
           );
         }
 
-        if (!hasFilter) {
-          const organizationIds = rows.map(permission => permission.objectId);
-          ands.push(
-            this.transactionTable.organizationId.in(organizationIds)
-          );
-        }
-
         return lf.op.and(...ands);
       });
   }
@@ -198,17 +199,18 @@ export default class ReadTransactionController {
     this.$scope.loading = true;
 
     this.$scope.$parent.ready.then(() => {
-      return this.getWhereClause(text).then((whereClause) => {
-        return this.getRows(whereClause)
-          .then(rows => {
-            this.$scope.data = rows;
-          });
-      });
-    }, () => {
-      this.uiService.notify('Unable to retrieve data');
-    }).then(() => {
-      this.$scope.loading = false;
-      this.$timeout();
+      return this.getWhereClause(text)
+        .then((whereClause) => this.getRows(whereClause))
+        .then((rows) => {
+          this.$scope.data = rows;
+        }, () => {
+          this.uiService.notify('Unable to retrieve data');
+        })
+        .then(() => {}, () => {})
+        .then(() => {
+          this.$scope.loading = false;
+          this.$timeout();
+        });
     });
   }
 
@@ -263,7 +265,7 @@ export default class ReadTransactionController {
     this.$mdDialog.show({
       controller: 'ViewTransactionController',
       controllerAs: 'controller',
-      templateUrl: '/src/transaction/partial/view.html',
+      template: transactionPartialView,
       clickOutsideToClose: true,
       locals: {
         transaction: transaction,

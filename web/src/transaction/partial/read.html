@@ -2,15 +2,22 @@
   <md-toolbar class="md-table-toolbar md-default">
     <div class="md-toolbar-tools">
       <ng-md-icon icon="search"></ng-md-icon>
-      <input flex ng-model="searchText" ng-change="controller.onSearchTextChange(searchText)" placeholder="search">
+      <input flex ng-model-options='{ debounce: 600 }' ng-model="searchText" ng-change="controller.onSearchTextChange(searchText)" placeholder="search">
       <ng-md-icon ng-click="controller.onSearchTextClear(searchText)" icon="close"></ng-md-icon>
     </div>
   </md-toolbar>
   <md-table-container>
     <table ng-model="selected" md-table md-row-select multiple>
       <tbody md-body>
+        <tr ng-show="loading" md-row>
+          <td md-cell colspan="4">
+            <div layout="row" layout-margin layout-align="center">
+              <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+            </div>
+          </td>
+        </tr>
         <tr ng-repeat="transactionData in data track by transactionData.Transaction.id" md-row md-auto-select>
-          <td md-cell class="transaction-user-td">
+          <td md-cell class="transaction-user">
             <div>
               <div>
                 <span ng-show="transactionData.User.user_id === null">{{transactionData.Transaction.given_name}} {{transactionData.Transaction.family_name}}</span>
@@ -27,12 +34,12 @@
               <div>
                 <span ng-show="transactionData.userData !== null"># {{transactionData.userData.number}}</span>
               </div>
-            </div>
-            <div ng-click="controller.showImage('https://storage.googleapis.com/' + transactionData.EntityAsset.assetId)" ng-if="transactionData.EntityAsset.assetId !== null">
-              <img ng-src="https://storage.googleapis.com/{{transactionData.EntityAsset.assetId}}">
+              <div ng-click="controller.showImage('https://storage.googleapis.com/' + transactionData.EntityAsset.assetId)" ng-if="transactionData.EntityAsset.assetId !== null">
+                <img ng-src="https://storage.googleapis.com/{{transactionData.EntityAsset.assetId}}">
+              </div>
             </div>
           </td>
-          <td md-cell>
+          <td class="payment" md-cell>
             <div ng-show="transactionData.Transaction.status === 0">
               <div ng-show="transactionData.Transaction.amount === 0">
                 <span class="payment-free">free</span>
@@ -87,13 +94,6 @@
         <tr ng-show="data.length === 0 && !loading" md-row>
           <td md-cell colspan="3">
             <span class="md-subheader">No data found</span>
-          </td>
-        </tr>
-        <tr ng-show="loading" md-row>
-          <td md-cell colspan="4">
-            <div layout="row" layout-margin layout-align="center">
-              <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-            </div>
           </td>
         </tr>
       </tbody>

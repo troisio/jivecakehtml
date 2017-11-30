@@ -37,7 +37,7 @@ import currencySymbolFilter from './angularcomponents/currencySymbolFilter';
 
 import jiveCakeClassModule from './class/module';
 import jiveCakeServiceModule from './service/module';
-import configuration from './application/configuration';
+import configuration from './configuration';
 
 import ApplicationController from './application/controller/ApplicationController';
 import HomeController from './application/controller/HomeController';

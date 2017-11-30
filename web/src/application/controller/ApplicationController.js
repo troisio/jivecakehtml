@@ -1,3 +1,6 @@
+import verifiedPartial from '../../access/partial/verified.html';
+import createOrganizationAndEventPartial from '../../event/partial/createOrganizationAndEvent.html';
+
 export default class ApplicationController {
   constructor(
     $scope,
@@ -93,7 +96,7 @@ export default class ApplicationController {
 
       if (showEmailUnverified) {
         this.$mdDialog.show({
-          templateUrl: '/src/access/partial/verified.html',
+          template: verifiedPartial,
           controller: 'EmailVerifiedController',
           controllerAs: 'controller',
           clickOutsideToClose: false
@@ -193,7 +196,7 @@ export default class ApplicationController {
     this.$mdDialog.show({
       controller: 'CreateOrganizationAndEventController',
       controllerAs: 'controller',
-      templateUrl: '/src/event/partial/createOrganizationAndEvent.html',
+      template: createOrganizationAndEventPartial,
       clickOutsideToClose: true
     });
   }

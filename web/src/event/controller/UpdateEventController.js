@@ -1,5 +1,7 @@
 import angular from 'angular';
 import TransactionService from '../../service/TransactionService';
+import createPaymentProfilePartial from '../../payment/profile/partial/create.html';
+import createConsentPartial from '../../organization/partial/createConsentAsset.html';
 
 export default class UpdateEventController {
   constructor(
@@ -142,7 +144,7 @@ export default class UpdateEventController {
   createPaymentProfile() {
     this.$mdDialog.show({
       controller: 'CreatePaymentProfileController',
-      templateUrl: '/src/payment/profile/partial/create.html',
+      template: createPaymentProfilePartial,
       controllerAs: 'controller',
       clickOutsideToClose: true,
       locals: {
@@ -260,7 +262,7 @@ export default class UpdateEventController {
     this.$mdDialog.show({
       controller: 'CreateConsentAssetController',
       controllerAs: 'controller',
-      templateUrl: '/src/organization/partial/createConsentAsset.html',
+      template: createConsentPartial,
       clickOutsideToClose: true,
       locals: {
         organization: {id: event.organizationId},

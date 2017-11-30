@@ -1,3 +1,5 @@
+import sessionWarningPartial from '../../access/partial/sessionWarning.html';
+
 export default class InterneralApplicationController {
   constructor(
     $mdDialog,
@@ -18,7 +20,7 @@ export default class InterneralApplicationController {
     this.$scope.ready.then(() => {
       this.$scope.$on('jivecakeapi.oauth.invalid_grant', () => {
         this.$mdDialog.show({
-          templateUrl: '/src/access/partial/sessionWarning.html',
+          template: sessionWarningPartial,
           controller: 'SessionWarningController',
           controllerAs: 'controller',
           clickOutsideToClose: true

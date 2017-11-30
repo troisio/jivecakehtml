@@ -1,5 +1,8 @@
 import lf from 'lovefield';
 import angular from 'angular';
+import eventFeedbackPartial from '../partial/eventActiveFeedback.html';
+import insufficientSubscriptionPartial from '../partial/insufficientSubscriptions.html';
+import createEventPartial from '../partial/create.html';
 
 export default class ReadEventController {
   constructor(
@@ -135,7 +138,7 @@ export default class ReadEventController {
             }
           })
         }],
-        templateUrl: '/src/event/partial/eventActiveFeedback.html',
+        template: eventFeedbackPartial,
         clickOutsideToClose: false,
         locals: {
           event: eventData.Event
@@ -155,7 +158,7 @@ export default class ReadEventController {
             this.$mdDialog.show({
               controllerAs: 'controller',
               controller: 'InsufficientSubscriptionController',
-              templateUrl: '/src/event/partial/insufficientSubscriptions.html',
+              template: insufficientSubscriptionPartial,
               clickOutsideToClose: true,
               locals: {
                 subscriptionId: subscriptionId,
@@ -233,7 +236,7 @@ export default class ReadEventController {
     this.$mdDialog.show({
       controller: 'CreateEventController',
       controllerAs: 'controller',
-      templateUrl: '/src/event/partial/create.html',
+      template: createEventPartial,
       clickOutsideToClose: true
     });
   }

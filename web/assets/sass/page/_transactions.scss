@@ -11,18 +11,28 @@
     outline: none;
   }
 
-  .transaction-user-td {
-    > div {
-      display:inline-block;
+  @media screen and (max-width: 500px) {
+    .transaction-user > div {
+      width: 30vw;
+
+      div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 
-  .transaction-user-td {
+  .transaction-user {
     img {
       border-radius: 50%;
       height: 2em;
       border: 1px solid aliceblue;
       box-shadow: 2px 2px 2px #888888;
     }
+  }
+
+  td.payment {
+    white-space: nowrap;
   }
 }

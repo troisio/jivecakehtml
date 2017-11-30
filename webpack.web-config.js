@@ -10,6 +10,7 @@ module.exports = function(env) {
   return {
     entry: {
       bundle: path.resolve(__dirname, 'web/src/index.js'),
+      worker: path.resolve(__dirname, 'web/src/worker.js'),
       index: path.resolve(__dirname, 'web/assets/sass/index.scss'),
       landingcss: path.resolve(__dirname, 'web/assets/sass/landing.scss'),
       landingjs: path.resolve(__dirname, 'web/src/landing.js')
@@ -20,6 +21,18 @@ module.exports = function(env) {
     },
     module: {
       rules: [
+        {
+          test: /\.(html)$/,
+          exclude: /(node_modules)|(web\/index-template\.html)/,
+          use: [
+            {
+              loader: 'html-loader',
+              options: {
+                minimize: true
+              }
+            }
+          ]
+        },
         {
           test: /\.(js)$/,
           exclude: /node_modules/,

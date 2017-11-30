@@ -15,7 +15,18 @@
     .consent {
       span {
         font-size: 0.7em;
+      }
     }
+
+    .name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 30vw;
     }
+  }
+
+  td.amount {
+    white-space: nowrap;
   }
 }

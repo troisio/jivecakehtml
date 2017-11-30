@@ -1,18 +1,24 @@
-<div ng-show="uiReady">
+<div ng-show="uiReady" class="read-item-page">
   <md-table-container>
     <table ng-model="selected" md-table md-row-select multiple>
       <tbody md-body>
         <tr md-row md-auto-select ng-repeat="itemData in data track by itemData.Item.id">
           <td md-cell class="name">
-            <p>{{itemData.Item.name}}</p>
-            <a ui-sref="application.internal.event.read({highlight: itemData.Event.id})">{{itemData.Event.name}}</a>
+            <div>
+              <p>{{itemData.Item.name}}</p>
+              <a ui-sref="application.internal.event.read({highlight: itemData.Event.id})">{{itemData.Event.name}}</a>
+            </div>
           </td>
-          <td md-cell>
-            <a ui-sref="application.internal.transaction.read({itemId: itemData.Item.id})">{{itemData.transactionCount}}</a><span>&nbsp;/&nbsp;</span><span ng-show="itemData.Item.totalAvailible === null">&infin;</span><span ng-show="itemData.Item.totalAvailible !== null">{{itemData.Item.totalAvailible}}</span>
+          <td md-cell class="count">
+            <a ui-sref="application.internal.transaction.read({itemId: itemData.Item.id})">{{itemData.transactionCount}}</a>
+            <span>&nbsp;/&nbsp;</span><span ng-show="itemData.Item.totalAvailible === null">&infin;</span>
+            <span ng-show="itemData.Item.totalAvailible !== null">{{itemData.Item.totalAvailible}}</span>
           </td>
-          <td md-cell>
+          <td md-cell class="publish">
             <md-input-container class="md-block">
-              <md-checkbox ng-model="itemData.Item.status" ng-true-value="0" ng-false-value="1" ng-change="controller.toggleStatus(itemData.Item)" aria-label="Active">active</md-checkbox>
+              <md-checkbox ng-model="itemData.Item.status" ng-true-value="0" ng-false-value="1" ng-change="controller.toggleStatus(itemData.Item)" aria-label="Publish">
+                <span class="publish">publish</span>
+              </md-checkbox>
             </md-input-container>
           </td>
           <td md-cell>
@@ -31,13 +37,6 @@
                     <span md-menu-align-target>update</span>
                   </md-button>
                 </md-menu-item>
-<!--
-                <md-menu-item>
-                  <md-button ng-href="{{apiUrl + '/transaction/excel?itemId=' + itemData.item.id + '&Authorization=Bearer ' + token}}">
-                    <span md-menu-align-target>download transactions</span>
-                  </md-button>
-                </md-menu-item>
--->
                 <md-menu-item>
                   <md-button ng-click="controller.delete(itemData, $event)">
                     <span md-menu-align-target>delete</span>

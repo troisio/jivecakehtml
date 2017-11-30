@@ -1,3 +1,19 @@
+import applicationPartialIndex from './application/partial/index.html';
+import applicationInternal from './application/partial/internal.html';
+import accessPartialOAuthRedirect from './access/partial/oauthRedirect.html';
+import eventPartialRead from './event/partial/read.html';
+import itemPartialRead from './item/partial/read.html';
+import itemPartialUpdate from './item/partial/update.html';
+import eventPartialUpdate from './event/partial/update.html';
+import organizationRead from './organization/partial/read.html';
+import organizationUpdate from './organization/partial/update.html';
+import transactionRead from './transaction/partial/read.html';
+import transactionCreate from './transaction/partial/create.html';
+import accountPartial from './user/partial/update.html';
+import myTransactionPartial from './transaction/partial/myTransaction.html';
+import publicPartialEvent from './public/partial/event.html';
+import checkoutConfirmationPartial from './checkout/partial/confirmation.html';
+
 export default [
   '$locationProvider',
   '$stateProvider',
@@ -42,17 +58,17 @@ export default [
     $stateProvider.state('application', {
       controller: 'ApplicationController',
       controllerAs: 'controller',
-      templateUrl: '/src/application/partial/index.html',
+      template: applicationPartialIndex,
       abstract: true
     })
     .state('application.internal', {
       controller: 'InternalApplicationController',
-      templateUrl: '/src/application/partial/internal.html'
+      template: applicationInternal
     })
     .state('application.oauthRedirect', {
       url: '/oauth/redirect?state&code',
       controller: 'OAuthRedirectController',
-      templateUrl: '/src/access/partial/oauthRedirect.html'
+      template: accessPartialOAuthRedirect
     })
     .state('application.internal.event', {
       abstract: true,
@@ -62,13 +78,13 @@ export default [
     })
     .state('application.internal.event.read', {
       url : '?organizationId&highlight',
-      templateUrl: '/src/event/partial/read.html',
+      template: eventPartialRead,
       controller: 'ReadEventController',
       controllerAs: 'controller'
     })
     .state('application.internal.event.update', {
       url : '/{eventId}/update',
-      templateUrl: '/src/event/partial/update.html',
+      template: eventPartialUpdate,
       controller: 'UpdateEventController',
       controllerAs: 'controller'
     })
@@ -80,13 +96,13 @@ export default [
     })
     .state('application.internal.item.read', {
       url : '?eventId&highlight',
-      templateUrl: '/src/item/partial/read.html',
+      template: itemPartialRead,
       controller: 'ReadItemController',
       controllerAs: 'controller'
     })
     .state('application.internal.item.update', {
       url: '/{itemId}/update',
-      templateUrl: '/src/item/partial/update.html',
+      template: itemPartialUpdate,
       controller: 'UpdateItemController',
       controllerAs: 'controller'
     })
@@ -97,13 +113,13 @@ export default [
     })
     .state('application.internal.organization.read', {
       url: '/organization?highlight',
-      templateUrl: '/src/organization/partial/read.html',
+      template: organizationRead,
       controller: 'ReadOrganizationController',
       controllerAs: 'controller'
     })
     .state('application.internal.organization.update', {
       url: '/organization/{organizationId}/update',
-      templateUrl: '/src/organization/partial/update.html',
+      template: organizationUpdate,
       controller: 'UpdateOrganizationController',
       controllerAs: 'controller'
     })
@@ -115,19 +131,19 @@ export default [
     })
     .state('application.internal.transaction.read', {
       url: '?organizationId&eventId&itemId&id',
-      templateUrl: '/src/transaction/partial/read.html',
+      template: transactionRead,
       controller: 'ReadTransactionController',
       controllerAs: 'controller'
     })
     .state('application.internal.transaction.create', {
       url: '/{itemId}/create',
-      templateUrl: '/src/transaction/partial/create.html',
+      template: transactionCreate,
       controller: 'CreateTransactionController',
       controllerAs: 'controller'
     })
     .state('application.internal.account', {
       url: '/update',
-      templateUrl: '/src/user/partial/update.html',
+      template: accountPartial,
       controller: 'UpdateAccountController',
       controllerAs: 'controller'
     })
@@ -138,19 +154,19 @@ export default [
     })
     .state('application.event', {
       url: '/e/{hash}',
-      templateUrl: '/src/public/partial/event.html',
+      template: publicPartialEvent,
       controller: 'PublicEventController',
       controllerAs: 'controller'
     })
     .state('application.internal.myTransaction', {
       url: '/transaction/{user_id}',
-      templateUrl: '/src/transaction/partial/myTransaction.html',
+      template: myTransactionPartial,
       controller: 'MyTransactionController',
       controllerAs: 'controller'
     })
     .state('application.checkoutConfirmation', {
       url: '/confirmation',
-      templateUrl: '/src/checkout/partial/confirmation.html',
+      template: checkoutConfirmationPartial,
       controller: 'ConfirmationController',
       controllerAs: 'controller'
     });

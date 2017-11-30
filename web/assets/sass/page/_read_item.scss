@@ -1,0 +1,28 @@
+.read-item-page {
+  @media screen and (max-width: 500px) {
+    td {
+      padding: 0 !important;
+    }
+
+    td.name > div {
+      width: 30vw;
+
+      > * {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    td.count * {
+      display: none;
+    }
+
+    span.publish {
+      display: none;
+    }
+  }
+
+  td.name, td.count {
+    white-space: nowrap;
+  }
+}
