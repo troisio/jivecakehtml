@@ -155,8 +155,14 @@ const module = angular.module('jivecakeweb', [
 
 .controller('UpdateAccountController', UpdateAccountController);
 
+try {
+  indexedDB.deleteDatabase('jivecake');
+} catch (e) {
+  console.log(e);
+}
+
 builder.connect({
-  storeType: lf.schema.DataStoreType.INDEXED_DB,
+  storeType: lf.schema.DataStoreType.MEMORY,
   onUpgrade: function(db) {
     const tablesInSchema = builder.getSchema().tables().map(table => table.getName());
     const rawDB = db.getRawDBInstance();

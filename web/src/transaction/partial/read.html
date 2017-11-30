@@ -9,13 +9,6 @@
   <md-table-container>
     <table ng-model="selected" md-table md-row-select multiple>
       <tbody md-body>
-        <tr ng-show="loading" md-row>
-          <td md-cell colspan="4">
-            <div layout="row" layout-margin layout-align="center">
-              <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-            </div>
-          </td>
-        </tr>
         <tr ng-repeat="transactionData in data track by transactionData.Transaction.id" md-row md-auto-select>
           <td md-cell class="transaction-user">
             <div>
@@ -94,6 +87,13 @@
         <tr ng-show="data.length === 0 && !loading" md-row>
           <td md-cell colspan="3">
             <span class="md-subheader">No data found</span>
+          </td>
+        </tr>
+        <tr ng-show="loading" md-row>
+          <td md-cell colspan="4">
+            <div layout="row" layout-margin layout-align="center">
+              <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+            </div>
           </td>
         </tr>
       </tbody>
