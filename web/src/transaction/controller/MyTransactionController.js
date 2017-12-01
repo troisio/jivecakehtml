@@ -92,7 +92,8 @@ export default class MyTransactionController {
       locals: {
         transaction: row.Transaction,
         item: row.Item,
-        user: storage.profile
+        user: storage.profile,
+        event: row.Event
       }
     });
   }

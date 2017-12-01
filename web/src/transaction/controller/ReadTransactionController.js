@@ -261,7 +261,7 @@ export default class ReadTransactionController {
       });
   }
 
-  readTransaction(transaction, item, user) {
+  readTransaction(transaction, event, item, user) {
     this.$mdDialog.show({
       controller: 'ViewTransactionController',
       controllerAs: 'controller',
@@ -269,6 +269,7 @@ export default class ReadTransactionController {
       clickOutsideToClose: true,
       locals: {
         transaction: transaction,
+        event: event,
         item: item,
         user: user
       }

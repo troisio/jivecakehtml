@@ -1,9 +1,11 @@
 export default class ViewTransactionController {
-  constructor($scope, storageService, paypalService, transactionService, item, transaction, user) {
+  constructor($scope, storageService, paypalService, transactionService, event, item, transaction, user) {
     this.$scope = $scope;
     this.storageService = storageService;
     this.paypalService = paypalService;
     this.transactionService = transactionService;
+    this.event = event;
+    this.user = user;
     $scope.item = item;
     $scope.transaction = transaction;
     $scope.user = user;
@@ -15,7 +17,9 @@ export default class ViewTransactionController {
 
   run() {
     const storage = this.storageService.read();
-    this.$scope.profile = storage.profile;
+
+    const eventData = this.event.userData.find(data => this.user != null && data.userId === this.user.user_id);
+    this.$scope.userData = typeof eventData === 'undefined' ? null : eventData;
 
     const isPendingPaypal = this.$scope.transaction.status === this.transactionService.PENDING &&
       this.$scope.transaction.linkedObjectClass === 'PaypalPayment';
@@ -37,6 +41,7 @@ ViewTransactionController.$inject = [
   'StorageService',
   'PaypalService',
   'TransactionService',
+  'event',
   'item',
   'transaction',
   'user'

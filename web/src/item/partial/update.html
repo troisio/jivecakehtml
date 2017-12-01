@@ -22,6 +22,10 @@
         <label>Price</label>
         <input type="number" step="0.01" ng-model="item.amount" min="0" ng-required="!free">
       </md-input-container>
+      <div class="note" ng-show="!free">
+        <span>Your customers pay the above amount.</span>
+        <span>Refer to <a href="https://www.paypal.com/en/webapps/mpp/paypal-fees">Paypal's fee policy</a> or <a href="https://stripe.com/pricing">Stripe's pricing policy</a> for fee information</span>
+      </div>
       <div>
         <h5>Timezone {{currentDate| browserTimeZoneAbbreviation}}</h5>
       </div>
@@ -120,7 +124,7 @@
                   </div>
                 </td>
                 <td md-cell>
-                  <ng-md-icon ng-click="controller.addTimeAmount(amount, time)" icon="add"></ng-md-icon>
+                  <a href="" ng-click="controller.addTimeAmount(amount, time)">add</a>
                 </td>
               </tr>
               <tr ng-show="item.timeAmounts === 0" md-row layout-padding>
