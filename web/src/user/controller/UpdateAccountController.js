@@ -104,7 +104,7 @@ export default class UpdateAccountController {
     const storage = this.storageService.read();
     let imageFuture;
 
-    if (this.$scope.croppedImage === '') {
+    if (this.$scope.croppedImage === '' || this.$scope.croppedImage === null) {
       imageFuture = this.$q.resolve();
     } else {
       const index = this.$scope.croppedImage.indexOf(';base64,') + ';base64,'.length;

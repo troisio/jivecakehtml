@@ -77,6 +77,18 @@ export default class PublicEventController {
     groupFuture.then((data) => {
       const group = this.getGroupData(data);
 
+      group.itemData.sort((first, second) => {
+        if (first.amountSelections.length === 1) {
+          return 1;
+        }
+
+        if (second.amountSelections.length === 1) {
+          return -1;
+        }
+
+        return first.item.name.localeCompare(second.item.name);
+      });
+
       for (let itemData of group.itemData) {
         const canDisplayItem = (
           itemData.item.totalAvailible === null ||
@@ -310,7 +322,7 @@ export default class PublicEventController {
 
         orderFuture.then(() => {
           defer.resolve();
-        })
+        });
       },
       closed: function () {
         defer.reject();
@@ -419,52 +431,72 @@ export default class PublicEventController {
 
       const storage = this.storageService.read();
 
-      if (hasPaidItem) {
-        const validProfile = group.profile instanceof this.StripePaymentProfile ||
-          group.profile instanceof this.PaypalPaymentProfile;
+      let accountInformationFuture;
 
-        if (validProfile) {
-          let future;
-
-          if (this.mustUpdateAccountName(group) && storage.auth !== null) {
-            future = this.updateAccountInformation(information);
-          } else {
-            future = Promise.resolve();
+      if (this.showFirstNameAndLastName(group, storage.auth) && storage.auth !== null) {
+        accountInformationFuture = this.auth0Service.updateUser(
+          storage.auth.idToken,
+          storage.auth.idTokenPayload.sub,
+          {
+            email: storage.profile.email,
+            user_metadata: {
+              given_name: information.firstName,
+              family_name: information.lastName
+            }
           }
-
-          future.then(() => {
-            if (group.profile instanceof this.StripePaymentProfile) {
-              this.processStripe(group, information);
-            } else if (group.profile instanceof this.PaypalPaymentProfile) {
-              this.processPaypal(group, information);
-            }
-          }, () => {
-            this.uiService.notify('Unable to update your account');
-          });
-        } else {
-          throw new Error('invalid payment profile implementation');
-        }
-      } else {
-        const unpaidFutures = group.itemData
-          .filter(itemData => itemData.amount === 0)
-          .map((itemData) => {
-              return this.transactionService.purchase(
-                storage.auth.idToken,
-                itemData.item.id,
-                {quantity: itemData.selected}
-              );
-            }
-          );
-
-        Promise.all(unpaidFutures).then(() => {
-        }, () => {
-          this.uiService.notify('We were not able to process all of your orders');
-        }).then(() => {
-          this.$state.go('application.internal.myTransaction', {
-            user_id: storage.auth.idTokenPayload.sub
-          });
+        ).then((profile) => {
+          storage.profile = profile;
+          this.storageService.write(storage);
         })
+      } else {
+        accountInformationFuture = Promise.resolve();
       }
+
+      accountInformationFuture
+        .then(() => {}, () => {})
+        .then(() => {
+          if (hasPaidItem) {
+            const validProfile = group.profile instanceof this.StripePaymentProfile ||
+              group.profile instanceof this.PaypalPaymentProfile;
+
+            if (validProfile) {
+              if (group.profile instanceof this.StripePaymentProfile) {
+                this.processStripe(group, information);
+              } else if (group.profile instanceof this.PaypalPaymentProfile) {
+                this.processPaypal(group, information);
+              }
+            } else {
+              throw new Error('invalid payment profile implementation');
+            }
+          } else {
+            this.uiService.notify('Processing your order...');
+
+            const unpaidFutures = group.itemData
+              .filter(itemData => itemData.amount === 0 && itemData.selected > 0)
+              .map((itemData) => {
+                  return this.transactionService.purchase(
+                    storage.auth.idToken,
+                    itemData.item.id,
+                    {quantity: itemData.selected}
+                  );
+                }
+              );
+
+            Promise.all(unpaidFutures).then(() => {
+              this.uiService.notify('Payment complete');
+            }, () => {
+              this.uiService.notify('We were not able to process all of your orders');
+            }).then(() => {
+              this.downstreamService.cacheUserTransactions(storage.auth)
+                .then(() => {}, () => {})
+                .then(() => {
+                  this.$state.go('application.internal.myTransaction', {
+                    user_id: storage.auth.idTokenPayload.sub
+                  });
+                });
+            })
+          }
+        });
     } else {
       this.uiService.notify('Consent field not checked');
     }
@@ -511,29 +543,10 @@ export default class PublicEventController {
     });
   }
 
-  updateAccountInformation(information) {
-    const storage = this.storageService.read();
-    const body = {
-      email: storage.profile.email,
-      user_metadata: {
-        given_name: information.firstName,
-        family_name: information.lastName
-      }
-    };
-
-    return this.auth0Service.updateUser(
-      storage.auth.idToken,
-      storage.auth.idTokenPayload.sub,
-      body
-    );
-  }
-
-  mustUpdateAccountName(group) {
-    const storage = this.storageService.read();
-
+  mustUpdateAccountName(group, auth) {
     let result;
 
-    if (storage.auth === null) {
+    if (auth === null) {
       result = true;
     } else {
       result = !this.userService.hasFirstAndLastName(this.profile) && group.event.requireName;
