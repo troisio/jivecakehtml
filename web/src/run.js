@@ -30,7 +30,7 @@ export default [
   invitation to organization
 */
     $transitions.onFinish({
-      from: 'application.public.oauthRedirect',
+      from: 'application.oauthRedirect',
       to: ''
     }, (transition) => {
       transition.promise.then(() => {

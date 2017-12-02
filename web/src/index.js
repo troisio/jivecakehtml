@@ -40,7 +40,6 @@ import jiveCakeServiceModule from './service/module';
 import configuration from './configuration';
 
 import ApplicationController from './application/controller/ApplicationController';
-import HomeController from './application/controller/HomeController';
 import InternalApplicationController from './application/controller/InternalApplicationController';
 
 import ConfirmationController from './checkout/controller/ConfirmationController';
@@ -114,7 +113,6 @@ const module = angular.module('jivecakeweb', [
 .config(configuration)
 .run(run)
 .controller('ApplicationController', ApplicationController)
-.controller('HomeController', HomeController)
 .controller('InternalApplicationController', InternalApplicationController)
 
 .controller('ConfirmationController', ConfirmationController)

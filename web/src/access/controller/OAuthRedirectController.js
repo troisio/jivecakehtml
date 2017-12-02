@@ -120,7 +120,7 @@ export default class OAuthRedirectController {
 
               const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
 
-              if (routerParameters !== null && routerParameters.name === 'application.public.event') {
+              if (routerParameters !== null && routerParameters.name === 'application.event') {
                 this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
               } else if (transactionsInPreviousWeek.length > 0) {
                 this.$state.go('application.internal.transaction.read', {}, {reload: true});
