@@ -30,7 +30,7 @@
         <h5>Timezone {{currentDate| browserTimeZoneAbbreviation}}</h5>
       </div>
       <div layout="row">
-        <md-datepicker md-placeholder="Start Date" ng-model="timeStart.time"></md-datepicker>
+        <md-datepicker md-placeholder="Start Time" ng-model="timeStart.time"></md-datepicker>
         <md-input-container class="md-block">
           <md-select ng-model="timeStart.hour" aria-label="Start Time Hour">
             <md-option ng-value="null"></md-option>
@@ -45,7 +45,7 @@
         </md-input-container>
       </div>
       <div layout="row">
-        <md-datepicker md-placeholder="End Date" ng-model="timeEnd.time"></md-datepicker>
+        <md-datepicker md-placeholder="End Time" ng-model="timeEnd.time"></md-datepicker>
         <md-input-container class="md-block">
           <md-select ng-model="timeEnd.hour" name="timeEndHour" aria-label="End Time Hour">
             <md-option ng-value="null">

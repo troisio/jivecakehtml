@@ -1,7 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const LiveReloadPlugin = require('webpack-livereload-plugin');
 const packageJson = require('./package.json');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -10,7 +9,6 @@ module.exports = function(env) {
   return {
     entry: {
       bundle: path.resolve(__dirname, 'web/src/index.js'),
-      worker: path.resolve(__dirname, 'web/src/worker.js'),
       index: path.resolve(__dirname, 'web/assets/sass/index.scss'),
       landingcss: path.resolve(__dirname, 'web/assets/sass/landing.scss'),
       landingjs: path.resolve(__dirname, 'web/src/landing.js')
@@ -105,10 +103,7 @@ module.exports = function(env) {
       new webpack.optimize.UglifyJsPlugin({
         sourceMap: sourceMap
       }),
-      new ExtractTextPlugin(`[name]-${packageJson.version}.css`),
-      new LiveReloadPlugin({
-        ignore: /node_modules/
-      })
+      new ExtractTextPlugin(`[name]-${packageJson.version}.css`)
     ]
   };
 };

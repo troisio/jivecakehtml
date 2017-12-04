@@ -6,7 +6,6 @@
       </md-list-item>
       <md-list-item ng-show="item.timeStart !== null || item.timeEnd !== null" class="layout-padding md-1-line">
         <div class="md-list-item-text" layout="column">
-          <h4 ng-show="item.timeStart !== null && item.timeEnd !== null">Time</h4>
           <h4 ng-show="item.timeEnd === null">Start Time</h4>
           <h4 ng-show="item.timeStart === null">End Time</h4>
           <div layout-padding>
@@ -19,7 +18,9 @@
       </md-list-item>
       <md-list-item ng-show="item.description" class="layout-padding md-1-line">
         <div class="md-list-item-text" layout="column">
-          <pre layout-padding marked="$sanitize(item.description)"></pre>
+          <p>
+            {{item.description}}
+          </p>
         </div>
       </md-list-item>
     </md-list>

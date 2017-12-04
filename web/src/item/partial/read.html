@@ -2,21 +2,21 @@
   <md-table-container>
     <table ng-model="selected" md-table md-row-select multiple>
       <tbody md-body>
-        <tr md-row md-auto-select ng-repeat="itemData in data track by itemData.Item.id">
+        <tr md-row md-auto-select ng-repeat="itemData in data track by itemData.item.id">
           <td md-cell class="name">
             <div>
-              <p>{{itemData.Item.name}}</p>
-              <a ui-sref="application.internal.event.read({highlight: itemData.Event.id})">{{itemData.Event.name}}</a>
+              <p>{{itemData.item.name}}</p>
+              <a ui-sref="application.internal.event.read({highlight: itemData.event.id})">{{itemData.event.name}}</a>
             </div>
           </td>
           <td md-cell class="count">
-            <a ui-sref="application.internal.transaction.read({itemId: itemData.Item.id})">{{itemData.transactionCount}}</a>
-            <span>&nbsp;/&nbsp;</span><span ng-show="itemData.Item.totalAvailible === null">&infin;</span>
-            <span ng-show="itemData.Item.totalAvailible !== null">{{itemData.Item.totalAvailible}}</span>
+            <a ui-sref="application.internal.transaction.read({itemId: itemData.item.id})">{{itemData.transactions.length}}</a>
+            <span>&nbsp;/&nbsp;</span><span ng-show="itemData.item.totalAvailible === null">&infin;</span>
+            <span ng-show="itemData.item.totalAvailible !== null">{{itemData.item.totalAvailible}}</span>
           </td>
           <td md-cell class="publish">
             <md-input-container class="md-block">
-              <md-checkbox ng-model="itemData.Item.status" ng-true-value="0" ng-false-value="1" ng-change="controller.toggleStatus(itemData.Item)" aria-label="Publish">
+              <md-checkbox ng-model="itemData.item.status" ng-true-value="0" ng-false-value="1" ng-change="controller.toggleStatus(itemData.item)" aria-label="Publish">
                 <span class="publish">publish</span>
               </md-checkbox>
             </md-input-container>
@@ -28,12 +28,12 @@
               </md-button>
               <md-menu-content width="2">
                 <md-menu-item>
-                  <md-button ui-sref="application.internal.transaction.create({itemId: itemData.Item.id})">
+                  <md-button ui-sref="application.internal.transaction.create({itemId: itemData.item.id})">
                     <span md-menu-align-target>create transaction</span>
                   </md-button>
                 </md-menu-item>
                 <md-menu-item>
-                  <md-button ui-sref="application.internal.item.update({itemId: itemData.Item.id})">
+                  <md-button ui-sref="application.internal.item.update({itemId: itemData.item.id})">
                     <span md-menu-align-target>update</span>
                   </md-button>
                 </md-menu-item>
@@ -44,7 +44,7 @@
                 </md-menu-item>
               </md-menu-content>
             </md-menu>
-            <md-button ui-sref="application.internal.transaction.read({itemId: itemData.Item.id})" aria-label="View Transactions" class="md-icon-button">
+            <md-button ui-sref="application.internal.transaction.read({itemId: itemData.item.id})" aria-label="View Transactions" class="md-icon-button">
               <ng-md-icon icon="arrow_forward"></ng-md-icon>
             </md-button>
           </td>

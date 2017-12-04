@@ -3,19 +3,15 @@
     <tbody md-body>
       <tr md-row md-auto-select ng-repeat="row in rows track by row.Transaction.id">
         <td md-cell>
-          <a href="" ng-click="controller.viewItem(row.Item)">{{row.Item.name}}</a>
+          <a ng-show="!(row.Item.description === null && row.Item.timeStart === null && row.Item.timeEnd === null)" href="" ng-click="controller.viewItem(row.Item)">{{row.Item.name}}</a>
+          <span ng-show="row.Item.description === null && row.Item.timeStart === null && row.Item.timeEnd === null">{{row.Item.name}}</span>
         </td>
         <td md-cell>
           <md-menu md-position-mode="target-right target">
-            <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
+            <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="controller.readTransaction(row)">
               <ng-md-icon icon="more_vert"></ng-md-icon>
             </md-button>
             <md-menu-content width="2">
-              <md-menu-item>
-                <md-button ng-click="controller.readTransaction(row)">
-                  <span md-menu-align-target>view transaction</span>
-                </md-button>
-              </md-menu-item>
             </md-menu-content>
           </md-menu>
         </td>

@@ -3,7 +3,6 @@ import createItemPartial from '../partial/create.html';
 
 export default class ReadItemController {
   constructor(
-    $q,
     $timeout,
     $scope,
     $state,
@@ -17,7 +16,6 @@ export default class ReadItemController {
     db,
     Permission
   ) {
-    this.$q = $q;
     this.$timeout = $timeout;
     this.$scope = $scope;
     this.$state = $state;
@@ -119,57 +117,49 @@ export default class ReadItemController {
         .innerJoin(permissionTable, permissionTable.objectId.eq(itemTable.organizationId))
         .leftOuterJoin(transactionTable, transactionTable.itemId.eq(itemTable.id))
         .where(lf.op.and(...ands))
-        .orderBy(itemTable.status, lf.Order.ASC)
-        .orderBy(itemTable.lastActivity, lf.Order.DESC)
         .exec()
         .then(rows => {
-          const data = [];
-
-          if (rows.length > 0) {
-            data.push(Object.assign({
-              transactionCount: 0
-            }, rows[0]));
-          }
+          const itemData = {};
 
           for (let row of rows) {
-            let itemData;
-            const lastItem = data[data.length - 1];
-
-            if (row.Item.id === lastItem.Item.id) {
-              itemData = lastItem;
-            } else {
-              itemData = Object.assign({
-                transactionCount: 0
-              }, row);
-              data.push(itemData);
+            if (! (row.Item.id in itemData)) {
+              itemData[row.Item.id] = {transactions: []};
             }
 
-            const usedForCounting = this.transactionService.countingFilter(row.Transaction);
-
-            if (usedForCounting) {
-              itemData.transactionCount += row.Transaction.quantity;
-            }
+            const itemDatum = itemData[row.Item.id];
+            itemDatum.item = row.Item;
+            itemDatum.transactions.push(row.Transaction);
+            itemDatum.permission = row.Permission;
+            itemDatum.event = row.Event;
           }
 
-          data.sort(function(first, second) {
-            let result = second.status - first.status;
+          const items = [];
+
+          for (let key in itemData) {
+            const itemDatum = itemData[key];
+            itemDatum.transactions = itemDatum.transactions.filter(this.transactionService.countingFilter);
+            items.push(itemDatum);
+          }
+
+          items.sort((first, second) => {
+            let result = second.item.status - first.item.status;
 
             if (result === 0) {
-              result = second.lastActivity - first.lastActivity;
+              result = second.item.lastActivity - first.item.lastActivity;
             }
 
             return result;
-          });
+          })
 
-          const item = data.find(datum => datum.Item.id === this.$state.params.highlight);
-          const index = data.indexOf(item);
+          const index = items.findIndex(item => item.item.id === this.$state.params.highlight);
 
           if (index > -1) {
-            data.splice(index, 1);
-            data.unshift(item);
+            const item = items[index];
+            items.splice(index, 1);
+            items.unshift(item);
           }
 
-          this.$scope.data = data;
+          this.$scope.data = items;
         }, () => {
           this.uiService.notify('Unable to retrieve data');
         });
@@ -244,7 +234,6 @@ export default class ReadItemController {
 }
 
 ReadItemController.$inject = [
-  '$q',
   '$timeout',
   '$scope',
   '$state',

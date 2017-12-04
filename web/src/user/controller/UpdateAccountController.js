@@ -151,8 +151,9 @@ export default class UpdateAccountController {
     this.$q.all([imageFuture, userUpdateFuture]).then(() => {
       this.uiService.notify('Successfully updated');
       this.run();
-    }, () => {
-      this.uiService.notify('Unable to update user');
+    }, (response) => {
+      const text = response.status === 409 ? 'Email has already been taken' : 'Unable to update user';
+      this.uiService.notify(text);
     }).finally(() => {
       this.$scope.loading = false;
       this.reset();

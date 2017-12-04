@@ -7,6 +7,7 @@ export default class ViewTransactionController {
     this.event = event;
     this.user = user;
     $scope.item = item;
+    $scope.event = event;
     $scope.transaction = transaction;
     $scope.user = user;
     $scope.time = new Date();

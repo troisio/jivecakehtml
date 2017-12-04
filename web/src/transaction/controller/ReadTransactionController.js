@@ -32,7 +32,7 @@ export default class ReadTransactionController {
     this.toolsService = toolsService;
     this.db = db;
     this.Transaction = Transaction;
-    this.DEFAULT_DISPLAY_LIMIT = 100;
+    this.DEFAULT_DISPLAY_LIMIT = 200;
 
     $scope.selected = [];
     $scope.searchText = '';

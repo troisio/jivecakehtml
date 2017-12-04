@@ -1,5 +1,6 @@
 import './polyfill/assign';
 import './polyfill/find';
+import './polyfill/findIndex';
 import './polyfill/from';
 import 'whatwg-fetch';
 
