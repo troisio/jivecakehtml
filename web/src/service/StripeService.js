@@ -14,15 +14,18 @@ export default class StripeService {
     const queries = [
       {
         organizationId: organizationId,
-        plan: this.MONTHLY_TRIAL_ID
+        plan: this.MONTHLY_TRIAL_ID,
+        status: 'all'
       },
       {
         email: user.email,
-        plan: this.MONTHLY_TRIAL_ID
+        plan: this.MONTHLY_TRIAL_ID,
+        status: 'all'
       },
       {
         email: user.email,
-        plan: this.MONTHLY_TRIAL_ID
+        plan: this.MONTHLY_TRIAL_ID,
+        status: 'all'
       }
     ];
 
