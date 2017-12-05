@@ -159,6 +159,38 @@ const initializeOnBoading = (form) => {
 };
 
 $(document).ready(() => {
+  const memoizedEventSearch = {};
+  const input = document.querySelector('#main input');
+
+  if (input !== null) {
+    input.oninput = () => {
+      let future;
+
+      if (input.value in memoizedEventSearch) {
+        future = Promise.resolve(memoizedEventSearch[input.value]);
+      } else if (input.length < 3) {
+        future = Promise.resolve({count: 0, entity: []});
+      } else {
+        future = fetch(`${settings.jivecakeapi.uri}/event/search?text=${input.value}`)
+          .then(response => response.ok ? response.json() : Promise.reject(response));
+      }
+
+      future.then((search) => {
+        memoizedEventSearch[input.value] = search;
+        $(input).typeahead({
+          source: search.entity.map(event => ({
+            id: event.hash,
+            name: event.name
+          })),
+          afterSelect: (event) => {
+            location.href = `/e/${event.id}`;
+          },
+          showHintOnFocus: true
+        });
+      });
+    };
+  }
+
   const elements = document.querySelectorAll('a.login');
 
   for (let element of elements) {

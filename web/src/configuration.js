@@ -12,7 +12,6 @@ import transactionCreate from './transaction/partial/create.html';
 import accountPartial from './user/partial/update.html';
 import myTransactionPartial from './transaction/partial/myTransaction.html';
 import publicPartialEvent from './public/partial/event.html';
-import checkoutConfirmationPartial from './checkout/partial/confirmation.html';
 
 export default [
   '$locationProvider',
@@ -162,12 +161,6 @@ export default [
       url: '/transaction/{user_id}',
       template: myTransactionPartial,
       controller: 'MyTransactionController',
-      controllerAs: 'controller'
-    })
-    .state('application.checkoutConfirmation', {
-      url: '/confirmation',
-      template: checkoutConfirmationPartial,
-      controller: 'ConfirmationController',
       controllerAs: 'controller'
     });
 

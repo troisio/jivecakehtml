@@ -411,7 +411,7 @@ p, a {
 }
 
 .hero-content {
-	padding: 100px 0 100px 0;
+	padding: 50px 0;
 	overflow: hidden;
 }
 
@@ -2091,7 +2091,7 @@ input[type="email"]::-webkit-input-placeholder, textarea::-webkit-input-placehol
 	}
 
 	.product .hero-content {
-		padding: 150px 0 100px 0;
+		padding: 100px 0;
 		text-align: left;
 	}
 
@@ -2249,7 +2249,6 @@ input[type="email"]::-webkit-input-placeholder, textarea::-webkit-input-placehol
 	}
 
  .formee input {
-	 text-align: center;
    padding: 0 0 0 0;
    border-radius: 5px 0 0 5px;
  }

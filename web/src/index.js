@@ -43,8 +43,6 @@ import configuration from './configuration';
 import ApplicationController from './application/controller/ApplicationController';
 import InternalApplicationController from './application/controller/InternalApplicationController';
 
-import ConfirmationController from './checkout/controller/ConfirmationController';
-
 import OAuthRedirectController from './access/controller/OAuthRedirectController';
 import EmailVerifiedController from './access/controller/EmailVerifiedController';
 import SessionWarningController from './access/controller/SessionWarningController';
@@ -115,8 +113,6 @@ const module = angular.module('jivecakeweb', [
 .run(run)
 .controller('ApplicationController', ApplicationController)
 .controller('InternalApplicationController', InternalApplicationController)
-
-.controller('ConfirmationController', ConfirmationController)
 
 .controller('OAuthRedirectController', OAuthRedirectController)
 .controller('EmailVerifiedController', EmailVerifiedController)

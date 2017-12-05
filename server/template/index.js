@@ -79,6 +79,7 @@ export default (page) => {
         <script src="/assets/advent-v1.2/assets/js/menu.js"></script>
         <script src="/assets/advent-v1.2/assets/js/custom.js"></script>
         <script src="https://use.fontawesome.com/4248578432.js"></script>
+        <script src="/assets/advent-v1.2/assets/js/typeahead.js"></script>
       </div>
       <div>
         <script src="https://cdn.auth0.com/js/lock/10.20.0/lock.min.js"></script>
