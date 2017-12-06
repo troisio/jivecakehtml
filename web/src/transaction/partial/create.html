@@ -8,20 +8,20 @@
     <div layout layout-sm="column">
       <md-input-container flex class="md-block">
         <label>First Name</label>
-        <input ng-required="event.requireName" ng-model="transaction.given_name" maxlength="255">
+        <input ng-required="event.requireName" ng-model="transaction.given_name" maxlength="100">
       </md-input-container>
       <md-input-container flex class="md-block">
         <label>Middle Name</label>
-        <input ng-model="transaction.middleName" maxlength="255">
+        <input ng-model="transaction.middleName" maxlength="100">
       </md-input-container>
       <md-input-container flex class="md-block">
         <label>Last Name</label>
-        <input ng-required="event.requireName" ng-model="transaction.family_name" maxlength="255">
+        <input ng-required="event.requireName" ng-model="transaction.family_name" maxlength="100">
       </md-input-container>
     </div>
     <md-input-container class="md-block">
       <label>Email</label>
-      <input ng-model="transaction.email" type="email" class="form-control" maxlength="255" placeholder="Email" autocomplete="off">
+      <input ng-model="transaction.email" type="email" class="form-control" maxlength="100" placeholder="Email" autocomplete="off">
     </md-input-container>
     <md-input-container ng-show="event.requireOrganizationName" class="md-block">
       <label>Organization Name</label>

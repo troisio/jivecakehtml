@@ -216,7 +216,7 @@ export default class ReadItemController {
 
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
-      this.itemService.delete(storage.auth.idToken, itemData.Item.id).then(() => {
+      this.itemService.delete(storage.auth.idToken, itemData.item.id).then(() => {
         this.uiService.notify('Item deleted');
       }, (response) => {
         let message;

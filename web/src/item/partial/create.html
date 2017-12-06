@@ -7,7 +7,7 @@
       <form ng-submit="!loading && controller.submit(item)">
         <md-input-container class="md-block">
           <label>Name</label>
-          <input ng-model="item.name" autocomplete="off" required>
+          <input ng-model="item.name" maxlength="100" autocomplete="off" required>
         </md-input-container>
         <md-input-container class="md-block">
           <md-select placeholder="choose an event" required="true" ng-model="item.eventId">
