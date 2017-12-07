@@ -83,7 +83,25 @@
   }
 }
 
-#main .formee {
-  border-bottom: 3px solid;
-  border-color: #F1F1F1;
+#main {
+  .formee {
+    border-bottom: 3px solid;
+    border-color: #F1F1F1;
+
+    input {
+      background-color: transparent;
+      border: none;
+      width: 100%;
+    }
+  }
+
+  .no-results {
+    margin: 1em 0 0 0;
+    height: 1em;
+
+    p {
+      margin: 0;
+      display: none;
+    }
+  }
 }
