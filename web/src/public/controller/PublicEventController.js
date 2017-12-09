@@ -202,7 +202,7 @@ export default class PublicEventController {
     if (group.event.requireName) {
       if (auth === null) {
         result = true;
-      } else if (this.userService.hasFirstAndLastName(this.profile)) {
+      } else if (this.profile !== null && this.userService.hasFirstAndLastName(this.profile)) {
         result = false;
       } else {
         result = true;
@@ -544,7 +544,7 @@ export default class PublicEventController {
     if (auth === null) {
       result = true;
     } else {
-      result = !this.userService.hasFirstAndLastName(this.profile) && group.event.requireName;
+      result = group.event.requireName && (this.profile === null || !this.userService.hasFirstAndLastName(this.profile));
     }
 
     return result;
