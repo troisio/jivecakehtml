@@ -10,27 +10,24 @@ export default class EventService {
   }
 
   getAggregatedEventData(id, token) {
-    const url = [this.settings.jivecakeapi.uri, 'event', id, 'aggregated'].join('/');
-    const options = {};
-
-    if (token !== null) {
-      options.headers = {
-        Authorization: 'Bearer ' + token
-      };
-    }
-
-    return this.$http.get(url, options).then(response => {
-      response.data.organization = this.toolsService.toObject(response.data.organization, this.Organization);
-      response.data.event = this.toolsService.toObject(response.data.event, this.Event);
-      response.data.itemData.forEach(itemDatum => {
+    return fetch(`${this.settings.jivecakeapi.uri}/event/${id}/aggregated`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => response.ok ? response.json() : Promise.reject(response))
+    .then((data) => {
+      data.organization = this.toolsService.toObject(data.organization, this.Organization);
+      data.event = this.toolsService.toObject(data.event, this.Event);
+      data.itemData.forEach(itemDatum => {
         itemDatum.item = this.toolsService.toObject(itemDatum.item, this.Item);
       });
 
-      if (response.data.profile !== null) {
-        response.data.profile = this.paymentProfileService.toObject(response.data.profile);
+      if (data.profile !== null) {
+        data.profile = this.paymentProfileService.toObject(data.profile);
       }
 
-      return response.data;
+      return data;
     });
   }
 
@@ -61,9 +58,7 @@ export default class EventService {
       params: params,
     }).then(response => {
       return {
-        entity: response.data.entity.map((event) => {
-          return this.toolsService.toObject(event, this.Event);
-        }),
+        entity: response.data.entity.map((event) => this.toolsService.toObject(event, this.Event)),
         count: response.data.count
       };
     });

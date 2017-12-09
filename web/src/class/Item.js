@@ -18,6 +18,10 @@ export default class Item {
      this.lastActivity = null;
    }
 
+   hasDescription() {
+     return this.description !== null && this.description.trim().length > 0;
+   }
+
    getDerivedAmountFromCounts(count) {
      let result = this.amount;
 

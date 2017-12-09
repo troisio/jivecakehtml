@@ -3,8 +3,8 @@
     <tbody md-body>
       <tr md-row md-auto-select ng-repeat="row in rows track by row.Transaction.id">
         <td md-cell>
-          <a ng-show="!(row.Item.description === null && row.Item.timeStart === null && row.Item.timeEnd === null)" href="" ng-click="controller.viewItem(row.Item)">{{row.Item.name}}</a>
-          <span ng-show="row.Item.description === null && row.Item.timeStart === null && row.Item.timeEnd === null">{{row.Item.name}}</span>
+          <a ng-show="!((row.Item.description === null || row.Item.description.trim().length === 0) && row.Item.timeStart === null && row.Item.timeEnd === null)" href="" ng-click="controller.viewItem(row.Item)">{{row.Item.name}}</a>
+          <span ng-show="(row.Item.description === null || row.Item.description.trim().length === 0) && row.Item.timeStart === null && row.Item.timeEnd === null">{{row.Item.name}}</span>
         </td>
         <td md-cell>
           <md-menu md-position-mode="target-right target">

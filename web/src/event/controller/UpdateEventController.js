@@ -82,6 +82,7 @@ export default class UpdateEventController {
             const consentFuture = this.assetService.search(this.storage.auth.idToken, {
               entityId: event.organizationId,
               entityType: this.assetService.ORGANIZATION_TYPE,
+              assetType: [this.assetService.GOOGLE_CLOUD_STORAGE_CONSENT_PDF, this.assetService.ORGANIZATION_CONSENT_TEXT],
               order: '-timeCreated'
             });
 

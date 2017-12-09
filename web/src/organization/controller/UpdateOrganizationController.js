@@ -147,6 +147,7 @@ export default class UpdateOrganizationController {
       const assetFuture = this.assetService.search(this.storage.auth.idToken, {
         entityId: organization.id,
         entityType: this.assetService.ORGANIZATION_TYPE,
+        assetType: [this.assetService.GOOGLE_CLOUD_STORAGE_CONSENT_PDF, this.assetService.ORGANIZATION_CONSENT_TEXT],
         order: '-timeCreated'
       });
 

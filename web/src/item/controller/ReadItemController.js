@@ -142,14 +142,14 @@ export default class ReadItemController {
           }
 
           items.sort((first, second) => {
-            let result = second.item.status - first.item.status;
+            let result = second.item.lastActivity - first.item.lastActivity;
 
             if (result === 0) {
-              result = second.item.lastActivity - first.item.lastActivity;
+              result = first.item.status - second.item.status;
             }
 
             return result;
-          })
+          });
 
           const index = items.findIndex(item => item.item.id === this.$state.params.highlight);
 
@@ -163,9 +163,7 @@ export default class ReadItemController {
         }, () => {
           this.uiService.notify('Unable to retrieve data');
         });
-    }).then(() => {
-    }, () => {
-    }).then(() => {
+    }).then(() => {}, () => {}).then(() => {
       this.$scope.uiReady = true;
       this.$timeout();
     });

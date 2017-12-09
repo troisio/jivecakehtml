@@ -456,15 +456,10 @@ export default class PublicEventController {
         .then(() => {}, () => {})
         .then(() => {
           if (hasPaidItem) {
-            const validProfile = group.profile instanceof this.StripePaymentProfile ||
-              group.profile instanceof this.PaypalPaymentProfile;
-
-            if (validProfile) {
-              if (group.profile instanceof this.StripePaymentProfile) {
-                this.processStripe(group, information);
-              } else if (group.profile instanceof this.PaypalPaymentProfile) {
-                this.processPaypal(group, information);
-              }
+            if (group.profile instanceof this.StripePaymentProfile) {
+              this.processStripe(group, information);
+            } else if (group.profile instanceof this.PaypalPaymentProfile) {
+              this.processPaypal(group, information);
             } else {
               throw new Error('invalid payment profile implementation');
             }
