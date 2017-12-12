@@ -23,7 +23,7 @@ export default class EmailVerifiedController {
           this.$mdDialog.hide();
           this.uiService.notify('Email verified');
         } else {
-          this.uiService.notify('Email has not verified');
+          this.uiService.notify('Email has not been verified');
         }
       }
 

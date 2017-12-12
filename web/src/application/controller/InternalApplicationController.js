@@ -24,7 +24,7 @@ export default class InterneralApplicationController {
           controller: 'SessionWarningController',
           controllerAs: 'controller',
           clickOutsideToClose: true
-        }).then(function() {
+        }).then(() => {
         }, () => {
           this.accessService.logout();
         }).finally(() => {

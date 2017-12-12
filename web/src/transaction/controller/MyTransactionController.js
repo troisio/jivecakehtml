@@ -62,11 +62,13 @@ export default class MyTransactionController {
       .innerJoin(itemTable, itemTable.id.eq(transactionTable.itemId))
       .innerJoin(eventTable, eventTable.id.eq(transactionTable.eventId))
       .where(
-        transactionTable.user_id.eq(storage.auth.idTokenPayload.sub),
-        transactionTable.leaf.eq(true),
-        lf.op.or(
-          transactionTable.paymentStatus.eq(this.transactionService.SETTLED),
-          transactionTable.paymentStatus.eq(this.transactionService.PENDING)
+        lf.op.and(
+          transactionTable.user_id.eq(storage.auth.idTokenPayload.sub),
+          transactionTable.leaf.eq(true),
+          lf.op.or(
+            transactionTable.paymentStatus.eq(this.transactionService.SETTLED),
+            transactionTable.paymentStatus.eq(this.transactionService.PENDING)
+          )
         )
       )
       .orderBy(transactionTable.timeCreated, lf.Order.DESC)
