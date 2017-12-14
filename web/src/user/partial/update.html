@@ -1,26 +1,4 @@
 <div class="user-account-page" layout-padding ng-show="uiReady">
-  <div ng-show="invitations.length > 0">
-    <h4>Organization Invitations</h4>
-    <md-table-container>
-      <table ng-model="selected" md-table md-row-select multiple>
-        <tbody md-body>
-          <tr ng-repeat="invitation in invitations track by invitation.id" md-row md-auto-select>
-            <td>
-              <span>{{invitation.organization.name}}</span>
-            </td>
-            <td>
-              <a href="" ng-click="controller.acceptInvitation(invitation)">join organization</a>
-            </td>
-            <td>
-              <md-button aria-label="Delete" ng-click="controller.deleteInvitation(invitation)">
-                <ng-md-icon icon="delete"></ng-md-icon>
-              </md-button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </md-table-container>
-  </div>
   <div>
     <form ng-submit="!loading && controller.submit(user)">
       <div layout layout-sm="column">

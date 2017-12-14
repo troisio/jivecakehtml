@@ -408,7 +408,7 @@ export default class DownstreamService {
             id: transactionIdsUserSearch
           }).then((assets) => {
             const assetTable = this.db.getSchema().table('EntityAsset');
-            const rows = assets.map(assetTable.createRow, assetTable);
+            const rows = assets.map(asset => assetTable.createRow(asset));
             return this.db.insertOrReplace().into(assetTable).values(rows).exec();
           });
 
@@ -416,7 +416,18 @@ export default class DownstreamService {
             id: transactionIdsUserSearch
           }).then((users) => {
             const userTable = this.db.getSchema().table('User');
-            const rows = users.map(userTable.createRow, userTable);
+
+            const rows = users.map((user) => {
+              if (user.user_metadata && user.user_metadata.given_name) {
+                user.user_metadata_given_name = user.user_metadata.given_name;
+              }
+
+              if (user.user_metadata && user.user_metadata.family_name) {
+                user.user_metadata_family_name = user.user_metadata.family_name;
+              }
+
+              return userTable.createRow(user);
+            });
             return this.db.insertOrReplace().into(userTable).values(rows).exec();
           });
         } else {

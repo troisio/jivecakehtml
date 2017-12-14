@@ -10,6 +10,7 @@ export default class ReadItemController {
     itemService,
     transactionService,
     permissionService,
+    eventService,
     storageService,
     settings,
     uiService,
@@ -23,6 +24,7 @@ export default class ReadItemController {
     this.itemService = itemService;
     this.transactionService = transactionService;
     this.permissionService = permissionService;
+    this.eventService = eventService;
     this.storageService = storageService;
     this.uiService = uiService;
     this.db = db;
@@ -229,6 +231,29 @@ export default class ReadItemController {
       });
     });
   }
+
+  downloadTransactions(item) {
+    const storage = this.storageService.read();
+    const loader = this.uiService.load();
+
+    this.eventService.getExcel(storage.auth.idToken, item.eventId, {itemId: item.id}).then((asset) => {
+      loader.close.resolve();
+
+      this.$mdDialog.show({
+        template: `
+        <md-dialog flex="80" layout-align="center center">
+          <div layout-padding layout-margin>
+            <a href="https://storage.googleapis.com/${asset.assetId}">download file</a>
+          </div>
+        </md-dialog>
+        `,
+        clickOutsideToClose: true
+      });
+    }, () => {
+      loader.close.resolve();
+      this.uiService.notify('Unable to generate file');
+    });
+  }
 }
 
 ReadItemController.$inject = [
@@ -239,6 +264,7 @@ ReadItemController.$inject = [
   'ItemService',
   'TransactionService',
   'PermissionService',
+  'EventService',
   'StorageService',
   'settings',
   'UIService',

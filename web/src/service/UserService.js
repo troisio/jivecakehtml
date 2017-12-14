@@ -55,7 +55,7 @@ export default class UserService {
     return result;
   }
 
-  getUserIdsNotInDBCache(userIds) {
+  getUserIdsNotInDB(userIds) {
     const userTable = this.db.getSchema().table('User');
 
     return this.db.select()
@@ -89,7 +89,7 @@ export default class UserService {
         const transactions = this.transactionService.getMinimalUserIdCovering(rows);
         const userIds = transactions.map(row => row.user_id);
 
-        return this.getUserIdsNotInDBCache(userIds).then(ids => {
+        return this.getUserIdsNotInDB(userIds).then(ids => {
           const userIds = new Set();
           ids.forEach(id => userIds.add(id));
 
@@ -103,10 +103,20 @@ export default class UserService {
       });
   }
 
-  refreshUserCacheFromTransactions(token, loveFieldQuery) {
-    return this.getUsersNotInDBCacheFromTransactionQuery(token, loveFieldQuery).then(users => {
+  refreshUserCacheFromTransactions(token, query) {
+    return this.getUsersNotInDBCacheFromTransactionQuery(token, query).then(users => {
       const userTable = this.db.getSchema().table('User');
-      const rows = users.map(userTable.createRow, userTable);
+      const rows = users.map((user) => {
+        if (user.user_metadata && user.user_metadata.given_name) {
+          user.user_metadata_given_name = user.user_metadata.given_name;
+        }
+
+        if (user.user_metadata && user.user_metadata.family_name) {
+          user.user_metadata_family_name = user.user_metadata.family_name;
+        }
+
+        return userTable.createRow(user);
+      });
       return this.db.insertOrReplace().into(userTable).values(rows).exec();
     });
   }

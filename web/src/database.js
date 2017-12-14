@@ -152,10 +152,12 @@ builder.createTable('User')
   .addColumn('name', lf.Type.STRING)
   .addColumn('nickname', lf.Type.STRING)
   .addColumn('user_metadata', lf.Type.OBJECT)
+  .addColumn('user_metadata_family_name', lf.Type.STRING)
+  .addColumn('user_metadata_given_name', lf.Type.STRING)
   .addColumn('given_name', lf.Type.STRING)
   .addColumn('family_name', lf.Type.STRING)
   .addColumn('picture', lf.Type.STRING)
-  .addNullable(['given_name', 'family_name', 'email', 'user_metadata'])
+  .addNullable(['given_name', 'family_name', 'email', 'user_metadata', 'user_metadata_given_name', 'user_metadata_family_name'])
   .addPrimaryKey(['user_id']);
 
 builder.createTable('PaymentProfile')

@@ -32,11 +32,9 @@ export default class EventService {
   }
 
   getExcel(token, id) {
-    const url = [this.settings.jivecakeapi.uri, 'event', id, 'excel'].join('/');
-
-    return fetch(url, {
+    return fetch(`${this.settings.jivecakeapi.uri}/event/${id}/excel`, {
       headers: {
-        Authorization: 'Bearer ' + token
+        Authorization: `Bearer ${token}`
       }
     }).then(response => response.ok ? response.json() : Promise.reject(response));
   }

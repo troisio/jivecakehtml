@@ -11,24 +11,28 @@
       <tbody md-body>
         <tr ng-repeat="transactionData in data track by transactionData.Transaction.id" md-row md-auto-select>
           <td md-cell class="transaction-user">
-            <div>
-              <div>
-                <span ng-show="transactionData.User.user_id === null">{{transactionData.Transaction.given_name}} {{transactionData.Transaction.family_name}}</span>
+            <div layout="row">
+              <div class="user-data">
+                <div>
+                  <span ng-show="transactionData.User.user_id === null">{{transactionData.Transaction.given_name}} {{transactionData.Transaction.family_name}}</span>
+                </div>
+                <div>
+                  <span ng-show="transactionData.Transaction.organizationName !== null">{{transactionData.Transaction.organizationName}}</span>
+                </div>
+                <div>
+                  <span ng-show="transactionData.User.user_id !== null">{{transactionData.User | userIdentificationFilter: false}}</span>
+                </div>
+                <div>
+                  <a href="" ui-sref="application.internal.item.read({highlight: transactionData.Item.id})">{{transactionData.Item.name}}</a>
+                </div>
+                <div>
+                  <span ng-show="transactionData.userData !== null"># {{transactionData.userData.number}}</span>
+                </div>
               </div>
-              <div>
-                <span ng-show="transactionData.Transaction.organizationName !== null">{{transactionData.Transaction.organizationName}}</span>
-              </div>
-              <div>
-                <span ng-show="transactionData.User.user_id !== null">{{transactionData.User | userIdentificationFilter: false}}</span>
-              </div>
-              <div>
-                <a href="" ui-sref="application.internal.item.read({highlight: transactionData.Item.id})">{{transactionData.Item.name}}</a>
-              </div>
-              <div>
-                <span ng-show="transactionData.userData !== null"># {{transactionData.userData.number}}</span>
-              </div>
-              <div ng-click="controller.showImage('https://storage.googleapis.com/' + transactionData.EntityAsset.assetId)" ng-if="transactionData.EntityAsset.assetId !== null">
-                <img ng-src="https://storage.googleapis.com/{{transactionData.EntityAsset.assetId}}">
+              <div layout layout-align="center center">
+                <div ng-click="controller.showImage('https://storage.googleapis.com/' + transactionData.EntityAsset.assetId)" ng-if="transactionData.EntityAsset.assetId !== null">
+                  <img ng-src="https://storage.googleapis.com/{{transactionData.EntityAsset.assetId}}">
+                </div>
               </div>
             </div>
           </td>

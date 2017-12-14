@@ -77,21 +77,27 @@ export default class ReadTransactionController {
 
   run() {
     this.$scope.loading = true;
-
     this.$scope.data = [];
 
     this.$scope.$parent.ready.then(() => {
-      return this.getWhereClause(this.$scope.searchText).then(whereClause => {
-        return this.getRows(whereClause).then(data => {
-          this.$scope.data = data;
-        });
-      }).then(() => {
-      }, () => {
-        this.uiService.notify('Unable to retrieve data');
-      }).then(() => {
-        this.$scope.loading = false;
-        this.$timeout();
-      })
+      const storage = this.storageService.read();
+      return this.update(this.$scope.searchText, storage.auth.idTokenPayload.sub);
+    });
+  }
+
+  update(text, userId) {
+    this.$scope.loading = true;
+
+    return this.getWhereClause(text, userId).then(whereClause => {
+      return this.getRows(whereClause).then(data => {
+        this.$scope.data = data;
+      });
+    }).then(() => {
+    }, () => {
+      this.uiService.notify('Unable to retrieve data');
+    }).then(() => {
+      this.$scope.loading = false;
+      this.$timeout();
     });
   }
 
@@ -103,6 +109,7 @@ export default class ReadTransactionController {
         .from(this.transactionTable)
         .innerJoin(this.itemTable, this.itemTable.id.eq(this.transactionTable.itemId))
         .innerJoin(this.eventTable, this.eventTable.id.eq(this.itemTable.eventId))
+        .innerJoin(this.permissionTable, this.eventTable.organizationId.eq(this.permissionTable.objectId))
         .leftOuterJoin(this.userTable, this.userTable.user_id.eq(this.transactionTable.user_id))
         .leftOuterJoin(this.assetTable, this.assetTable.entityId.eq(this.transactionTable.user_id))
         .where(whereClause)
@@ -130,14 +137,16 @@ export default class ReadTransactionController {
     });
   }
 
-  getWhereClause(text) {
+  getWhereClause(text, userId) {
     return this.db.select()
       .from(this.permissionTable)
       .where(this.permissionTable.objectClass.eq('Organization'))
       .exec()
       .then(rows => {
         const ands = [
-          this.transactionTable.leaf.eq(true)
+          this.transactionTable.leaf.eq(true),
+          this.permissionTable.objectClass.eq('Organization'),
+          this.permissionTable.user_id.eq(userId)
         ];
 
         let hasFilter = false;
@@ -176,6 +185,8 @@ export default class ReadTransactionController {
               this.itemTable.name.match(regex),
               this.userTable.given_name.match(regex),
               this.userTable.family_name.match(regex),
+              this.userTable.user_metadata_given_name.match(regex),
+              this.userTable.user_metadata_family_name.match(regex),
               this.userTable.email.match(regex),
               this.userTable.name.match(regex),
               this.userTable.nickname.match(regex)
@@ -196,21 +207,9 @@ export default class ReadTransactionController {
   }
 
   onSearchTextChange(text) {
-    this.$scope.loading = true;
-
     this.$scope.$parent.ready.then(() => {
-      return this.getWhereClause(text)
-        .then((whereClause) => this.getRows(whereClause))
-        .then((rows) => {
-          this.$scope.data = rows;
-        }, () => {
-          this.uiService.notify('Unable to retrieve data');
-        })
-        .then(() => {}, () => {})
-        .then(() => {
-          this.$scope.loading = false;
-          this.$timeout();
-        });
+      const storage = this.storageService.read();
+      return this.update(text, storage.auth.idTokenPayload.sub);
     });
   }
 
