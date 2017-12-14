@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 9);
+const builder = lf.schema.create('jivecake', 10);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)

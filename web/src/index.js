@@ -150,12 +150,6 @@ const module = angular.module('jivecakeweb', [
 
 .controller('UpdateAccountController', UpdateAccountController);
 
-try {
-  indexedDB.deleteDatabase('jivecake');
-} catch (e) {
-  console.log(e);
-}
-
 builder.connect({
   storeType: lf.schema.DataStoreType.MEMORY,
   onUpgrade: function(db) {

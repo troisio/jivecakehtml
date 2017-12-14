@@ -213,7 +213,7 @@ export default class ReadEventController {
     const storage = this.storageService.read();
     const loader = this.uiService.load();
 
-    this.eventService.getExcel(storage.auth.idToken, event.id).then((asset) => {
+    this.eventService.getExcel(storage.auth.idToken, event.id, {}).then((asset) => {
       loader.close.resolve();
 
       this.$mdDialog.show({

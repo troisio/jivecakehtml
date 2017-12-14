@@ -1,3 +1,5 @@
+import URLSearchParams from 'url-search-params';
+
 export default class EventService {
   constructor($http, settings, toolsService, paymentProfileService, Organization, Event, Item) {
     this.$http = $http;
@@ -31,8 +33,14 @@ export default class EventService {
     });
   }
 
-  getExcel(token, id) {
-    return fetch(`${this.settings.jivecakeapi.uri}/event/${id}/excel`, {
+  getExcel(token, id, query) {
+    const params = new URLSearchParams();
+
+    for (let key in query) {
+      params.append(key, query[key]);
+    }
+
+    return fetch(`${this.settings.jivecakeapi.uri}/event/${id}/excel?${params.toString()}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
