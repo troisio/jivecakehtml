@@ -12,10 +12,14 @@ export default class EventService {
   }
 
   getAggregatedEventData(id, token) {
+    const headers = {};
+
+    if (token !== null) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     return fetch(`${this.settings.jivecakeapi.uri}/event/${id}/aggregated`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: headers
     })
     .then(response => response.ok ? response.json() : Promise.reject(response))
     .then((data) => {
