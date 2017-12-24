@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import 'whatwg-fetch';
 import settings from './settings';
 import StorageService from './service/StorageService';

@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import './polyfill/assign';
 import './polyfill/find';
 import './polyfill/findIndex';
