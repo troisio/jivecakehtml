@@ -6,7 +6,7 @@ export default class CreateTransactionController {
     $q,
     $scope,
     $state,
-    $stateParams,
+    $timeout,
     Transaction,
     itemService,
     eventService,
@@ -18,7 +18,7 @@ export default class CreateTransactionController {
     this.$q = $q;
     this.$scope = $scope;
     this.$state = $state;
-    this.$stateParams = $stateParams;
+    this.$timeout = $timeout;
     this.Transaction = Transaction;
     this.itemService = itemService;
     this.eventService = eventService;
@@ -30,7 +30,7 @@ export default class CreateTransactionController {
     $scope.currencies = TransactionService.getSupportedCurrencies();
 
     const storage = storageService.read();
-    this.itemFuture = this.itemService.read(storage.auth.idToken, this.$stateParams.itemId);
+    this.itemFuture = this.itemService.read(storage.auth.idToken, this.$state.params.itemId);
 
     this.run();
   }
@@ -42,8 +42,10 @@ export default class CreateTransactionController {
       return this.setDefaults();
     }, () => {
       this.uiService.notify('Unable to find item');
-    }).finally(() => {
+    }).then(() => {}, () => {})
+      .then(() => {
       this.$scope.uiReady = true;
+      this.$timeout();
     });
   }
 
@@ -80,34 +82,28 @@ export default class CreateTransactionController {
     this.$scope.loading = true;
     const transactionCopy = angular.copy(transaction);
 
-    this.transactionService.search(storage.auth.idToken, {
-      itemId: item.id
-    }).then(() => {
-      if (event.currency !== null) {
-        transactionCopy.currency = event.currency;
+    if (event.currency !== null) {
+      transactionCopy.currency = event.currency;
+    }
+
+    return this.transactionService.create(storage.auth.idToken, item.id, transactionCopy).then(() => {
+      this.uiService.notify('Transaction created');
+      return this.setDefaults();
+    }, response => {
+      let message = 'Unable to create transaction';
+
+      if (response.status === 400 && 'data' in response) {
+        if (response.data.error === 'totalAvailible') {
+          message = 'Can not create more than ' + response.data.data + ' transactions';
+        }
       }
 
-      return this.transactionService.create(storage.auth.idToken, item.id, transactionCopy).then(() => {
-        this.uiService.notify('Transaction created');
-
-        window.scrollTo(0, 0);
-        return this.setDefaults();
-      }, response => {
-        let message = 'Unable to create transaction';
-
-        if (response.status === 400 && 'data' in response) {
-          if (response.data.error === 'totalAvailible') {
-            message = 'Can not create more than ' + response.data.data + ' transactions';
-          }
-        }
-
-        this.uiService.notify(message);
+      this.uiService.notify(message);
+    }).then(() => {}, () => {})
+      .then(() => {
+        this.$scope.loading = false;
+        this.$timeout();
       });
-    }, () => {
-      this.uiService.notify('Unable to read transaction for ' + item.name);
-    }).finally(() => {
-      this.$scope.loading = false;
-    });
   }
 }
 
@@ -115,7 +111,7 @@ CreateTransactionController.$inject = [
   '$q',
   '$scope',
   '$state',
-  '$stateParams',
+  '$timeout',
   'Transaction',
   'ItemService',
   'EventService',

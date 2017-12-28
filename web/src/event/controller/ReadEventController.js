@@ -62,7 +62,8 @@ export default class ReadEventController {
       const eventTable = this.db.getSchema().table('Event');
       const organizationTable = this.db.getSchema().table('Organization');
       const and = [
-        permissionTable.objectClass.eq('Organization')
+        permissionTable.objectClass.eq('Organization'),
+        permissionTable.read.eq(true)
       ];
 
       if (this.$state.params.organizationId) {

@@ -45,18 +45,18 @@ export default class CreateEventController {
     this.db.select()
       .from(organizationTable)
       .innerJoin(permissionTable, permissionTable.objectId.eq(organizationTable.id))
-      .where(permissionTable.user_id.eq(this.storage.auth.idTokenPayload.sub))
+      .where(
+        permissionTable.user_id.eq(this.storage.auth.idTokenPayload.sub),
+        permissionTable.write.eq(true)
+      )
       .orderBy(organizationTable.lastActivity, lf.Order.DESC)
       .exec()
       .then(rows => {
-        const hasPermission = new this.Permission().has;
-        const data = rows.filter(row => hasPermission.call(row.Permission, this.permissionService.WRITE));
-
-        if (data.length > 0) {
-          event.organizationId = data[0].Organization.id;
+        if (rows.length > 0) {
+          event.organizationId = rows[0].Organization.id;
         }
 
-        this.$scope.data = data;
+        this.$scope.data = rows;
         this.$scope.event = event;
         this.$scope.loading = false;
       });

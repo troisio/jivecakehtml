@@ -7,7 +7,6 @@ export default [
   '$location',
   '$state',
   '$mdDialog',
-  'StorageService',
   'settings',
   function(
     lock,
@@ -18,15 +17,8 @@ export default [
     $location,
     $state,
     $mdDialog,
-    storageService,
     settings
   ) {
-    const storage = storageService.read();
-
-    if (storage.auth !== null && storage.auth.idTokenPayload.iat <= (1513986891252 / 1000)) {
-      storageService.reset();
-    }
-
     if (settings.google.analytics.enabled && window.ga) {
       ga('create', 'UA-81919203-1', 'auto');
     }

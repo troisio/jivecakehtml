@@ -10,14 +10,6 @@ export default class ApplicationService {
   getApplication() {
     return this.application;
   }
-
-  getWritePermission() {
-    return 0;
-  }
-
-  getReadPermission() {
-    return 1;
-  }
 }
 
 ApplicationService.$inject = ['$http', 'Application', 'settings'];

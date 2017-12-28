@@ -1,40 +1,11 @@
+import PaypalPaymentProfile from '../class/PaypalPaymentProfile';
+import StripePaymentProfile from '../class/StripePaymentProfile';
+
 export default class PaymentProfileService {
-  constructor($http, $q, settings, toolsService, PaypalPaymentProfile, StripePaymentProfile) {
+  constructor($http, settings, toolsService) {
     this.$http = $http;
-    this.$q = $q;
     this.settings = settings;
     this.toolsService = toolsService;
-    this.PaypalPaymentProfile = PaypalPaymentProfile;
-    this.StripePaymentProfile = StripePaymentProfile;
-  }
-
-  search(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'payment', 'profile'].join('/');
-
-    return this.$http.get(url, {
-      params: params,
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).then(response => {
-      return {
-        entity: response.data.entity.map(this.toObject, this),
-        count: response.data.count
-      };
-    });
-  }
-
-  publicSearch(params) {
-    const url = [this.settings.jivecakeapi.uri, 'payment', 'profile', 'search'].join('/');
-
-    return this.$http.get(url, {
-      params: params
-    }).then(response => {
-      return {
-        entity: response.data.entity.map(this.toObject, this),
-        count: response.data.count
-      };
-    });
   }
 
   createPaypalPaymentProfile(token, organizationId, profile) {
@@ -71,9 +42,9 @@ export default class PaymentProfileService {
     let result;
 
     if (data.hasOwnProperty('stripe_publishable_key')) {
-      result = this.StripePaymentProfile;
+      result = StripePaymentProfile;
     } else if (data.hasOwnProperty('email')) {
-      result = this.PaypalPaymentProfile;
+      result = PaypalPaymentProfile;
     } else {
       throw new Error('PaymentProfile has invalid implementation');
     }
@@ -87,4 +58,4 @@ export default class PaymentProfileService {
   }
 }
 
-PaymentProfileService.$inject = ['$http', '$q', 'settings', 'ToolsService', 'PaypalPaymentProfile', 'StripePaymentProfile'];
+PaymentProfileService.$inject = ['$http', 'settings', 'ToolsService'];

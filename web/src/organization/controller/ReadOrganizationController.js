@@ -76,6 +76,7 @@ export default class ReadOrganizationController {
       const searchFuture = this.db.select()
         .from(organizationTable)
         .innerJoin(permissionTable, permissionTable.objectId.eq(organizationTable.id))
+        .where(permissionTable.read.eq(true))
         .orderBy(organizationTable.lastActivity, lf.Order.DESC)
         .limit(100)
         .exec()
@@ -112,16 +113,12 @@ export default class ReadOrganizationController {
       .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
-      this.$scope.uiReady = false;
-
       const storage = this.storageService.read();
 
       this.organizationService.delete(storage.auth.idToken, organizationData.Organization.id).then(() => {
         this.uiService.notify('Organization deleted');
       }, () => {
         this.uiService.notify('Unable to delete organization');
-      }).finally(() => {
-        this.$scope.uiReady = true;
       });
     });
   }

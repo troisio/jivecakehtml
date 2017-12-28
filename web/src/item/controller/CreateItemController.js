@@ -40,13 +40,15 @@ export default class CreateItemController {
     this.db.select()
       .from(eventTable)
       .innerJoin(permissionTable, permissionTable.objectId.eq(eventTable.organizationId))
+      .where(
+        permissionTable.write.eq(true),
+        permissionTable.objectClass.eq('Organization')
+      )
       .orderBy(eventTable.lastActivity, lf.Order.DESC)
       .exec()
       .then(rows => {
-        const hasPermission = new this.Permission().has;
-        const data = rows.filter(row => hasPermission.call(row.Permission, this.permissionService.WRITE));
-        this.$scope.item.eventId = data[0].Event.id;
-        this.$scope.data = data;
+        this.$scope.item.eventId = rows[0].Event.id;
+        this.$scope.data = rows;
       });
   }
 

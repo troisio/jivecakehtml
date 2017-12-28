@@ -2,7 +2,6 @@ import angular from 'angular';
 
 export default class UpdateItemController {
   constructor(
-    $q,
     $rootScope,
     $scope,
     $state,
@@ -12,7 +11,6 @@ export default class UpdateItemController {
     itemService,
     uiService
   ) {
-    this.$q = $q;
     this.$rootScope = $rootScope;
     this.$scope = $scope;
     this.$state = $state;
@@ -23,7 +21,6 @@ export default class UpdateItemController {
 
     this.$scope.selected = [];
     this.$scope.time = {};
-    this.$scope.paymentProfiles = [];
     this.storage = storageService.read();
     this.$scope.timeSelections = this.uiService.getTimeSelections();
     this.$scope.currentDate = new Date();
@@ -68,20 +65,9 @@ export default class UpdateItemController {
       }
 
       this.$scope.item = item;
-
       this.$scope.enableScheduledPriceModifications = item.timeAmounts !== null;
       this.$scope.itemName = item.name;
       this.$scope.free = item.amount === 0;
-
-      return this.eventService.read(this.storage.auth.idToken, item.eventId).then((event) => {
-        this.$scope.event = event;
-
-        return this.paymentProfileService.search(this.storage.auth.idToken, {
-          organizationId: event.organizationId
-        }).then((searchResult) => {
-          this.$scope.paymentProfiles = searchResult.entity;
-        });
-      });
     }).finally(() => {
       this.$scope.uiReady = true;
     });
@@ -193,7 +179,6 @@ export default class UpdateItemController {
 }
 
 UpdateItemController.$inject = [
-  '$q',
   '$rootScope',
   '$scope',
   '$state',

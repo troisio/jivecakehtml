@@ -33,19 +33,16 @@
                   <h5>{{user| userIdentificationFilter: true}}</h5>
                 </td>
                 <td md-cell>
-                  <span ng-show="userPermissionModel[user.user_id].include === 0">all</span>
-                  <span ng-show="userPermissionModel[user.user_id].include === 1">including</span>
-                  <span ng-show="userPermissionModel[user.user_id].include === 2">excluding</span>
-                  <span ng-show="userPermissionModel[user.user_id].include !== 0 && userPermissionModel[user.user_id].permission[0]">read</span>
-                  <span ng-show="userPermissionModel[user.user_id].include !== 0 && userPermissionModel[user.user_id].permission[1]">write</span>
+                  <span ng-show="user.permission.read">read</span>
+                  <span ng-show="user.permission.write">, write</span>
                 </td>
                 <td md-cell>
-                  <md-button aria-label="Delete user from organization" ng-click="controller.removeUserFromOrganization(user)" ng-show="auth.idTokenPayload.sub !== user.user_id">
+                  <md-button aria-label="Delete user from organization" ng-click="controller.deletePermission(user, user.permission)" ng-show="organization.createdBy !== user.user_id">
                     <ng-md-icon icon="delete"></ng-md-icon>
                   </md-button>
                 </td>
               </tr>
-              <tr ng-show="users.length === 0" md-row layout-padding>
+              <tr ng-show="invitations.length === 0 && users.length === 0" md-row layout-padding>
                 <td md-cell colspan="4">
                   <span class="md-subheader">No data found</span>
                 </td>

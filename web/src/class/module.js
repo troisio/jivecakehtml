@@ -6,7 +6,6 @@ import Item from './Item';
 import JiveCakeLocalStorage from './JiveCakeLocalStorage';
 import Organization from './Organization';
 import OrganizationInvitation from './OrganizationInvitation';
-import Page from './Page';
 import PaymentDetail from './PaymentDetail';
 import PaymentProfile from './PaymentProfile';
 import PaypalPaymentProfile from './PaypalPaymentProfile';
@@ -24,7 +23,6 @@ export default angular.module('jivecakeclass', [])
   .constant('JiveCakeLocalStorage', JiveCakeLocalStorage)
   .constant('Organization', Organization)
   .constant('OrganizationInvitation', OrganizationInvitation)
-  .constant('Page', Page)
   .constant('PaymentDetail', PaymentDetail)
   .constant('PaymentProfile', PaymentProfile)
   .constant('PaypalPaymentProfile', PaypalPaymentProfile)

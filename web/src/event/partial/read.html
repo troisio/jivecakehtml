@@ -11,7 +11,7 @@
         </td>
         <td md-cell>
           <md-input-container class="md-block">
-            <md-checkbox ng-true-value="1" ng-false-value="0" ng-change="controller.toggleStatus(eventData, $event)" ng-model="eventData.Event.status" ng-disabled="!hasPermission(eventData.Permission, permissionService.WRITE)" aria-label="Publish">publish</md-checkbox>
+            <md-checkbox ng-true-value="1" ng-false-value="0" ng-change="controller.toggleStatus(eventData, $event)" ng-model="eventData.Event.status" ng-disabled="!eventData.Permission.write" aria-label="Publish">publish</md-checkbox>
           </md-input-container>
         </td>
         <td md-cell>
@@ -25,7 +25,7 @@
                   <span md-menu-align-target>view transactions</span>
                 </md-button>
               </md-menu-item>
-              <md-menu-item ng-show="hasPermission(eventData.Permission, permissionService.WRITE)">
+              <md-menu-item ng-show="eventData.Permission.write">
                 <md-button ui-sref="application.internal.event.update({eventId: eventData.Event.id})">
                   <span md-menu-align-target>update event</span>
                 </md-button>
@@ -35,7 +35,7 @@
                   <span md-menu-align-target>download transactions</span>
                 </md-button>
               </md-menu-item>
-              <md-menu-item ng-show="hasPermission(eventData.Permission, permissionService.WRITE)">
+              <md-menu-item ng-show="eventData.Permission.write">
                 <md-button ng-click="controller.delete(eventData, $event)">
                   <span md-menu-align-target>delete</span>
                 </md-button>

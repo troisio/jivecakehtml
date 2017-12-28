@@ -19,7 +19,7 @@
           <span>{{organizationData.Organization.name}}</span>
         </td>
         <td md-cell>
-          <md-menu ng-show="hasPermission(organizationData.Permission, permissionService.WRITE)" md-position-mode="target-right target">
+          <md-menu ng-show="organizationData.Permission.write" md-position-mode="target-right target">
             <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
               <ng-md-icon icon="more_vert"></ng-md-icon>
             </md-button>

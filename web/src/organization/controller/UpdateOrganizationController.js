@@ -52,17 +52,7 @@ export default class UpdateOrganizationController {
     this.selectedPaymentProfile = [];
     this.storage = storageService.read();
     this.$scope.auth = this.storage.auth;
-    this.$scope.organizationPermissionTypes = [];
     this.$scope.loading = false;
-
-    [
-      'ORGANIZATION.PERMISSION.WRITE',
-      'organization.delete',
-    ].forEach((event) => {
-      this.$scope.$on(event, () => {
-        this.loadUI(this.$stateParams.organizationId);
-      });
-    });
 
     this.run();
   }
@@ -73,7 +63,7 @@ export default class UpdateOrganizationController {
     this.$scope.$parent.ready.then(() => {
       return this.loadUI(this.$stateParams.organizationId).then(() => {
       }, () => {
-        this.uiService.notify('Unable to find organization');
+        this.uiService.notify('Unable to load organization data');
       }).then(() => {
         this.$scope.uiReady = true;
         this.$timeout();
@@ -92,48 +82,16 @@ export default class UpdateOrganizationController {
     }).finally(() => {
       this.$scope.loading = false;
       anguar.element(document.querySelector('md-content'))[0].scrollTop = 0;
+      this.$timeout();
     });
-  }
-
-  getUserPermissionModel(users, permissions, userPermissions) {
-    const userPermissionsMap = this.relationalService.groupBy(userPermissions, false, subject => subject.user_id);
-
-    const result = Object.keys(userPermissionsMap).reduce((previous, user_id) => {
-      const permission = userPermissionsMap[user_id][0];
-      let set;
-
-      if (permission.include === 0) {
-        set = null;
-      } else {
-        set = new Set();
-
-        permission.permissions.forEach(set.add, set);
-      }
-
-      const selectedPermissions = permissions.reduce(function(previous, current) {
-        previous[current] = permission.include === 0 || set.has(current);
-        return previous;
-      }, {});
-
-      previous[user_id] = {
-        include: permission.include,
-        permission: selectedPermissions
-      };
-
-      return previous;
-    }, {});
-
-    return result;
   }
 
   loadUI(organizationId) {
     return this.organizationService.read(organizationId).then((organization) => {
       this.$scope.organization = organization;
 
-      const paymentProfileFutures = this.paymentProfileService.search(this.storage.auth.idToken, {
-        organizationId: organizationId
-      });
-
+      const usersFuture = this.organizationService.getUsers(this.storage.auth.idToken, organizationId);
+      const paymentProfileFutures = this.organizationService.getPaymentProfiles(this.storage.auth.idToken, organizationId);
       const subscriptionFuture = this.stripeService.getOrganizationTrialingOrActiveSubscriptions(
         this.storage.auth.idToken,
         organizationId
@@ -161,29 +119,21 @@ export default class UpdateOrganizationController {
         permissions: permission,
         subscription: subscriptionFuture,
         paymentProfile: paymentProfileFutures,
-        organizationInvitation: organizationInvitationFuture
+        organizationInvitation: organizationInvitationFuture,
+        user: usersFuture
       }).then((resolve) => {
         const permissions = resolve.permissions.entity;
-        const permissionTypes = this.permissionService.getTypes();
-        const storage = this.storageService.read();
+        const users = resolve.user;
 
-        this.$scope.organizationPermissionTypes = permissionTypes.find(type => type.class === 'Organization').permissions;
+        for (let user of users) {
+          user.permission = permissions.find(permission => permission.user_id === user.user_id);
+        }
+
         this.$scope.assets = resolve.asset.entity;
-        this.$scope.paymentProfiles = resolve.paymentProfile.entity;
+        this.$scope.paymentProfiles = resolve.paymentProfile;
         this.$scope.subscriptions = resolve.subscription;
         this.$scope.invitations = resolve.organizationInvitation;
-
-        const userPromise = permissions.length === 0 ? Promise.resolve([]) : this.organizationService.getUsers(storage.auth.idToken, organization.id);
-
-        return userPromise.then((users) => {
-          this.$scope.users = this.relationalService.oneToOneJoin(users, 'id', permissions, 'user_id').map(function(relation) {
-            relation.entity.permission = relation.foreign;
-            return relation.entity;
-          });
-
-          const userPermissionModel = this.getUserPermissionModel(users, this.$scope.organizationPermissionTypes, permissions);
-          this.$scope.userPermissionModel = userPermissionModel;
-        });
+        this.$scope.users = users;
       });
     });
   }
@@ -326,7 +276,9 @@ export default class UpdateOrganizationController {
       .cancel('Cancel');
 
     this.$mdDialog.show(confirm).then(() => {
+      this.uiService.notify('Deleting profile...');
       this.paymentProfileService.delete(this.storage.auth.idToken, paymentProfile.id).then(() => {
+        this.$scope.paymentProfiles = this.$scope.paymentProfiles.filter(profile => profile.id !== paymentProfile.id);
       }, (response) => {
         let text;
 
@@ -341,14 +293,15 @@ export default class UpdateOrganizationController {
     });
   }
 
-  removeUserFromOrganization(user) {
-    this.permissionService.delete(this.storage.auth.idToken, {
-      user_id: user.user_id,
-      objectId: this.$stateParams.organizationId,
-      objectClass: 'Organization'
-    }).then(() => {
-      const removeIndex = this.$scope.users.indexOf(user);
-      this.$scope.users.splice(removeIndex, 1);
+  deletePermission(user, permission) {
+    this.uiService.notify('Deleting permission...');
+    this.permissionService.delete(this.storage.auth.idToken, permission.id).then((response) => {
+      if (response.ok) {
+        const removeIndex = this.$scope.users.indexOf(user);
+        this.$scope.users.splice(removeIndex, 1);
+      } else {
+        this.uiService.notify('Unable to remove user from organization');
+      }
     }, () => {
       this.uiService.notify('Unable to remove user from organization');
     });

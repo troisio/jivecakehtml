@@ -1,5 +1,3 @@
-import lf from 'lovefield';
-
 export default class DownstreamService {
   constructor(
     $rootScope,
@@ -38,51 +36,22 @@ export default class DownstreamService {
         });
     });
 
-    source.addEventListener('permission.write', (sse) => {
+    source.addEventListener('permission.create', (sse) => {
       const permissions = JSON.parse(sse.data);
-      const permissionTable = this.db.getSchema().table('Permission');
-      const rows = permissions.map(permissionTable.createRow, permissionTable);
+      const table = this.db.getSchema().table('Permission');
+      const rows = permissions.map(permission => table.createRow(permission));
 
-      const ands = permissions.map(permission =>
-        lf.op.and(
-          permissionTable.objectId.eq(permission.objectId),
-          permissionTable.objectClass.eq(permission.objectClass),
-          permissionTable.user_id.eq(permission.user_id)
-        )
-      );
-
-      this.db.delete()
-        .from(permissionTable)
-        .where(lf.op.or(...ands))
-        .exec()
-        .then(() => {
-          return this.db.insertOrReplace()
-            .into(permissionTable)
-            .values(rows)
-            .exec()
-            .then(() => {
-              const storage = this.storageService.read();
-
-              return this.organizationService.getOrganizationsByUser(storage.auth.idToken, storage.auth.idTokenPayload.sub, {}).then((organizations) => {
-                const organizationTable = this.db.getSchema().table('Organization');
-                const organizationRows = organizations.map(organizationTable.createRow, organizationTable);
-
-                return this.db.insertOrReplace()
-                  .into(organizationTable)
-                  .values(organizationRows)
-                  .exec();
-              });
-            });
-        }).then(() => {
-          this.$rootScope.$broadcast('permission.write', permissions);
-        });
+      this.db.insertOrReplace()
+        .into(table)
+        .values(rows)
+        .exec();
     });
 
     source.addEventListener('organization.delete', (sse) => {
       const organizationsAndPermissions = JSON.parse(sse.data);
       const permissions = organizationsAndPermissions.filter(data => data.hasOwnProperty('permissions'));
 
-      const organizations = organizationsAndPermissions.filter(data => data.hasOwnProperty('children'));
+      const organizations = organizationsAndPermissions.filter(data => data.hasOwnProperty('email'));
       const organizationTable = this.db.getSchema().table('Organization');
       const organizationIds = organizations.map(organization => organization.id);
       const organizationFuture = this.db.delete()
@@ -111,16 +80,15 @@ export default class DownstreamService {
         .values(rows)
         .exec()
         .then(() => {
-            this.$rootScope.$broadcast('organization.update', organizations);
+          this.$rootScope.$broadcast('organization.update', organizations);
         });
     });
 
     source.addEventListener('organization.create', (sse) => {
       const organizationsAndPermissions = JSON.parse(sse.data);
-
       const permissions = organizationsAndPermissions.filter(data => data.hasOwnProperty('objectClass'));
       const permissionTable = this.db.getSchema().table('Permission');
-      const permissionRows = permissions.map(permissionTable.createRow, permissionTable);
+      const permissionRows = permissions.map(permission => permissionTable.createRow(permission));
       const permissionFuture = this.db.insertOrReplace()
         .into(permissionTable)
         .values(permissionRows)
@@ -264,7 +232,7 @@ export default class DownstreamService {
 
     source.addEventListener('paymentprofile.delete', (sse) => {
       const profiles = JSON.parse(sse.data);
-      const table = this.db.getSchema().table('PaypalPaymentProfile');
+      const table = this.db.getSchema().table('PaymentProfile');
       const ids = profiles.map(profile => profile.id);
 
       this.db.delete()
@@ -548,7 +516,7 @@ export default class DownstreamService {
     }).then(permissionSearchResult => {
       const permissions = permissionSearchResult.entity;
       const permissionTable = this.db.getSchema().table('Permission');
-      const permissionRows = permissions.map(permissionTable.createRow, permissionTable);
+      const permissionRows = permissions.map(permissions => permissionTable.createRow(permissions));
       const permissionFuture = this.db.insert().into(permissionTable).values(permissionRows).exec();
 
       const invitationFuture = this.organizationInvitationService.getUserInvitations(

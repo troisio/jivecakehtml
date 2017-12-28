@@ -31,7 +31,6 @@ export default class CreatePaymentProfileController {
   }
 
   run() {
-    this.$scope.organization = this.organization;
     this.$scope.profile = new this.PaypalPaymentProfile();
     this.$scope.close = this.$mdDialog.hide;
   }
@@ -74,7 +73,6 @@ export default class CreatePaymentProfileController {
         params.append('stripe_landing', 'login');
       } else {
         const storage = this.storageService.read();
-
         params.append('stripe_landing', 'register');
         params.append('stripe_user[email]', storage.profile.email);
       }

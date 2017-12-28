@@ -1,6 +1,6 @@
 <md-dialog flex="80">
   <div ng-show="showForm" layout-padding>
-    <form ng-submit="!loading && controller.submit(invitation, read, write)">
+    <form ng-submit="!loading && controller.submit(invitation)">
       <md-input-container class="md-block">
         <label>User's Email</label>
         <input required ng-model="invitation.email">
@@ -8,18 +8,11 @@
       <div>
         <h3>Permissions</h3>
       </div>
-      <div layout="row">
-        <md-select aria-label="Inclusion" ng-model="invitation.include">
-          <md-option ng-value="0">All</md-option>
-          <md-option ng-value="1">including</md-option>
-          <md-option ng-value="2">excluding</md-option>
-        </md-select>
-      </div>
-      <div ng-show="invitation.include !== 0">
-        <md-checkbox ng-model="read">
+      <div layout-margin>
+        <md-checkbox ng-model="invitation.read">
           <span>read</span>
         </md-checkbox>
-        <md-checkbox ng-model="write">
+        <md-checkbox ng-model="invitation.write">
           <span>write</span>
         </md-checkbox>
       </div>

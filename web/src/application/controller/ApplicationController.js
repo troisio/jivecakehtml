@@ -48,9 +48,6 @@ export default class ApplicationController {
 
     this.$scope.permissionService = permissionService;
 
-    const hasPermission = new Permission().has;
-    this.$scope.hasPermission = (permission, target) => hasPermission.call(permission, target);
-
     this.$scope.toggleSidenav = (id) => {
       this.$mdSidenav(id).toggle();
     };
@@ -123,9 +120,7 @@ export default class ApplicationController {
   }
 
   refreshPermissions() {
-    const hasPermission = new this.Permission().has;
     const permissionTable = this.db.getSchema().table('Permission');
-
     const organizationInvitationTable = this.db.getSchema().table('OrganizationInvitation');
     const sevenDaysBefore = new Date();
     sevenDaysBefore.setDate(sevenDaysBefore.getDate() - 7);
@@ -145,11 +140,6 @@ export default class ApplicationController {
       .exec()
       .then(rows => {
         this.$scope.organizationPermissions = rows.filter(permission => permission.objectClass === 'Organization');
-        this.$scope.applicationReadPermissions = rows.filter(permission =>
-          permission.objectClass === 'Application' &&
-          hasPermission.call(permission, this.permissionService.READ)
-        );
-
         return rows;
       });
 

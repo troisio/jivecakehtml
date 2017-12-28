@@ -8,10 +8,6 @@ import UrlSearchParams from 'url-search-params';
 const storageService = new StorageService(JiveCakeLocalStorage);
 const storage = storageService.read();
 
-if (storage.auth !== null && storage.auth.idTokenPayload.iat <= (1513986891252 / 1000)) {
-  storageService.reset();
-}
-
 const hasOrganizations = (auth) => {
   const params = new UrlSearchParams();
   params.append('user_id', auth.idTokenPayload.sub);

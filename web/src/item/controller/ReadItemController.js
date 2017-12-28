@@ -84,25 +84,13 @@ export default class ReadItemController {
         return columns;
       }, []);
 
-      this.db.select()
-        .from(permissionTable)
-        .where(permissionTable.objectClass.eq('Application'))
-        .exec()
-        .then(rows => {
-          if (rows.length > 0) {
-            const hasPermission = new this.Permission().has;
-            this.$scope.hasApplicationWrite = hasPermission.call(rows[0], this.permissionService.WRITE);
-          } else {
-            this.$scope.hasApplicationWrite = false;
-          }
-        });
-
       const storage = this.storageService.read();
       const userId = storage.auth.idTokenPayload.sub;
 
       const ands = [
         permissionTable.objectClass.eq('Organization'),
-        permissionTable.user_id.eq(userId)
+        permissionTable.user_id.eq(userId),
+        permissionTable.read.eq(true)
       ];
 
       if (typeof this.$state.params.eventId !== 'undefined') {
@@ -178,12 +166,10 @@ export default class ReadItemController {
     this.db.select()
       .from(eventTable)
       .innerJoin(permissionTable, permissionTable.objectId.eq(eventTable.organizationId))
+      .where(permissionTable.write.eq(true))
       .exec()
       .then(rows => {
-        const hasPermission = new this.Permission().has;
-        const eventsWithWrite = rows.filter(row => hasPermission.call(row.Permission, this.permissionService.WRITE));
-
-        if (eventsWithWrite.length > 0) {
+        if (rows.length > 0) {
           this.$mdDialog.show({
             template: createItemPartial,
             controller: 'CreateItemController',

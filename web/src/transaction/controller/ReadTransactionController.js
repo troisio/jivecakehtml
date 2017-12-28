@@ -66,7 +66,7 @@ export default class ReadTransactionController {
     this.eventTable = this.db.getSchema().table('Event');
     this.assetTable = this.db.getSchema().table('EntityAsset');
 
-    [this.transactionTable, this.itemTable, this.eventTable, this.assetTable, this.userTable].forEach(table => {
+    [this.transactionTable, this.permissionTable, this.itemTable, this.eventTable, this.assetTable, this.userTable].forEach(table => {
       table.getColumns()
         .map(column => table[column.getName()])
         .forEach(column => this.selectColumns.push(column));
@@ -146,9 +146,10 @@ export default class ReadTransactionController {
         const ands = [
           this.transactionTable.leaf.eq(true),
           this.permissionTable.objectClass.eq('Organization'),
+          this.permissionTable.read.eq(true),
           this.permissionTable.user_id.eq(userId)
         ];
-
+console.log(2);
         let hasFilter = false;
 
         ['eventId', 'itemId', 'id'].forEach(filter => {

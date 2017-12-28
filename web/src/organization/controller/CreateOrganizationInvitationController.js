@@ -20,29 +20,13 @@ export default class CreateOrganizationInvitationController {
     this.organization = organization;
 
     this.$scope.invitation = new OrganizationInvitation();
-    this.$scope.invitation.include = this.permissionService.INCLUDE;
-    this.$scope.read = true;
-    this.$scope.write = false;
     this.$scope.showForm = true;
     this.$scope.showConfirmation = false;
     this.$scope.loading = false;
   }
 
-  submit(invitation, read, write) {
-    invitation.permissions = [];
-
-    if (invitation.include !== 0) {
-      if (read) {
-        invitation.permissions.push(this.permissionService.READ);
-      }
-
-      if (write) {
-        invitation.permissions.push(this.permissionService.WRITE);
-      }
-    }
-
+  submit(invitation) {
     const storage = this.storageService.read();
-
     this.$scope.loading = true;
 
     this.organizationInvitationService.create(

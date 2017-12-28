@@ -1,69 +1,41 @@
+import Permission from '../class/Permission';
+import URLSearchParams from 'url-search-params';
+
 export default class PermissionService {
-  constructor($http, Item, Permission, settings, toolsService) {
+  constructor($http, settings, toolsService) {
     this.$http = $http;
-    this.Item = Item;
-    this.Permission = Permission;
     this.settings = settings;
     this.toolsService = toolsService;
-
-    this.ALL = 0;
-    this.INCLUDE = 1;
-    this.EXCLUDE = 2;
-
-    this.READ = 0;
-    this.WRITE = 1;
-
-    this.settings = settings;
-    this.permissionTypes = [
-      {'class': 'Application', permissions: [this.READ, this.WRITE]},
-      {'class': 'Organization', permissions: [this.READ, this.WRITE]}
-    ];
   }
 
-  getTypes() {
-    return this.permissionTypes;
-  }
+  search(token, query) {
+    const params = new URLSearchParams();
 
-  search(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'permission'].join('/');
+    for (let key in query) {
+      params.append(key, query[key]);
+    }
 
-    return this.$http.get(url, {
-      params: params,
+    return fetch(`${this.settings.jivecakeapi.uri}/permission?${params.toString()}`, {
       headers: {
-        Authorization: 'Bearer ' + token
+        Authorization: `Bearer ${token}`
       }
-    }).then((response) => {
-      return {
-        entity: response.data.entity.map((permission) => {
-          return this.toolsService.toObject(permission, this.Permission);
-        }),
-        count: response.data.count
-      };
+    })
+    .then(response => response.ok ? response.json() : Promise.reject(response))
+    .then(data => {
+      return Object.assign(data, {
+        entity: data.entity.map((permission) => this.toolsService.toObject(permission, Permission))
+      });
     });
   }
 
-  write(token, organizationId, permissions) {
-    const url = [this.settings.jivecakeapi.uri, 'organization', organizationId, 'permission'].join('/');
-
-    return this.$http.post(url, permissions, {
+  delete(token, id) {
+    return fetch(`${this.settings.jivecakeapi.uri}/permission/${id}`, {
+      method: 'DELETE',
       headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).then((response) => response.data.map((permission) => {
-      return this.toolsService.toObject(permission, this.Permission);
-    }));
-  }
-
-  delete(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'permission'].join('/');
-
-    return this.$http.delete(url, {
-      params: params,
-      headers: {
-        Authorization: 'Bearer ' + token
+        Authorization: `Bearer ${token}`
       }
     });
   }
 }
 
-PermissionService.$inject = ['$http', 'Item', 'Permission', 'settings', 'ToolsService'];
+PermissionService.$inject = ['$http', 'settings', 'ToolsService', 'UIService'];

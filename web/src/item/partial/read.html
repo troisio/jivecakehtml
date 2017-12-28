@@ -16,7 +16,7 @@
           </td>
           <td md-cell class="publish">
             <md-input-container class="md-block">
-              <md-checkbox ng-model="itemData.item.status" ng-true-value="0" ng-false-value="1" ng-change="controller.toggleStatus(itemData.item)" ng-disabled="!hasPermission(itemData.permission, permissionService.WRITE)" aria-label="Publish">
+              <md-checkbox ng-model="itemData.item.status" ng-true-value="0" ng-false-value="1" ng-change="controller.toggleStatus(itemData.item)" ng-disabled="!itemData.permission.write" aria-label="Publish">
                 <span class="publish">publish</span>
               </md-checkbox>
             </md-input-container>
@@ -27,12 +27,12 @@
                 <ng-md-icon icon="more_vert"></ng-md-icon>
               </md-button>
               <md-menu-content width="2">
-                <md-menu-item ng-show="hasPermission(itemData.permission, permissionService.WRITE)">
+                <md-menu-item ng-show="itemData.permission.write">
                   <md-button ui-sref="application.internal.transaction.create({itemId: itemData.item.id})">
                     <span md-menu-align-target>create transaction</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-item ng-show="hasPermission(itemData.permission, permissionService.WRITE)">
+                <md-menu-item ng-show="itemData.permission.write">
                   <md-button ui-sref="application.internal.item.update({itemId: itemData.item.id})">
                     <span md-menu-align-target>update</span>
                   </md-button>
@@ -42,7 +42,7 @@
                     <span md-menu-align-target>download transactions</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-item ng-show="hasPermission(itemData.permission, permissionService.WRITE)">
+                <md-menu-item ng-show="itemData.permission.write">
                   <md-button ng-click="controller.delete(itemData, $event)">
                     <span md-menu-align-target>delete</span>
                   </md-button>

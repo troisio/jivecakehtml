@@ -112,9 +112,11 @@ export default class PublicEventController {
           return array;
         }, [])
         .map(time => time - currentTime)
-        .filter(time => time > 0 && !this.scheduledModificationTimes.has(time));
+        .filter(time => time <= 0x7FFFFFFF && time > 0 && !this.scheduledModificationTimes.has(time));
 
-      positiveTimes.forEach(this.scheduledModificationTimes.add, this.scheduledModificationTimes);
+      for (let time of positiveTimes) {
+        this.scheduledModificationTimes.add(time);
+      }
       this.timeoutPromises = positiveTimes.map(time => {
         return this.$timeout(() => {
           this.uiService.notify('Updating data');
@@ -129,6 +131,7 @@ export default class PublicEventController {
     .then(() => {}, () => {})
     .then(() => {
       this.$scope.uiReady = true;
+      this.$timeout();
     })
   }
 

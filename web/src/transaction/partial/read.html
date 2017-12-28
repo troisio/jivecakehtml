@@ -68,18 +68,18 @@
                     <span md-menu-align-target>view transaction</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-item ng-show="transactionData.Transaction.canDelete()">
+                <md-menu-item ng-show="transactionData.Permission.write && transactionData.Transaction.canDelete()">
                   <md-button ng-click="controller.deleteTransaction(transactionData, $event)">
                     <span ng-show="transactionData.Transaction.status !== 2" md-menu-align-target>delete transaction</span>
                     <span ng-show="transactionData.Transaction.status === 2" md-menu-align-target>undo revocation</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-item ng-show="transactionData.Transaction.canRefund()">
+                <md-menu-item ng-show="transactionData.Permission.write && transactionData.Transaction.canRefund()">
                   <md-button ng-click="controller.refund(transactionData.Transaction, $event)">
                     <span md-menu-align-target>refund transaction</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-item ng-show="transactionData.Transaction.status === 0">
+                <md-menu-item ng-show="transactionData.Permission.write && transactionData.Transaction.status === 0">
                   <md-button ng-click="controller.revokeTransaction(transactionData.Transaction, $event)">
                     <span md-menu-align-target>revoke transaction</span>
                   </md-button>

@@ -5,7 +5,7 @@ import createConsentPartial from '../../organization/partial/createConsentAsset.
 
 export default class UpdateEventController {
   constructor(
-    $q,
+    $timeout,
     $scope,
     $state,
     $mdDialog,
@@ -13,24 +13,18 @@ export default class UpdateEventController {
     eventService,
     assetService,
     organizationService,
-    permissionService,
-    paymentProfileService,
     uiService,
-    db,
-    Permission
+    db
   ) {
-    this.$q = $q;
+    this.$timeout = $timeout;
     this.$scope = $scope;
     this.$state = $state;
     this.$mdDialog = $mdDialog;
     this.eventService = eventService;
     this.assetService = assetService;
     this.organizationService = organizationService;
-    this.permissionService = permissionService;
-    this.paymentProfileService = paymentProfileService;
     this.uiService = uiService;
     this.db = db;
-    this.Permission = Permission;
 
     this.$scope.currentDate = new Date();
     this.$scope.paymentProfiles = null;
@@ -63,112 +57,63 @@ export default class UpdateEventController {
     this.$scope.uiReady = false;
 
     this.$scope.$parent.ready.then(() => {
-      const permissionTable = this.db.getSchema().table('Permission');
-
-      return this.db.select()
-        .from(permissionTable)
-        .where(permissionTable.objectClass.eq('Organization'))
-        .exec()
-        .then(rows => {
-          const hasPermission = new this.Permission().has;
-          this.$scope.organizationIds = rows.filter(row => hasPermission.call(row, this.permissionService.READ))
-            .map(row => row.objectId);
-
-          return this.eventService.read(this.storage.auth.idToken, this.$state.params.eventId).then((event) => {
-            const paymentProfileFuture = this.paymentProfileService.search(this.storage.auth.idToken, {
-              organizationId: event.organizationId
-            });
-            const organizationFuture = this.organizationService.read(event.organizationId);
-            const consentFuture = this.assetService.search(this.storage.auth.idToken, {
-              entityId: event.organizationId,
-              entityType: this.assetService.ORGANIZATION_TYPE,
-              assetType: [this.assetService.GOOGLE_CLOUD_STORAGE_CONSENT_PDF, this.assetService.ORGANIZATION_CONSENT_TEXT],
-              order: '-timeCreated'
-            });
-
-            if (event.timeStart === null) {
-              this.$scope.timeStart = {
-                time: null,
-                hour: null,
-                minute: null
-              };
-            } else {
-              this.$scope.timeStart = {
-                time: new Date(event.timeStart)
-              };
-
-              this.$scope.timeStart.hour = this.$scope.timeStart.time.getHours();
-              this.$scope.timeStart.minute = this.$scope.timeStart.time.getMinutes();
-            }
-
-            if (event.timeEnd === null) {
-              this.$scope.timeEnd = {
-                time: null,
-                hour: null,
-                minute: null
-              };
-            } else {
-              this.$scope.timeEnd = {
-                time: new Date(event.timeEnd)
-              };
-
-              this.$scope.timeEnd.hour = this.$scope.timeEnd.time.getHours();
-              this.$scope.timeEnd.minute = this.$scope.timeEnd.time.getMinutes();
-            }
-
-            if (event.facebookEventId !== null) {
-              event.facebookEventId = 'https://facebook.com/events/' + event.facebookEventId;
-            }
-
-            this.$scope.event = event;
-
-            return this.$q.all({
-              consent: consentFuture,
-              paymentProfile: paymentProfileFuture,
-              organization: organizationFuture
-            }).then(resolve => {
-              this.$scope.consentAssets = resolve.consent.entity;
-              this.$scope.organization = resolve.organization;
-              this.$scope.paymentProfiles = resolve.paymentProfile.entity;
-            });
-          }, () => {
-            this.uiService.notify('Unable to find event');
-          });
+      return this.eventService.read(this.storage.auth.idToken, this.$state.params.eventId).then((event) => {
+        const paymentProfileFuture = this.organizationService.getPaymentProfiles(this.storage.auth.idToken, event.organizationId);
+        const consentFuture = this.assetService.search(this.storage.auth.idToken, {
+          entityId: event.organizationId,
+          entityType: this.assetService.ORGANIZATION_TYPE,
+          assetType: [this.assetService.GOOGLE_CLOUD_STORAGE_CONSENT_PDF, this.assetService.ORGANIZATION_CONSENT_TEXT],
+          order: '-timeCreated'
         });
-    }).then(() => {
-      this.$scope.uiReady = true;
-    }, () => {
-      this.$scope.uiReady = true;
-    });
-  }
 
-  createPaymentProfile() {
-    this.$mdDialog.show({
-      controller: 'CreatePaymentProfileController',
-      template: createPaymentProfilePartial,
-      controllerAs: 'controller',
-      clickOutsideToClose: true,
-      locals: {
-        organization: this.$scope.organization,
-        onPaymentProfileCreate: (profile) => {
-          this.$scope.paymentProfiles.push(profile);
+        if (event.timeStart === null) {
+          this.$scope.timeStart = {
+            time: null,
+            hour: null,
+            minute: null
+          };
+        } else {
+          this.$scope.timeStart = {
+            time: new Date(event.timeStart)
+          };
+
+          this.$scope.timeStart.hour = this.$scope.timeStart.time.getHours();
+          this.$scope.timeStart.minute = this.$scope.timeStart.time.getMinutes();
         }
-      }
-    }).finally(() => {
-      this.$scope.ready.then(() => {
-        const readOrganizationIds = this.$scope.organizationIds;
 
-        this.paymentProfileService.search(this.storage.auth.idToken, {
-          organizationId: readOrganizationIds
-        }).then(search => {
-          this.$scope.paymentProfiles = search.entity;
+        if (event.timeEnd === null) {
+          this.$scope.timeEnd = {
+            time: null,
+            hour: null,
+            minute: null
+          };
+        } else {
+          this.$scope.timeEnd = {
+            time: new Date(event.timeEnd)
+          };
 
-          if (this.$scope.paymentProfiles.length > 0) {
-            this.$scope.event.paymentProfileId = this.$scope.paymentProfiles[0].id;
-          }
+          this.$scope.timeEnd.hour = this.$scope.timeEnd.time.getHours();
+          this.$scope.timeEnd.minute = this.$scope.timeEnd.time.getMinutes();
+        }
+
+        if (event.facebookEventId !== null) {
+          event.facebookEventId = 'https://facebook.com/events/' + event.facebookEventId;
+        }
+
+        this.$scope.event = event;
+
+        return Promise.all([consentFuture, paymentProfileFuture]).then(resolve => {
+          this.$scope.consentAssets = resolve[0].entity;
+          this.$scope.paymentProfiles = resolve[1];
         });
+      }, () => {
+        this.uiService.notify('Unable to find event');
       });
-    });
+    }).then(() => {}, () => {})
+      .then(() => {
+        this.$scope.uiReady = true;
+        this.$timeout();
+      });
   }
 
   submit(event, timeStart, timeEnd) {
@@ -277,10 +222,39 @@ export default class UpdateEventController {
       }
     });
   }
+
+  createPaymentProfile() {
+    const organizationTable = this.db.getSchema().table('Organization');
+    const eventTable = this.db.getSchema().table('Event');
+
+    this.db.select()
+      .from(organizationTable)
+      .innerJoin(eventTable, eventTable.organizationId.eq(organizationTable.id))
+      .where(eventTable.id.eq(this.$state.params.eventId))
+      .exec()
+      .then((rows) => {
+        const organization = Object.assign({}, rows[0].Organization);
+
+        this.$mdDialog.show({
+          controller: 'CreatePaymentProfileController',
+          template: createPaymentProfilePartial,
+          controllerAs: 'controller',
+          clickOutsideToClose: true,
+          locals: {
+            organization: organization,
+            onPaymentProfileCreate: (profile) => {
+              this.$scope.paymentProfiles.push(profile);
+              this.$scope.event.paymentProfileId = profile.id;
+              this.$timeout();
+            }
+          }
+        });
+      });
+  }
 }
 
 UpdateEventController.$inject = [
-  '$q',
+  '$timeout',
   '$scope',
   '$state',
   '$mdDialog',
@@ -288,9 +262,6 @@ UpdateEventController.$inject = [
   'EventService',
   'AssetService',
   'OrganizationService',
-  'PermissionService',
-  'PaymentProfileService',
   'UIService',
-  'db',
-  'Permission'
+  'db'
 ];

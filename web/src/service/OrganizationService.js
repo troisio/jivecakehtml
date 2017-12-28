@@ -1,8 +1,11 @@
+import Organization from '../class/Organization';
+import StripePaymentProfile from '../class/StripePaymentProfile';
+import PaypalPaymentProfile from '../class/PaypalPaymentProfile';
+
 export default class OrganizationService {
-  constructor($window, $http, Organization, settings, eventService, permissionService, toolsService) {
+  constructor($window, $http, settings, eventService, permissionService, toolsService) {
     this.$window = $window;
     this.$http = $http;
-    this.Organization = Organization;
     this.settings = settings;
     this.eventService = eventService;
     this.permissionService = permissionService;
@@ -10,7 +13,6 @@ export default class OrganizationService {
 
     this.rootOrganization = new Organization();
     this.rootOrganization.id = '55865027c1fcce003aa0aa40';
-    this.rootOrganization.children = [];
     this.rootOrganization.name = "JiveCake";
     this.rootOrganization.email = "luis@trois.io";
   }
@@ -25,12 +27,31 @@ export default class OrganizationService {
     }).then(response => response.ok ? response.json() : Promise.reject(response));
   }
 
-  getReadPermission() {
-    return 0;
-  }
+  getPaymentProfiles(token, organizationId) {
+    const getImplementation = (data) => {
+      let result;
 
-  getWritePermission() {
-    return 1;
+      if (data.hasOwnProperty('stripe_publishable_key')) {
+        result = StripePaymentProfile;
+      } else if (data.hasOwnProperty('email')) {
+        result = PaypalPaymentProfile;
+      } else {
+        throw new Error('PaymentProfile has invalid implementation');
+      }
+
+      return result;
+    };
+
+    return fetch(`${this.settings.jivecakeapi.uri}/organization/${organizationId}/payment/profile`, {
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    }).then(response => response.ok ? response.json() : Promise.reject(response))
+      .then(profiles => {
+        return profiles.map((profile) => {
+          return this.toolsService.toObject(profile, getImplementation(profile));
+        })
+      });
   }
 
   delete(token, id) {
@@ -40,7 +61,7 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => this.toolsService.toObject(response.data, this.Organization));
+    }).then(response => this.toolsService.toObject(response.data, Organization));
   }
 
   create(token, organization) {
@@ -50,7 +71,7 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => this.toolsService.toObject(response.data, this.Organization));
+    }).then(response => this.toolsService.toObject(response.data, Organization));
   }
 
   update(token, organization) {
@@ -60,32 +81,14 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => this.toolsService.toObject(response.data, this.Organization));
-  }
-
-  search(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'organization'].join('/');
-
-    return this.$http.get(url, {
-      params: params,
-      headers: {
-        Authorization : 'Bearer ' + token
-      }
-    }).then((response) => {
-      return {
-        entity: response.data.entity.map(entity => {
-          return this.toolsService.toObject(entity, this.Organization);
-        }),
-        count: response.data.count
-      };
-    });
+    }).then(response => this.toolsService.toObject(response.data, Organization));
   }
 
   read(id) {
     const url = `${this.settings.jivecakeapi.uri}/organization/${id}`;
     return fetch(url)
       .then(response => response.ok ? response.json() : Promise.reject(response))
-      .then(data => this.toolsService.toObject(data, this.Organization));
+      .then(data => this.toolsService.toObject(data, Organization));
   }
 
   getOrganizationsByUser(token, user_id, params) {
@@ -96,48 +99,7 @@ export default class OrganizationService {
       headers: {
         Authorization: 'Bearer ' + token
       }
-    }).then(response => response.data.map(entity => this.toolsService.toObject(entity, this.Organization)));
-  }
-
-  getOrganizationsWithPermissions(organizations, permissions) {
-    const organizationIdToData = {};
-
-    const derivePermissions = (permission) => {
-      const set = new Set();
-
-      if (permission.include === 0) {
-        set.add(this.getReadPermission());
-        set.add(this.getWritePermission());
-      } else if (permission.include === 1) {
-        permission.permissions.forEach(set.add, set);
-      } else if (permission.include === 2) {
-        set.add(this.getReadPermission());
-        set.add(this.getWritePermission());
-
-        permission.permissions.forEach(set.delete, set);
-      }
-
-      return set;
-    };
-
-    organizations.forEach(function(organization) {
-      organizationIdToData[organization.id] = {organization: organization, permissions: null};
-    });
-
-    permissions.forEach((permission) => {
-      if (permission.objectClass === 'Organization') {
-        const organizationData = organizationIdToData[permission.objectId];
-
-        organizationData.permissions = derivePermissions(permission);
-
-        organizationData.organization.children.forEach(function(childId) {
-          const childData = organizationIdToData[childId];
-          childData.permissions = organizationData.permissions;
-        });
-      }
-    });
-
-    return organizations.map(organization => organizationIdToData[organization.id]);
+    }).then(response => response.data.map(entity => this.toolsService.toObject(entity, Organization)));
   }
 
   getUsers(token, id) {
@@ -151,4 +113,4 @@ export default class OrganizationService {
   }
 }
 
-OrganizationService.$inject = ['$window', '$http', 'Organization', 'settings', 'EventService', 'PermissionService', 'ToolsService'];
+OrganizationService.$inject = ['$window', '$http', 'settings', 'EventService', 'PermissionService', 'ToolsService'];
