@@ -118,7 +118,7 @@ export default class UIService {
         languages: ['en-nz']
       },
       {
-        currency: 'RUS',
+        currency: 'RUB',
         languages: ['ru', 'ru-mo']
       },
       {

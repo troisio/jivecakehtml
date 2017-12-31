@@ -284,7 +284,7 @@ export default class TransactionService {
         symbol: '$'
       },
       {
-        id: 'RUS',
+        id: 'RUB',
         label: 'Russian Ruble',
         symbol: '₽',
         html: '&#x20bd;'

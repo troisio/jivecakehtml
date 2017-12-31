@@ -7,8 +7,7 @@ export default class DownstreamService {
     transactionService,
     storageService,
     assetService,
-    db,
-    SearchEntity
+    db
   ) {
     this.$rootScope = $rootScope;
     this.permissionService = permissionService;
@@ -18,7 +17,6 @@ export default class DownstreamService {
     this.storageService = storageService;
     this.assetService = assetService;
     this.db = db;
-    this.SearchEntity = SearchEntity;
   }
 
   bootstrapEventSource(source) {
@@ -266,7 +264,9 @@ export default class DownstreamService {
         let future;
 
         if (asset.assetType === this.assetService.GOOGLE_CLOUD_STORAGE_BLOB_FACE) {
-          future = this.db.delete().from(table)
+          future = this.db
+            .delete()
+            .from(table)
             .where(
               table.assetType.eq(this.assetService.GOOGLE_CLOUD_STORAGE_BLOB_FACE),
               table.entityType.eq(this.assetService.USER_TYPE),
@@ -344,20 +344,26 @@ export default class DownstreamService {
         const eventTable = this.db.getSchema().table('Event');
         const itemTable = this.db.getSchema().table('Item');
         const transactionTable = this.db.getSchema().table('Transaction');
+        const userTable = this.db.getSchema().table('User');
+        const assetTable = this.db.getSchema().table('EntityAsset');
 
-        const events = tree.event.map(eventTable.createRow, eventTable);
-        const paymentProfiles = tree.event.map(paymentProfileTable.createRow, paymentProfileTable);
-        const items = tree.item.map(itemTable.createRow, itemTable);
-        const transactions = tree.transaction.map(transactionTable.createRow, transactionTable);
+        const events = tree.event.map(event => eventTable.createRow(event));
+        const paymentProfiles = tree.paymentProfile.map(profile => paymentProfileTable.createRow(profile));
+        const items = tree.item.map(item => itemTable.createRow(item));
+        const transactions = tree.transaction.map(transaction => transactionTable.createRow(transaction));
 
-        const organizationInsertFuture = this.db.insertOrReplace()
+        const organizationInsertFuture = this.db
+          .insertOrReplace()
           .into(organizationTable)
           .values([organizationTable.createRow(tree.organization)])
           .exec()
           .then(() => {
             return this.db.insertOrReplace().into(paymentProfileTable).values(paymentProfiles).exec();
           });
-        const treeInsertFuture = this.db.insertOrReplace().into(eventTable).values(events).exec()
+        const treeInsertFuture = this.db.insertOrReplace()
+          .into(eventTable)
+          .values(events)
+          .exec()
           .then(() => {
             return this.db.insertOrReplace().into(itemTable).values(items).exec()
               .then(() => {
@@ -365,45 +371,27 @@ export default class DownstreamService {
               });
           });
 
-        let userFuture;
-        let assetFuture;
+        const userRows = tree.transactionUser.map(user => {
+          const databaseFields = DownstreamService.getUserDatabaseFields(user);
+          const databaseUser = Object.assign(user, databaseFields);
+          return userTable.createRow(databaseUser);
+        });
+        const userFuture = this.db
+          .insertOrReplace()
+          .into(userTable)
+          .values(userRows)
+          .exec();
 
-        const transactionIdsUserSearch = this.transactionService.getMinimalUserIdCovering(tree.transaction)
-          .map(transaction => transaction.id);
+        const assetRows = [...tree.organizationAsset, ...tree.transactionUserAsset]
+          .map(asset => assetTable.createRow(asset));
+        const assetFuture = this.db.insertOrReplace().into(assetTable).values(assetRows).exec();
 
-        if (transactionIdsUserSearch.length > 0) {
-          assetFuture = this.transactionService.getUserAssets(token, {
-            id: transactionIdsUserSearch
-          }).then((assets) => {
-            const assetTable = this.db.getSchema().table('EntityAsset');
-            const rows = assets.map(asset => assetTable.createRow(asset));
-            return this.db.insertOrReplace().into(assetTable).values(rows).exec();
-          });
-
-          userFuture = this.transactionService.searchUsers(token, {
-            id: transactionIdsUserSearch
-          }).then((users) => {
-            const userTable = this.db.getSchema().table('User');
-
-            const rows = users.map((user) => {
-              if (user.user_metadata && user.user_metadata.given_name) {
-                user.user_metadata_given_name = user.user_metadata.given_name;
-              }
-
-              if (user.user_metadata && user.user_metadata.family_name) {
-                user.user_metadata_family_name = user.user_metadata.family_name;
-              }
-
-              return userTable.createRow(user);
-            });
-            return this.db.insertOrReplace().into(userTable).values(rows).exec();
-          });
-        } else {
-          userFuture = Promise.resolve();
-          assetFuture = Promise.resolve();
-        }
-
-        return Promise.all([organizationInsertFuture, treeInsertFuture, userFuture, assetFuture]);
+        return Promise.all([
+          organizationInsertFuture,
+          treeInsertFuture,
+          userFuture,
+          assetFuture
+        ]);
       });
     });
 
@@ -546,6 +534,20 @@ export default class DownstreamService {
       permissionFuture
     ]);
   }
+
+  static getUserDatabaseFields(user) {
+    const result = {};
+
+    if (user.user_metadata && user.user_metadata.given_name) {
+      result.user_metadata_given_name = user.user_metadata.given_name;
+    }
+
+    if (user.user_metadata && user.user_metadata.family_name) {
+      result.user_metadata_family_name = user.user_metadata.family_name;
+    }
+
+    return result;
+  }
 }
 
 DownstreamService.$inject = [
@@ -556,6 +558,5 @@ DownstreamService.$inject = [
   'TransactionService',
   'StorageService',
   'AssetService',
-  'db',
-  'SearchEntity'
+  'db'
 ];
