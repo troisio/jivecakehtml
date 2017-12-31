@@ -149,7 +149,7 @@ export default class ReadTransactionController {
           this.permissionTable.read.eq(true),
           this.permissionTable.user_id.eq(userId)
         ];
-console.log(2);
+
         let hasFilter = false;
 
         ['eventId', 'itemId', 'id'].forEach(filter => {
