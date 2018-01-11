@@ -1,6 +1,6 @@
 {
   "name": "jivecakehtml",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": "https://github.com/troisio/jivecakehtml.git",
   "license": "UNLICENSED",
   "authors": [
@@ -51,6 +51,7 @@
     "promise": "^8.0.1",
     "promise-polyfill": "6.0.2",
     "prop-types": "15.6.0",
+    "qrcode-generator": "1.3.1",
     "react": "16.2.0",
     "react-dom": "16.2.0",
     "request": "^2.81.0",

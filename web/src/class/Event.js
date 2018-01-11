@@ -9,6 +9,7 @@ export default class Event {
     this.requireName = null;
     this.assignIntegerToRegistrant = null;
     this.requirePhoto = null;
+    this.qr = null;
     this.facebookEventId = null;
     this.twitterUrl = null;
     this.websiteUrl = null;

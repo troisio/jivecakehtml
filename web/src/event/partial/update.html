@@ -34,6 +34,12 @@
         <label>Social Media Preview Image URL</label>
         <input title="https://website.com/image.png" pattern="^(http(|s)://).+" ng-model="event.previewImageUrl">
       </md-input-container>
+      <md-input-container class="md-block" layout="row">
+        <md-checkbox ng-model="event.qr" aria-label="Enabled QR Code">Enable QR Codes</md-checkbox>
+      </md-input-container>
+      <div class="note" ng-show="event.qr">
+        <span>Download our iOS <a href="https://itunes.apple.com/us/app/jivecake/id1332562771">app</a> to scan qr codes</span>
+      </div>
       <div>
         <h4>Registration requirements</h4>
       </div>

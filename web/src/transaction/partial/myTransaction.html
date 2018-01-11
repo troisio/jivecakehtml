@@ -7,6 +7,9 @@
           <span ng-show="(row.Item.description === null || row.Item.description.trim().length === 0) && row.Item.timeStart === null && row.Item.timeEnd === null">{{row.Item.name}}</span>
         </td>
         <td md-cell>
+          <i ng-click="controller.showQR(row.Transaction)" ng-show="row.Event.qr" class="fa fa-2x fa-qrcode" aria-hidden="true"></i>
+        </td>
+        <td md-cell>
           <md-menu md-position-mode="target-right target">
             <md-button aria-label="Open Event Options" class="md-icon-button" ng-click="controller.readTransaction(row)">
               <ng-md-icon icon="more_vert"></ng-md-icon>
@@ -17,7 +20,7 @@
         </td>
       </tr>
       <tr md-row>
-        <td md-cell colspan="2">
+        <td md-cell colspan="3">
           <span class="md-subheader" ng-show="rows.length === 0">You have no transactions</span>
         </td>
       </tr>

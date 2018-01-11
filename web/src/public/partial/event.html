@@ -15,6 +15,9 @@
         <a ng-show="group.event.twitterUrl !== null" ng-href="{{group.event.twitterUrl}}">
           <ng-md-icon size="30" icon="twitter"></ng-md-icon>
         </a>
+        <a href="" ng-click="controller.onEmailClicked(group.organization)">
+          <ng-md-icon size="30" icon="email"></ng-md-icon>
+        </a>
       </div>
     </div>
   </md-toolbar>

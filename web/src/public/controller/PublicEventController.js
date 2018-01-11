@@ -595,6 +595,19 @@ export default class PublicEventController {
 
     this.removePaypalFields();
   }
+
+  onEmailClicked(organization) {
+    this.$mdDialog.show({
+      controller: ['$scope', 'organization', ($scope, organization) => {
+        $scope.organization = organization;
+      }],
+      template: '<div layout-padding>Event contact: {{organization.email}}</div>',
+      clickOutsideToClose: true,
+      locals: {
+        organization: organization
+      }
+    });
+  }
 }
 
 PublicEventController.$inject = [

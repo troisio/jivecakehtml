@@ -1,6 +1,6 @@
 import lf from 'lovefield';
 
-const builder = lf.schema.create('jivecake', 11);
+const builder = lf.schema.create('jivecake', 12);
 
 builder.createTable('Permission')
   .addColumn('id', lf.Type.STRING)
@@ -41,6 +41,7 @@ builder.createTable('Event')
   .addColumn('requireOrganizationName', lf.Type.BOOLEAN)
   .addColumn('assignIntegerToRegistrant', lf.Type.BOOLEAN)
   .addColumn('requirePhoto', lf.Type.BOOLEAN)
+  .addColumn('qr', lf.Type.BOOLEAN)
   .addColumn('facebookEventId', lf.Type.STRING)
   .addColumn('twitterUrl', lf.Type.STRING)
   .addColumn('websiteUrl', lf.Type.STRING)

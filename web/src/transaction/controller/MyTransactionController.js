@@ -1,4 +1,5 @@
 import lf from 'lovefield';
+import qrcode from 'qrcode-generator';
 import transactionPartialView from '../partial/view.html';
 import viewItemPartial from '../../public/partial/viewItem.html';
 
@@ -109,6 +110,19 @@ export default class MyTransactionController {
       locals: {
         item: item
       }
+    });
+  }
+
+  showQR(transaction) {
+    const typeNumber = 4;
+    const errorCorrectionLevel = 'L';
+    const qr = qrcode(typeNumber, errorCorrectionLevel);
+    qr.addData(transaction.id);
+    qr.make();
+
+    this.$mdDialog.show({
+      template: `<div layout-padding style="text-align: center;">${qr.createImgTag(5)}</div>`,
+      clickOutsideToClose: true
     });
   }
 }
