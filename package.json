@@ -1,6 +1,6 @@
 {
   "name": "jivecakehtml",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "repository": "https://github.com/troisio/jivecakehtml.git",
   "license": "UNLICENSED",
   "authors": [
@@ -28,7 +28,6 @@
     "angular-material-icons": "0.7.1",
     "angular-messages": "1.6.6",
     "angular-sanitize": "1.6.6",
-    "auth0-js": "9.0.1",
     "babel-core": "6.26.0",
     "babel-loader": "7.1.0",
     "babel-polyfill": "^6.26.0",
