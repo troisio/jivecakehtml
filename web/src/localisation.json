@@ -1,0 +1,100 @@
+{
+  "organization": [
+    [
+      ["fr", "fr-fr", "fr-ca"],
+      "Organisations"
+    ],
+    [
+      ["ko"],
+      "단체"
+    ],
+    [
+      ["en-us"],
+      "Organizations"
+    ]
+  ],
+  "myTransactions": [
+    [
+      ["fr", "fr-fr", "fr-ca"],
+      "Mes Transactions"
+    ],
+    [
+      ["ko"],
+      "내 거래"
+    ],
+    [
+      ["en-us"],
+      "My Transactions"
+    ]
+  ],
+  "createEvent": [
+    [
+      ["fr", "fr-fr", "fr-ca"],
+      "Créer un évènement"
+    ],
+    [
+      ["ko"],
+      "이벤트 등록하기"
+    ],
+    [
+      ["en-us"],
+      "Create Event"
+    ]
+  ],
+  "myAccount": [
+    [
+      ["fr", "fr-fr", "fr-ca"],
+      "Mon Compte"
+    ],
+    [
+      ["ko"],
+      "내 정보"
+    ],
+    [
+      ["en-us"],
+      "My Account"
+    ]
+  ],
+  "login": [
+    [
+      ["fr", "fr-fr", "fr-ca"],
+      "Connexion"
+    ],
+    [
+      ["ko"],
+      "로그인"
+    ],
+    [
+      ["en-us"],
+      "Login"
+    ]
+  ],
+  "home": [
+    [
+      ["fr", "fr-fr", "fr-ca"],
+      "Accueil"
+    ],
+    [
+      ["ko"],
+      "홈"
+    ],
+    [
+      ["en-us"],
+      "Home"
+    ]
+  ],
+  "logout": [
+    [
+      ["fr", "fr-fr", "fr-ca"],
+      "Déconnexion"
+    ],
+    [
+      ["ko"],
+      "로그아웃"
+    ],
+    [
+      ["en-us"],
+      "Logout"
+    ]
+  ]
+}

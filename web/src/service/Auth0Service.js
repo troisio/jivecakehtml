@@ -1,28 +1,33 @@
+import settings from '../settings';
+
 export default class Auth0Service {
-  constructor($http, settings) {
-    this.$http = $http;
-    this.settings = settings;
-  }
-
   updateUser(token, user_id, body) {
-    const url = [this.settings.jivecakeapi.uri, 'auth0/api/v2/users', user_id].join('/');
-
-    return this.$http.patch(url, body, {
+    return fetch(`${settings.jivecakeapi.uri}/auth0/api/v2/users/${user_id}`, {
       headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).then(response => response.data);
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'PATCH',
+      body: JSON.stringify(body)
+    });
   }
 
   sendVerificationEmail(token, body) {
-    const url = [this.settings.jivecakeapi.uri, 'auth0/api/v2/jobs/verification-email'].join('/');
-
-    return this.$http.post(url, body, {
+    return fetch(`${settings.jivecakeapi.uri}/auth0/api/v2/jobs/verification-email`, {
       headers: {
-        Authorization: 'Bearer ' + token
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+  }
+
+  getUser(token, id) {
+    return fetch(`${settings.jivecakeapi.uri}/auth0/api/v2/users/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-    }).then((response) => response.data);
+    }).then(response => response.ok ? response.json() : Promise.reject(response));
   }
 }
-
-Auth0Service.$inject = ['$http', 'settings'];

@@ -1,5 +1,6 @@
 import verifiedPartial from '../../access/partial/verified.html';
 import createOrganizationAndEventPartial from '../../event/partial/createOrganizationAndEvent.html';
+import LocalisationService from '../../service/LocalisationService';
 
 export default class ApplicationController {
   constructor(
@@ -18,8 +19,8 @@ export default class ApplicationController {
     uiService,
     connectionService,
     storageService,
+    auth0Service,
     db,
-    lock,
     Permission
   ) {
     this.$scope = $scope;
@@ -37,17 +38,17 @@ export default class ApplicationController {
     this.uiService = uiService;
     this.connectionService = connectionService;
     this.storageService = storageService;
+    this.auth0Service = auth0Service;
     this.Permission = Permission;
     this.db = db;
-    this.lock = lock;
 
     this.$scope.storage = storageService.read();
     this.$scope.selectedTab = 0;
     this.$scope.uiReady = false;
     this.$scope.invitations = [];
 
-    this.$scope.permissionService = permissionService;
-
+    const localisationService = new LocalisationService();
+    this.$scope.translate = (term) => localisationService.translate(term);
     this.$scope.toggleSidenav = (id) => {
       this.$mdSidenav(id).toggle();
     };
@@ -151,16 +152,10 @@ export default class ApplicationController {
     this.connectionService.closeEventSources();
     this.connectionService.deleteEventSources();
 
-    const profileFuture = new Promise((resolve) => {
-      this.lock.getUserInfo(storage.auth.accessToken, (error, profile) => {
-        if (!error) {
-          const storage = this.storageService.read();
-          storage.profile = profile;
-          this.storageService.write(storage);
-        }
-
-        resolve();
-      });
+    const profileFuture = this.auth0Service.getUser(storage.auth.idToken, storage.auth.idTokenPayload.sub).then((profile) => {
+      const storage = this.storageService.read();
+      storage.profile = profile;
+      this.storageService.write(storage);
     });
 
     const eventSource = this.connectionService.getEventSource(storage.auth.idToken, storage.auth.idTokenPayload.sub);
@@ -216,7 +211,7 @@ ApplicationController.$inject = [
   'UIService',
   'ConnectionService',
   'StorageService',
+  'Auth0Service',
   'db',
-  'lock',
   'Permission'
 ];
