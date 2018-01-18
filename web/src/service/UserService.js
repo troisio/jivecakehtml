@@ -26,7 +26,7 @@ export default class UserService {
 
     return this.$http.post(url, data, {
       headers: {
-        Authorization: 'Bearer ' + token,
+        Authorization: `Bearer ${token}`,
         'Content-Type': contentType
       },
       transformRequest: []
