@@ -9,7 +9,7 @@
           <p ng-show="user !== null">{{user| userIdentificationFilter: true}}</p>
         </div>
       </md-list-item>
-      <md-list-item ng-if="userData !== null" class="layout-padding md-1-line">
+      <md-list-item ng-if="event.assignIntegerToRegistrant && userData !== null" class="layout-padding md-1-line">
         <div class="md-list-item-text" layout="column">
           <h3>Registration Number</h3>
           <p>{{userData.number}}</p>
