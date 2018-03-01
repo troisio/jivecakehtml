@@ -141,7 +141,13 @@ export default class OAuthRedirectController {
         unableToLoad('Sorry, we were unable to load your organizations');
       });
     } else {
-      unableToLoad(`Sorry, we were unable to get your personal data. ${error.errorDescription}`);
+      let message = 'Sorry, we were unable to get your personal data.';
+
+      if (typeof error.errorDescription !== 'undefined') {
+        message += ' ' + error.errorDescription;
+      }
+
+      unableToLoad(message);
     }
   }
 }
