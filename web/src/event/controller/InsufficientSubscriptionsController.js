@@ -36,7 +36,7 @@ export default class InsufficientSubscriptionsController {
       const storage = this.storageService.read();
 
       this.stripeService.subscribe(
-        storage.auth.idToken,
+        storage.auth.accessToken,
         organization.id,
         this.subscriptionId,
         {

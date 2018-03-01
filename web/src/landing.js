@@ -1,5 +1,6 @@
 import 'babel-polyfill';
 import 'whatwg-fetch';
+import lockFromState from './lockFromState';
 import settings from './settings';
 import StorageService from './service/StorageService';
 import JiveCakeLocalStorage from './class/JiveCakeLocalStorage';
@@ -11,11 +12,9 @@ const storage = storageService.read();
 const hasOrganizations = (auth) => {
   const params = new UrlSearchParams();
   params.append('user_id', auth.idTokenPayload.sub);
-  const path = [settings.jivecakeapi.uri, 'permission'].join('/') + '?' + params.toString();
-
-  return fetch(path, {
+  return fetch(`${settings.jivecakeapi.uri}/permission?${params.toString()}`, {
     headers: {
-      Authorization: 'Bearer ' + auth.idToken
+      Authorization: `Bearer ${auth.accessToken}`
     }
   })
   .then(response => response.ok ? response.json() : false)
@@ -33,6 +32,10 @@ if (storage.auth !== null) {
 const onLogin = (e) => {
   e.preventDefault();
 
+  const lock = lockFromState({
+    name: 'landing',
+    stateParams: {}
+  });
   const storage = storageService.read();
 
   if (storage.auth === null) {
@@ -54,110 +57,6 @@ const onLogin = (e) => {
     }
   }
 }
-
-const state = JSON.stringify({
-  name: 'landing',
-  stateParams: {}
-});
-const redirectUrl = location.origin + '/oauth/redirect';
-const lock = new Auth0Lock(settings.oauth.auth0.client_id, settings.oauth.auth0.domain, {
-  auth: {
-    redirectUrl: redirectUrl,
-    responseType: 'token',
-    params: {
-      state: state,
-      scope: 'openid email'
-    }
-  },
-  theme: {
-    logo: '/assets/auth0/signin.png'
-  },
-  focusInput: false,
-  rememberLastLogin: false
-});
-
-const initializeOnBoading = (form) => {
-  const email = form.querySelector('#email');
-  const eventName = form.querySelector('#eventName');
-  const organizationName = form.querySelector('#organizationName');
-  const sameAsEvent = form.querySelector('#sameAsEvent');
-  const emailTaken = form.querySelector('.email-taken');
-  const memoizeEmails = {};
-  let emailAvailable = false;
-
-  form.onsubmit = (e) => {
-    e.preventDefault();
-
-    if (!emailAvailable) {
-      return;
-    }
-
-    const storage = storageService.read();
-    storage.timeUpdated = new Date().getTime();
-    storage.onBoarding = {
-      event: {
-        name: eventName.value,
-        status: 0
-      },
-      organization: {
-        name: organizationName.value,
-        email: email.value
-      }
-    };
-
-    if (storage.timeCreated === null) {
-      storage.timeCreated = new Date().getTime();
-    }
-
-    storageService.write(storage);
-
-    onLogin(e);
-  };
-
-  email.oninput = (e) => {
-    const email = e.target.value;
-    const url = `${settings.jivecakeapi.uri}/organization/search?email=${email}`;
-
-    let searchFuture;
-
-    if (email in memoizeEmails) {
-      searchFuture = Promise.resolve(memoizeEmails[email]);
-    } else {
-      searchFuture = fetch(url).then(response => response.ok ? response.json() : Promise.reject(response));
-    }
-
-    searchFuture.then((searchResult) => {
-      memoizeEmails[email] = searchResult;
-
-      if (searchResult.count > 0) {
-        emailTaken.style.display = 'block';
-        emailAvailable = false;
-      } else {
-        emailTaken.style.display = 'none';
-        emailAvailable = true;
-      }
-    }, () => {
-      emailTaken.style.display = 'none';
-      emailAvailable = true;
-    });
-  };
-
-  sameAsEvent.onchange = () => {
-    organizationName.disabled = sameAsEvent.checked;
-
-    if (sameAsEvent.checked) {
-      organizationName.value = eventName.value;
-    } else {
-      organizationName.value = '';
-    }
-  };
-
-  eventName.oninput = (e) => {
-    if (sameAsEvent.checked) {
-      organizationName.value = e.target.value;
-    }
-  }
-};
 
 $(document).ready(() => {
   const memoizedEventSearch = {};
@@ -209,7 +108,6 @@ $(document).ready(() => {
   const signupForm = document.querySelector('.blog .signup-form');
 
   if (signupForm !== null) {
-    initializeOnBoading(signupForm);
     const storage = storageService.read();
 
     if (storage.auth === null) {

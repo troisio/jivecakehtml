@@ -70,8 +70,8 @@ export default class PublicEventController {
     const groupFuture = this.eventFuture.then((searchResult) => {
       const events = searchResult.entity;
       const storage = this.storageService.read();
-      const idToken = storage.auth === null ? null : storage.auth.idToken;
-      return events.length === 0 ? Promise.reject() : this.eventService.getAggregatedEventData(events[0].id, idToken);
+      const accessToken = storage.auth === null ? null : storage.auth.accessToken;
+      return events.length === 0 ? Promise.reject() : this.eventService.getAggregatedEventData(events[0].id, accessToken);
     });
 
     groupFuture.then((data) => {
@@ -277,8 +277,8 @@ export default class PublicEventController {
             entity: itemData.item.id
           }));
 
-        const idToken = storage.auth === null ? null : storage.auth.idToken;
-        const orderFuture = this.stripeService.order(idToken, group.event.id, {
+        const accessToken = storage.auth === null ? null : storage.auth.accessToken;
+        const orderFuture = this.stripeService.order(accessToken, group.event.id, {
           token: token,
           data: {
             order: itemData,
@@ -288,7 +288,7 @@ export default class PublicEventController {
             email: information.email
           }
         }).then(() => {
-          if (idToken === null) {
+          if (accessToken === null) {
             this.$mdDialog.show(
               this.$mdDialog.confirm()
                 .title('Your order has been processed. We will send you an email shortly.')
@@ -345,7 +345,7 @@ export default class PublicEventController {
     this.removePaypalFields();
 
     const storage = this.storageService.read();
-    const token = storage.auth === null ? null : storage.auth.idToken;
+    const token = storage.auth === null ? null : storage.auth.accessToken;
 
     paypal.Button.render({
       env: this.settings.paypal.env,
@@ -438,7 +438,7 @@ export default class PublicEventController {
 
       if (this.showFirstNameAndLastName(group, storage.auth) && storage.auth !== null) {
         accountInformationFuture = this.auth0Service.updateUser(
-          storage.auth.idToken,
+          storage.auth.accessToken,
           storage.auth.idTokenPayload.sub,
           {
             email: storage.profile.email,
@@ -473,7 +473,7 @@ export default class PublicEventController {
               .filter(itemData => itemData.amount === 0 && itemData.selected > 0)
               .map((itemData) => {
                   return this.transactionService.purchase(
-                    storage.auth.idToken,
+                    storage.auth.accessToken,
                     itemData.item.id,
                     {quantity: itemData.selected}
                   );

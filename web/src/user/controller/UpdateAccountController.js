@@ -2,18 +2,14 @@ import angular from 'angular';
 
 export default class UpdateAccountController {
   constructor(
-    $q,
     $timeout,
     $scope,
     auth0Service,
     storageService,
     userService,
     uiService,
-    assetService,
-    organizationService,
-    lock
+    assetService
   ) {
-    this.$q = $q;
     this.$timeout = $timeout;
     this.$scope = $scope;
     this.auth0Service = auth0Service;
@@ -21,8 +17,6 @@ export default class UpdateAccountController {
     this.userService = userService;
     this.uiService = uiService;
     this.assetService = assetService;
-    this.organizationService = organizationService;
-    this.lock = lock;
 
     this.$scope.selected = [];
     this.$scope.uiReady = false;
@@ -41,34 +35,25 @@ export default class UpdateAccountController {
     this.$scope.$parent.ready.then(() => {
       const storage = this.storageService.read();
 
-      const userFuture = new Promise((resolve, reject) => {
-        this.lock.getUserInfo(storage.auth.accessToken, (error, user) => {
-          if (error) {
-            reject(error);
-          } else {
-            this.$scope.isIdentityProviderAccount = user.user_id.startsWith('facebook') ||
-              user.user_id.startsWith('google');
+      const userFuture = this.auth0Service.getUser(storage.auth.accessToken, storage.auth.idTokenPayload.sub).then((user) => {
+        this.$scope.isIdentityProviderAccount = user.user_id.startsWith('facebook') || user.user_id.startsWith('google');
 
-            this.$scope.user = {
-              email: user.email
-            };
+        this.$scope.user = {
+          email: user.email
+        };
 
-            if (this.$scope.isIdentityProviderAccount) {
-              this.$scope.user.given_name = user.given_name;
-              this.$scope.user.family_name = user.family_name;
-            } else {
-              if ('user_metadata' in user) {
-                this.$scope.user.given_name = user.user_metadata.given_name;
-                this.$scope.user.family_name = user.user_metadata.family_name;
-              }
-            }
-
-            resolve();
+        if (this.$scope.isIdentityProviderAccount) {
+          this.$scope.user.given_name = user.given_name;
+          this.$scope.user.family_name = user.family_name;
+        } else {
+          if ('user_metadata' in user) {
+            this.$scope.user.given_name = user.user_metadata.given_name;
+            this.$scope.user.family_name = user.user_metadata.family_name;
           }
-        });
+        }
       });
 
-      const assetFuture = this.assetService.search(storage.auth.idToken, {
+      const assetFuture = this.assetService.search(storage.auth.accessToken, {
         assetType: this.assetService.GOOGLE_CLOUD_STORAGE_BLOB_FACE,
         entityId: storage.auth.idTokenPayload.sub,
         entityType: this.assetService.USER_TYPE,
@@ -80,8 +65,9 @@ export default class UpdateAccountController {
         this.uiService.notify('Unable to get asset information');
       });
 
-      this.$q.all([userFuture, assetFuture]).finally(() => {
+      Promise.all([userFuture, assetFuture]).then(() => {}, () => {}).then(() => {
         this.$scope.uiReady = true;
+        this.$timeout();
       });
     });
 
@@ -105,7 +91,7 @@ export default class UpdateAccountController {
     let imageFuture;
 
     if (this.$scope.croppedImage === '' || this.$scope.croppedImage === null) {
-      imageFuture = this.$q.resolve();
+      imageFuture = Promise.resolve();
     } else {
       const index = this.$scope.croppedImage.indexOf(';base64,') + ';base64,'.length;
       const base64 = this.$scope.croppedImage.substring(index);
@@ -121,7 +107,7 @@ export default class UpdateAccountController {
       const type = this.$scope.croppedImage.substring(sliceStart, sliceEnd);
 
       imageFuture = this.userService.uploadSelfie(
-        storage.auth.idToken,
+        storage.auth.accessToken,
         storage.auth.idTokenPayload.sub,
         data,
         type
@@ -140,21 +126,21 @@ export default class UpdateAccountController {
       };
 
       userUpdateFuture = this.auth0Service.updateUser(
-        storage.auth.idToken,
+        storage.auth.accessToken,
         storage.auth.idTokenPayload.sub,
         body
       );
     } else {
-      userUpdateFuture = this.$q.resolve();
+      userUpdateFuture = Promise.resolve();
     }
 
-    this.$q.all([imageFuture, userUpdateFuture]).then(() => {
+    Promise.all([imageFuture, userUpdateFuture]).then(() => {
       this.uiService.notify('Successfully updated');
       this.run();
     }, (response) => {
       const text = response.status === 409 ? 'Email has already been taken' : 'Unable to update user';
       this.uiService.notify(text);
-    }).finally(() => {
+    }).then(() => {}, () => {}).then(() => {
       this.$scope.loading = false;
       this.reset();
     });
@@ -168,14 +154,11 @@ export default class UpdateAccountController {
 }
 
 UpdateAccountController.$inject = [
-  '$q',
   '$timeout',
   '$scope',
   'Auth0Service',
   'StorageService',
   'UserService',
   'UIService',
-  'AssetService',
-  'OrganizationService',
-  'lock'
+  'AssetService'
 ];

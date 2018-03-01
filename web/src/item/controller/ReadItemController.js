@@ -32,7 +32,7 @@ export default class ReadItemController {
     this.Permission = Permission;
 
     const storage = this.storageService.read();
-    this.$scope.token = storage.auth.idToken;
+    this.$scope.token = storage.auth.accessToken;
     this.$scope.apiUrl = settings.jivecakeapi.uri;
     this.$scope.uiReady = false;
     this.$scope.selected = [];
@@ -185,7 +185,7 @@ export default class ReadItemController {
  toggleStatus(item) {
    const storage = this.storageService.read();
 
-   this.itemService.update(storage.auth.idToken, item).then(() => {
+   this.itemService.update(storage.auth.accessToken, item).then(() => {
    }, () => {
      this.uiService.notify('Unable to update item');
    })
@@ -202,7 +202,7 @@ export default class ReadItemController {
 
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
-      this.itemService.delete(storage.auth.idToken, itemData.item.id).then(() => {
+      this.itemService.delete(storage.auth.accessToken, itemData.item.id).then(() => {
         this.uiService.notify('Item deleted');
       }, (response) => {
         let message;
@@ -222,7 +222,7 @@ export default class ReadItemController {
     const storage = this.storageService.read();
     const loader = this.uiService.load();
 
-    this.eventService.getExcel(storage.auth.idToken, item.eventId, {itemId: item.id}).then((asset) => {
+    this.eventService.getExcel(storage.auth.accessToken, item.eventId, {itemId: item.id}).then((asset) => {
       loader.close.resolve();
 
       this.$mdDialog.show({

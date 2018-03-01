@@ -30,7 +30,7 @@ export default class CreateTransactionController {
     $scope.currencies = TransactionService.getSupportedCurrencies();
 
     const storage = storageService.read();
-    this.itemFuture = this.itemService.read(storage.auth.idToken, this.$state.params.itemId);
+    this.itemFuture = this.itemService.read(storage.auth.accessToken, this.$state.params.itemId);
 
     this.run();
   }
@@ -63,7 +63,7 @@ export default class CreateTransactionController {
     return this.itemFuture.then((item) => {
       this.$scope.item = item;
 
-      const eventFuture = this.eventService.read(storage.auth.idToken, item.eventId).then(event => {
+      const eventFuture = this.eventService.read(storage.auth.accessToken, item.eventId).then(event => {
         this.$scope.transaction.currency = event.currency;
         this.$scope.event = event;
       });
@@ -86,7 +86,7 @@ export default class CreateTransactionController {
       transactionCopy.currency = event.currency;
     }
 
-    return this.transactionService.create(storage.auth.idToken, item.id, transactionCopy).then(() => {
+    return this.transactionService.create(storage.auth.accessToken, item.id, transactionCopy).then(() => {
       this.uiService.notify('Transaction created');
       return this.setDefaults();
     }, response => {

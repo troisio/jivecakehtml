@@ -62,7 +62,7 @@ export default class CreateConsentAssetController {
     }
 
     future.then(() => {
-      return this.assetService.createConsentAsset(storage.auth.idToken, this.organization.id, asset).then((asset) => {
+      return this.assetService.createConsentAsset(storage.auth.accessToken, this.organization.id, asset).then((asset) => {
         this.uiService.notify('Asset created');
         this.onAssetCreate(asset);
         this.$mdDialog.hide();

@@ -74,7 +74,7 @@ export default class UpdateOrganizationController {
   submit(organization) {
     this.$scope.loading = true;
 
-    return this.organizationService.update(this.storage.auth.idToken, organization).then(() => {
+    return this.organizationService.update(this.storage.auth.accessToken, organization).then(() => {
       this.uiService.notify('Updated organization');
     }, (response) => {
       const text = response.status === 409 ? 'Organization email taken' : 'Unable to update organization';
@@ -90,19 +90,19 @@ export default class UpdateOrganizationController {
     return this.organizationService.read(organizationId).then((organization) => {
       this.$scope.organization = organization;
 
-      const usersFuture = this.organizationService.getUsers(this.storage.auth.idToken, organizationId);
-      const paymentProfileFutures = this.organizationService.getPaymentProfiles(this.storage.auth.idToken, organizationId);
+      const usersFuture = this.organizationService.getUsers(this.storage.auth.accessToken, organizationId);
+      const paymentProfileFutures = this.organizationService.getPaymentProfiles(this.storage.auth.accessToken, organizationId);
       const subscriptionFuture = this.stripeService.getOrganizationTrialingOrActiveSubscriptions(
-        this.storage.auth.idToken,
+        this.storage.auth.accessToken,
         organizationId
       );
 
-      const permission = this.permissionService.search(this.storage.auth.idToken, {
+      const permission = this.permissionService.search(this.storage.auth.accessToken, {
         objectId: organization.id,
         objectClass: 'Organization'
       });
 
-      const assetFuture = this.assetService.search(this.storage.auth.idToken, {
+      const assetFuture = this.assetService.search(this.storage.auth.accessToken, {
         entityId: organization.id,
         entityType: this.assetService.ORGANIZATION_TYPE,
         assetType: [this.assetService.GOOGLE_CLOUD_STORAGE_CONSENT_PDF, this.assetService.ORGANIZATION_CONSENT_TEXT],
@@ -110,7 +110,7 @@ export default class UpdateOrganizationController {
       });
 
       const organizationInvitationFuture = this.organizationInvitationService.getOrganizationInvitations(
-        this.storage.auth.idToken,
+        this.storage.auth.accessToken,
         organization.id
       );
 
@@ -157,7 +157,7 @@ export default class UpdateOrganizationController {
   deleteConsentAsset(asset) {
     const storage = this.storageService.read();
 
-    this.assetService.delete(storage.auth.idToken, asset.id).then(() => {
+    this.assetService.delete(storage.auth.accessToken, asset.id).then(() => {
       this.$scope.assets = this.$scope.assets.filter(subject => subject.id !== asset.id);
       this.uiService.notify('Document deleted');
     }, (response) => {
@@ -183,7 +183,7 @@ export default class UpdateOrganizationController {
 
   deleteInvitation(invitation) {
     const storage = this.storageService.read();
-    this.organizationInvitationService.delete(storage.auth.idToken, invitation.id).then(response => {
+    this.organizationInvitationService.delete(storage.auth.accessToken, invitation.id).then(response => {
       if (response.status === 200 || response.status === 404) {
         this.$scope.invitations = this.$scope.invitations.filter(subject => subject !== invitation);
         this.$timeout();
@@ -198,7 +198,7 @@ export default class UpdateOrganizationController {
   subscribe(organization) {
     const storage = this.storageService.read();
     this.stripeService.getMonthlySubscriptionId(
-      storage.auth.idToken,
+      storage.auth.accessToken,
       storage.profile,
       organization.id
     ).then((subscriptionId) => {
@@ -210,7 +210,7 @@ export default class UpdateOrganizationController {
       }).then((token) => {
         const storage = this.storageService.read();
         this.stripeService.subscribe(
-          storage.auth.idToken,
+          storage.auth.accessToken,
           organization.id,
           subscriptionId,
           {
@@ -219,7 +219,7 @@ export default class UpdateOrganizationController {
           }
         ).then(() => {
           this.stripeService.getOrganizationTrialingOrActiveSubscriptions(
-            this.storage.auth.idToken,
+            this.storage.auth.accessToken,
             organization.id
           ).then((subscriptions) => {
             this.$scope.subscriptions = subscriptions;
@@ -238,9 +238,9 @@ export default class UpdateOrganizationController {
 
     this.uiService.notify('Unsubscribing...');
 
-    this.stripeService.cancelSubscription(storage.auth.idToken, subscription.id).then(() => {
+    this.stripeService.cancelSubscription(storage.auth.accessToken, subscription.id).then(() => {
       return this.stripeService.getOrganizationTrialingOrActiveSubscriptions(
-        this.storage.auth.idToken,
+        this.storage.auth.accessToken,
         this.$stateParams.organizationId
       ).then((subscriptions) => {
         this.$scope.subscriptions = subscriptions;
@@ -277,7 +277,7 @@ export default class UpdateOrganizationController {
 
     this.$mdDialog.show(confirm).then(() => {
       this.uiService.notify('Deleting profile...');
-      this.paymentProfileService.delete(this.storage.auth.idToken, paymentProfile.id).then(() => {
+      this.paymentProfileService.delete(this.storage.auth.accessToken, paymentProfile.id).then(() => {
         this.$scope.paymentProfiles = this.$scope.paymentProfiles.filter(profile => profile.id !== paymentProfile.id);
       }, (response) => {
         let text;
@@ -295,7 +295,7 @@ export default class UpdateOrganizationController {
 
   deletePermission(user, permission) {
     this.uiService.notify('Deleting permission...');
-    this.permissionService.delete(this.storage.auth.idToken, permission.id).then((response) => {
+    this.permissionService.delete(this.storage.auth.accessToken, permission.id).then((response) => {
       if (response.ok) {
         const removeIndex = this.$scope.users.indexOf(user);
         this.$scope.users.splice(removeIndex, 1);

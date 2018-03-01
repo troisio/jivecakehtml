@@ -1,11 +1,10 @@
 export default class EmailVerifiedController {
-  constructor($mdDialog, $scope, uiService, auth0Service, storageService, lock) {
+  constructor($mdDialog, $scope, uiService, auth0Service, storageService) {
     this.$mdDialog = $mdDialog;
     this.$scope = $scope;
     this.uiService = uiService;
     this.auth0Service = auth0Service;
     this.storageService = storageService;
-    this.lock = lock;
 
     this.$scope.loading = false;
   }
@@ -15,19 +14,13 @@ export default class EmailVerifiedController {
 
     const storage = this.storageService.read();
 
-    this.lock.getUserInfo(storage.auth.accessToken, (error, user) => {
-      if (error) {
-        this.uiService.notify('Unable to retrieve user data for verification');
+    this.auth0Service(storage.auth.accessToken, storage.auth.idTokenPayload.sub).then((user) => {
+      if (user.email_verified) {
+        this.$mdDialog.hide();
+        this.uiService.notify('Email verified');
       } else {
-        if (user.email_verified) {
-          this.$mdDialog.hide();
-          this.uiService.notify('Email verified');
-        } else {
-          this.uiService.notify('Email has not been verified');
-        }
+        this.uiService.notify('Email has not been verified');
       }
-
-      this.$scope.loading = false;
     });
   }
 
@@ -36,7 +29,7 @@ export default class EmailVerifiedController {
 
     const storage = this.storageService.read();
 
-    this.auth0Service.sendVerificationEmail(storage.auth.idToken, {
+    this.auth0Service.sendVerificationEmail(storage.auth.accessToken, {
       user_id: storage.auth.idTokenPayload.sub
     }).then(() => {
       this.uiService.notify('Verification email sent');
@@ -50,4 +43,4 @@ export default class EmailVerifiedController {
   }
 }
 
-EmailVerifiedController.$inject = ['$mdDialog', '$scope', 'UIService', 'Auth0Service', 'StorageService', 'lock'];
+EmailVerifiedController.$inject = ['$mdDialog', '$scope', 'UIService', 'Auth0Service', 'StorageService'];

@@ -104,7 +104,7 @@ export default class ReadTransactionController {
   getRows(whereClause) {
     const storage = this.storageService.read();
 
-    return this.userService.refreshUserCacheFromTransactions(storage.auth.idToken, whereClause).then(() => {
+    return this.userService.refreshUserCacheFromTransactions(storage.auth.accessToken, whereClause).then(() => {
       return this.db.select(...this.selectColumns)
         .from(this.transactionTable)
         .innerJoin(this.itemTable, this.itemTable.id.eq(this.transactionTable.itemId))
@@ -240,13 +240,13 @@ export default class ReadTransactionController {
         let future;
 
         if (transaction.linkedObjectClass === 'PaypalPayment') {
-          future = this.paypalService.refund(storage.auth.idToken, transaction.id).then(() => {
+          future = this.paypalService.refund(storage.auth.accessToken, transaction.id).then(() => {
             this.uiService.notify('Transaction refunded');
           }, () => {
             this.uiService.notify('Unable to refund');
           });
         } else if (transaction.linkedObjectClass === 'StripeCharge') {
-          future = this.stripeService.refund(storage.auth.idToken, transaction.id).then(() => {
+          future = this.stripeService.refund(storage.auth.accessToken, transaction.id).then(() => {
             this.uiService.notify('Transaction refunded');
           }, () => {
             this.uiService.notify('Unable to refund');
@@ -307,7 +307,7 @@ export default class ReadTransactionController {
 
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
-      this.transactionService.delete(storage.auth.idToken, transactionData.Transaction.id).then(() => {
+      this.transactionService.delete(storage.auth.accessToken, transactionData.Transaction.id).then(() => {
         this.uiService.notify(successMessage);
       }, () => {
         this.uiService.notify(failureMessage);
@@ -326,7 +326,7 @@ export default class ReadTransactionController {
 
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
-      this.transactionService.revoke(storage.auth.idToken, transaction.id).then(() => {
+      this.transactionService.revoke(storage.auth.accessToken, transaction.id).then(() => {
         this.uiService.notify('Transaction revoked');
       }, () => {
         this.uiService.notify('Unable to revoke transaction');

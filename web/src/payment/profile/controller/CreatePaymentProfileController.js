@@ -43,7 +43,7 @@ export default class CreatePaymentProfileController {
 
       const storage = this.storageService.read();
       this.paymentProfileService.createPaypalPaymentProfile(
-        storage.auth.idToken,
+        storage.auth.accessToken,
         this.organization.id,
         this.$scope.profile
       ).then((profile) => {

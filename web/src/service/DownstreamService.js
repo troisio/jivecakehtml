@@ -400,7 +400,7 @@ export default class DownstreamService {
 
   cacheUserTransactions(auth) {
     return this.transactionService.search(
-      auth.idToken,
+      auth.accessToken,
       {
         userId: auth.idTokenPayload.sub,
         limit: 100
@@ -432,13 +432,13 @@ export default class DownstreamService {
       }
 
       const organizationPromises = transactionsForOrganization.map(transaction => {
-        return this.transactionService.getOrganization(auth.idToken, transaction.id);
+        return this.transactionService.getOrganization(auth.accessToken, transaction.id);
       });
       const eventPromises = transactionsForEvents.map(transaction => {
-        return this.transactionService.getEvent(auth.idToken, transaction.id);
+        return this.transactionService.getEvent(auth.accessToken, transaction.id);
       });
       const itemPromises = transactionsForItems.map(transaction => {
-        return this.transactionService.getItem(auth.idToken, transaction.id);
+        return this.transactionService.getItem(auth.accessToken, transaction.id);
       });
 
       const organizationPromise = Promise.all(organizationPromises).then((entities) => {
@@ -499,7 +499,7 @@ export default class DownstreamService {
 
   cacheUserData(auth) {
     const transactionFuture = this.cacheUserTransactions(auth);
-    const permissionFuture = this.permissionService.search(auth.idToken, {
+    const permissionFuture = this.permissionService.search(auth.accessToken, {
       user_id: auth.idTokenPayload.sub
     }).then(permissionSearchResult => {
       const permissions = permissionSearchResult.entity;
@@ -508,7 +508,7 @@ export default class DownstreamService {
       const permissionFuture = this.db.insert().into(permissionTable).values(permissionRows).exec();
 
       const invitationFuture = this.organizationInvitationService.getUserInvitations(
-        auth.idToken,
+        auth.accessToken,
         auth.idTokenPayload.sub
       ).then((invitations) => {
         const table = this.db.getSchema().table('OrganizationInvitation');
@@ -520,7 +520,7 @@ export default class DownstreamService {
         .filter(permission => permission.objectClass === 'Organization')
         .map(permission => permission.objectId);
 
-      const treeFuture = this.writeOrganizationTreeToLocalDatabase(auth.idToken, organizationIds);
+      const treeFuture = this.writeOrganizationTreeToLocalDatabase(auth.accessToken, organizationIds);
       return Promise.all([
         invitationFuture,
         permissionFuture,

@@ -33,7 +33,7 @@ export default class UpdateItemController {
   run() {
     this.$scope.uiReady = false;
 
-    return this.itemService.read(this.storage.auth.idToken, this.$state.params.itemId).then((item) => {
+    return this.itemService.read(this.storage.auth.accessToken, this.$state.params.itemId).then((item) => {
       if (item.timeStart === null) {
         this.$scope.timeStart = {
           time: null,
@@ -166,7 +166,7 @@ export default class UpdateItemController {
         itemCopy.timeAmounts = null;
       }
 
-      this.itemService.update(this.storage.auth.idToken, itemCopy).then(item => {
+      this.itemService.update(this.storage.auth.accessToken, itemCopy).then(item => {
         this.$state.go('application.internal.item.read');
         this.uiService.notify('Updated ' + item.name);
       }, () => {

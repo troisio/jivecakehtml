@@ -1,22 +1,18 @@
 export default [
-  'lock',
+  'Auth0Service',
   '$rootScope',
   '$timeout',
   '$mdSidenav',
   '$transitions',
   '$location',
-  '$state',
-  '$mdDialog',
   'settings',
   function(
-    lock,
+    auth0Service,
     $rootScope,
     $timeout,
     $mdSidenav,
     $transitions,
     $location,
-    $state,
-    $mdDialog,
     settings
   ) {
     if (settings.google.analytics.enabled && window.ga) {
@@ -46,12 +42,6 @@ export default [
       if (settings.google.analytics.enabled && window.ga) {
         ga('send', 'pageview', $location.path());
       }
-    });
-
-    lock.on('authenticated', function(auth) {
-      lock.getUserInfo(auth.accessToken, function(error, profile) {
-        $rootScope.$broadcast('auth0.authenticated', {auth: auth, error: error, profile: profile});
-      });
     });
   }
 ]

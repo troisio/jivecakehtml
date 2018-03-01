@@ -22,10 +22,10 @@ export default class CreateOrganizationAndEventController {
 
     this.$scope.loading = true;
 
-    return this.organizationService.create(storage.auth.idToken, organization).then((organization) => {
+    return this.organizationService.create(storage.auth.accessToken, organization).then((organization) => {
       event.status = this.eventService.getInactiveEventStatus();
 
-      return this.eventService.create(storage.auth.idToken, organization.id, event).then((event) => {
+      return this.eventService.create(storage.auth.accessToken, organization.id, event).then((event) => {
         this.$mdDialog.hide();
         this.uiService.notify('Event created');
 

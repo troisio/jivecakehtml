@@ -58,7 +58,7 @@ export default class CreateItemController {
     item.amount = 0;
     item.status = this.itemService.getInactiveStatus();
 
-    this.itemService.create(this.storage.auth.idToken, item).then(() => {
+    this.itemService.create(this.storage.auth.accessToken, item).then(() => {
       this.$mdDialog.cancel();
       this.uiService.notify('Item created');
     }, () => {

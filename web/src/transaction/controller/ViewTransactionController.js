@@ -26,7 +26,7 @@ export default class ViewTransactionController {
       this.$scope.transaction.linkedObjectClass === 'PaypalPayment';
 
     if (isPendingPaypal) {
-      this.paypalService.getPayment(storage.auth.idToken, this.$scope.transaction.id).then((payment) => {
+      this.paypalService.getPayment(storage.auth.accessToken, this.$scope.transaction.id).then((payment) => {
         const sale = payment.transactions[0].related_resources[0].sale;
 
         if (sale.state === 'pending' && sale.reason_code === 'RECEIVING_PREFERENCE_MANDATES_MANUAL_ACTION') {

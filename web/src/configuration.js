@@ -20,17 +20,13 @@ export default [
   '$mdThemingProvider',
   '$mdDateLocaleProvider',
   '$httpProvider',
-  'settings',
-  'lockProvider',
    function(
      $locationProvider,
      $stateProvider,
      $urlRouterProvider,
      $mdThemingProvider,
      $mdDateLocaleProvider,
-     $httpProvider,
-     settings,
-     lockProvider
+     $httpProvider
    ) {
     $httpProvider.interceptors.push('HTTPInterceptor');
 
@@ -162,11 +158,6 @@ export default [
       template: myTransactionPartial,
       controller: 'MyTransactionController',
       controllerAs: 'controller'
-    });
-
-    lockProvider.init({
-      domain: settings.oauth.auth0.domain,
-      clientID: settings.oauth.auth0.client_id
     });
   }
 ];

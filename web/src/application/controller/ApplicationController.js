@@ -15,13 +15,12 @@ export default class ApplicationController {
     eventService,
     itemService,
     downstreamService,
-    permissionService,
     uiService,
     connectionService,
     storageService,
     auth0Service,
     db,
-    Permission
+    onAuthentication
   ) {
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
@@ -34,13 +33,12 @@ export default class ApplicationController {
     this.eventService = eventService;
     this.itemService = itemService;
     this.downstreamService = downstreamService;
-    this.permissionService = permissionService;
     this.uiService = uiService;
     this.connectionService = connectionService;
     this.storageService = storageService;
     this.auth0Service = auth0Service;
-    this.Permission = Permission;
     this.db = db;
+    this.onAuthentication = onAuthentication;
 
     this.$scope.storage = storageService.read();
     this.$scope.selectedTab = 0;
@@ -152,13 +150,13 @@ export default class ApplicationController {
     this.connectionService.closeEventSources();
     this.connectionService.deleteEventSources();
 
-    const profileFuture = this.auth0Service.getUser(storage.auth.idToken, storage.auth.idTokenPayload.sub).then((profile) => {
+    const profileFuture = this.auth0Service.getUser(storage.auth.accessToken, storage.auth.idTokenPayload.sub).then((profile) => {
       const storage = this.storageService.read();
       storage.profile = profile;
       this.storageService.write(storage);
     });
 
-    const eventSource = this.connectionService.getEventSource(storage.auth.idToken, storage.auth.idTokenPayload.sub);
+    const eventSource = this.connectionService.getEventSource(storage.auth.accessToken, storage.auth.idTokenPayload.sub);
     this.downstreamService.bootstrapEventSource(eventSource);
 
     const userCacheStart = new Date().getTime();
@@ -166,7 +164,7 @@ export default class ApplicationController {
     const cacheFuture = this.downstreamService.cacheUserData(storage.auth).then(() => {
       const userCacheEnd = new Date().getTime();
 
-      this.uiService.logInteraction(storage.auth.idToken, {
+      this.uiService.logInteraction(storage.auth.accessToken, {
         event: 'cacheUserData',
         parameters: {
           duration: userCacheEnd - userCacheStart
@@ -207,11 +205,10 @@ ApplicationController.$inject = [
   'EventService',
   'ItemService',
   'DownstreamService',
-  'PermissionService',
   'UIService',
   'ConnectionService',
   'StorageService',
   'Auth0Service',
   'db',
-  'Permission'
+  'onAuthentication'
 ];

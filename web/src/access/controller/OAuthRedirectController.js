@@ -10,7 +10,8 @@ export default class OAuthRedirectController {
     eventService,
     organizationService,
     JiveCakeLocalStorage,
-    SearchEntity
+    SearchEntity,
+    onAuthentication
   ) {
     this.$scope = $scope;
     this.$state = $state;
@@ -24,8 +25,10 @@ export default class OAuthRedirectController {
     this.JiveCakeLocalStorage = JiveCakeLocalStorage;
     this.SearchEntity = SearchEntity;
 
-    this.$scope.$on('auth0.authenticated', (_, subject) => {
-      this.onAuthenticated(subject.auth, subject.error, subject.profile);
+    onAuthentication.then((subject) => {
+      this.onAuthenticated(subject.auth, null, subject.profile);
+    }, (e) => {
+      this.onAuthenticated(null, e, null);
     });
 
     this.$scope.$parent.ready.then(() => this.run());
@@ -47,7 +50,7 @@ export default class OAuthRedirectController {
         future = Promise.resolve();
       } else {
         const storage = this.storageService.read();
-        future = this.paymentProfileService.createStripePaymentProfile(storage.auth.idToken, state.subject, {
+        future = this.paymentProfileService.createStripePaymentProfile(storage.auth.accessToken, state.subject, {
           code: this.$state.params.code
         });
       }
@@ -68,97 +71,77 @@ export default class OAuthRedirectController {
 
       this.$mdDialog.show(confirm).then(() => {
         location.href = '/';
+      }, () => {
+        location.href = '/';
       });
     };
 
     if (typeof error === 'undefined' || error === null) {
       const storage = this.storageService.read();
+      storage.onBoarding = null;
+      storage.auth = auth;
+      storage.profile = profile;
+      storage.timeUpdated = new Date().getTime();
 
-      let onBoarding;
-
-      if (storage.onBoarding === null) {
-        onBoarding = Promise.resolve(null);
-      } else {
-        onBoarding = this.organizationService.create(auth.idToken, storage.onBoarding.organization).then((organization) => {
-          return this.eventService.create(auth.idToken, organization.id, storage.onBoarding.event);
-        }).then((event) => event, () => null);
+      if (storage.timeCreated === null) {
+        storage.timeCreated = new Date().getTime();
       }
 
-      onBoarding.then((onBoardedEvent) => {
-        const storage = this.storageService.read();
-        storage.onBoarding = null;
-        storage.auth = auth;
-        storage.profile = profile;
-        storage.timeUpdated = new Date().getTime();
+      this.storageService.write(storage);
 
-        if (storage.timeCreated === null) {
-          storage.timeCreated = new Date().getTime();
-        }
+      this.permissionService.search(auth.accessToken, {
+        user_id: auth.idTokenPayload.sub,
+        objectClass: 'Organization'
+      }).then((permissionResult) => {
+        const permissions = permissionResult.entity;
+        const organizationIds = permissions.map(permission => permission.objectId);
 
-        this.storageService.write(storage);
+        const transactionFuture = organizationIds.length === 0 ? Promise.resolve(new this.SearchEntity()) :
+          this.transactionService.search(auth.accessToken, {
+            limit: 1,
+            organizationId: organizationIds,
+            order: '-timeCreated'
+          });
 
-        if (onBoardedEvent === null) {
-          this.permissionService.search(auth.idToken, {
-            user_id: auth.idTokenPayload.sub,
-            objectClass: 'Organization'
-          }).then((permissionResult) => {
-            const permissions = permissionResult.entity;
-            const organizationIds = permissions.map(permission => permission.objectId);
+        transactionFuture.then(transactionSearch => {
+          const millisecondsPerWeek = 604800000;
+          const currentTime = new Date().getTime();
+          const transactionsInPreviousWeek = transactionSearch.entity
+            .filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
 
-            const transactionFuture = organizationIds.length === 0 ? Promise.resolve(new this.SearchEntity()) :
-              this.transactionService.search(auth.idToken, {
-                limit: 1,
-                organizationId: organizationIds,
-                order: '-timeCreated'
-              });
+          const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
 
-            transactionFuture.then(transactionSearch => {
-              const millisecondsPerWeek = 604800000;
-              const currentTime = new Date().getTime();
-              const transactionsInPreviousWeek = transactionSearch.entity
-                .filter(transaction => currentTime - transaction.timeCreated < millisecondsPerWeek);
-
-              const routerParameters = typeof auth.state === 'undefined' ? null : JSON.parse(auth.state);
-
-              if (routerParameters !== null && routerParameters.name === 'application.event') {
-                this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-              } else if (transactionsInPreviousWeek.length > 0) {
-                this.$state.go('application.internal.transaction.read', {}, {reload: true});
-              } else if (permissions.length > 0) {
-                this.$state.go('application.internal.organization.read', {}, {reload: true});
-              } else if (routerParameters === null) {
-                this.$state.go('application.internal.myTransaction', {
-                  user_id: auth.idTokenPayload.sub
-                }, {
-                  reload: true
-                });
-              } else {
-                if (routerParameters.name === 'landing') {
-                  this.$state.go('application.internal.myTransaction', {
-                    user_id: auth.idTokenPayload.sub
-                  }, {
-                    reload: true
-                  });
-                } else {
-                  this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
-                }
-              }
-            }, () => {
-              unableToLoad('Sorry, we were unable to load your data');
+          if (routerParameters !== null && routerParameters.name === 'application.event') {
+            this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+          } else if (transactionsInPreviousWeek.length > 0) {
+            this.$state.go('application.internal.transaction.read', {}, {reload: true});
+          } else if (permissions.length > 0) {
+            this.$state.go('application.internal.organization.read', {}, {reload: true});
+          } else if (routerParameters === null) {
+            this.$state.go('application.internal.myTransaction', {
+              user_id: auth.idTokenPayload.sub
+            }, {
+              reload: true
             });
-          }, () => {
-            unableToLoad('Sorry, we were unable to load your organizations');
-          });
-        } else {
-          this.$state.go('application.internal.event.update', {
-            eventId: onBoardedEvent.id
-          }, {
-            reload: true
-          });
-        }
+          } else {
+            if (routerParameters.name === 'landing') {
+              this.$state.go('application.internal.myTransaction', {
+                user_id: auth.idTokenPayload.sub
+              }, {
+                reload: true
+              });
+            } else {
+              this.$state.go(routerParameters.name, routerParameters.stateParams, {reload: true});
+            }
+          }
+        }, () => {
+          unableToLoad('Sorry, we were unable to load your data');
+        });
+      }, () => {
+        unableToLoad('Sorry, we were unable to load your organizations');
       });
     } else {
-      unableToLoad('Sorry, we were unable to get your data from Auth0');
+      unableToLoad(`Sorry, we were unable to get your personal data. ${error.errorDescription}`);
     }
   }
 }
@@ -174,5 +157,6 @@ OAuthRedirectController.$inject = [
   'EventService',
   'OrganizationService',
   'JiveCakeLocalStorage',
-  'SearchEntity'
+  'SearchEntity',
+  'onAuthentication'
 ];

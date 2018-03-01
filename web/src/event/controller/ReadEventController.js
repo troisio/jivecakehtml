@@ -56,7 +56,7 @@ export default class ReadEventController {
 
     return this.$scope.$parent.ready.then(() => {
       const storage = this.storageService.read();
-      this.$scope.token = storage.auth.idToken;
+      this.$scope.token = storage.auth.accessToken;
 
       const permissionTable = this.db.getSchema().table('Permission');
       const eventTable = this.db.getSchema().table('Event');
@@ -105,12 +105,12 @@ export default class ReadEventController {
 
   toggleStatus(eventData) {
     const storage = this.storageService.read();
-    const updateFuture = this.eventService.fieldUpdate(storage.auth.idToken, eventData.Event.id, {
+    const updateFuture = this.eventService.fieldUpdate(storage.auth.accessToken, eventData.Event.id, {
       status: eventData.Event.status
     });
 
     const subscriptionIdFuture = this.stripeService.getMonthlySubscriptionId(
-      storage.auth.idToken,
+      storage.auth.accessToken,
       storage.profile,
       eventData.Organization.id
     );
@@ -169,7 +169,7 @@ export default class ReadEventController {
                   this.uiService.notify('Subscribing...');
                 },
                 onSubscribe: () => {
-                  this.eventService.fieldUpdate(storage.auth.idToken, eventData.Event.id, {
+                  this.eventService.fieldUpdate(storage.auth.accessToken, eventData.Event.id, {
                     status: this.eventService.getActiveEventStatus()
                   }).then(() => {
                     eventData.Event.status = this.eventService.getActiveEventStatus();
@@ -201,7 +201,7 @@ export default class ReadEventController {
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
 
-      this.eventService.delete(storage.auth.idToken, eventData.Event.id).then(() => {
+      this.eventService.delete(storage.auth.accessToken, eventData.Event.id).then(() => {
         this.uiService.notify('Event deleted');
       }, (response) => {
         const message = response.status === 401 ? 'You do not have permission to delete this event' : 'Unable to delete event';
@@ -214,7 +214,7 @@ export default class ReadEventController {
     const storage = this.storageService.read();
     const loader = this.uiService.load();
 
-    this.eventService.getExcel(storage.auth.idToken, event.id, {}).then((asset) => {
+    this.eventService.getExcel(storage.auth.accessToken, event.id, {}).then((asset) => {
       loader.close.resolve();
 
       this.$mdDialog.show({

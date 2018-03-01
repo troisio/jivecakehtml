@@ -115,7 +115,7 @@ export default class ReadOrganizationController {
     this.$mdDialog.show(confirm).then(() => {
       const storage = this.storageService.read();
 
-      this.organizationService.delete(storage.auth.idToken, organizationData.Organization.id).then(() => {
+      this.organizationService.delete(storage.auth.accessToken, organizationData.Organization.id).then(() => {
         this.uiService.notify('Organization deleted');
       }, () => {
         this.uiService.notify('Unable to delete organization');
@@ -134,8 +134,8 @@ export default class ReadOrganizationController {
 
   acceptInvitation(invitation) {
     const storage = this.storageService.read();
-    this.organizationInvitationService.accept(storage.auth.idToken, invitation.id).then(permission => {
-      const treeFuture = this.downstreamService.writeOrganizationTreeToLocalDatabase(storage.auth.idToken, [invitation.organizationId]);
+    this.organizationInvitationService.accept(storage.auth.accessToken, invitation.id).then(permission => {
+      const treeFuture = this.downstreamService.writeOrganizationTreeToLocalDatabase(storage.auth.accessToken, [invitation.organizationId]);
       const permissionTable = this.db.getSchema().table('Permission');
       const permissionFuture = this.db.insertOrReplace()
         .into(permissionTable)
@@ -157,7 +157,7 @@ export default class ReadOrganizationController {
 
   declineInvitation(invitation) {
     const storage = this.storageService.read();
-    this.organizationInvitationService.delete(storage.auth.idToken, invitation.id).then(response => {
+    this.organizationInvitationService.delete(storage.auth.accessToken, invitation.id).then(response => {
       if (response.status === 200 || response.status === 404) {
         this.$scope.invitations = this.$scope.invitations.filter(subject => subject !== invitation);
         this.$timeout();

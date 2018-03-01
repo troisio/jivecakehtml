@@ -57,9 +57,9 @@ export default class UpdateEventController {
     this.$scope.uiReady = false;
 
     this.$scope.$parent.ready.then(() => {
-      return this.eventService.read(this.storage.auth.idToken, this.$state.params.eventId).then((event) => {
-        const paymentProfileFuture = this.organizationService.getPaymentProfiles(this.storage.auth.idToken, event.organizationId);
-        const consentFuture = this.assetService.search(this.storage.auth.idToken, {
+      return this.eventService.read(this.storage.auth.accessToken, this.$state.params.eventId).then((event) => {
+        const paymentProfileFuture = this.organizationService.getPaymentProfiles(this.storage.auth.accessToken, event.organizationId);
+        const consentFuture = this.assetService.search(this.storage.auth.accessToken, {
           entityId: event.organizationId,
           entityType: this.assetService.ORGANIZATION_TYPE,
           assetType: [this.assetService.GOOGLE_CLOUD_STORAGE_CONSENT_PDF, this.assetService.ORGANIZATION_CONSENT_TEXT],
@@ -182,7 +182,7 @@ export default class UpdateEventController {
       this.uiService.notify('Start Date / Time must be before End Date / Time');
       this.$scope.loading = false;
     } else {
-      this.eventService.update(this.storage.auth.idToken, eventCopy).then(() => {
+      this.eventService.update(this.storage.auth.accessToken, eventCopy).then(() => {
         this.$state.go('application.internal.event.read');
         this.uiService.notify('Event updated');
       }, (response) => {

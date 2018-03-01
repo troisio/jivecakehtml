@@ -65,7 +65,7 @@ export default class CreateEventController {
   createEvent(event) {
     this.$scope.loading = true;
 
-    return this.eventService.create(this.storage.auth.idToken, event.organizationId, event).then((event) => {
+    return this.eventService.create(this.storage.auth.accessToken, event.organizationId, event).then((event) => {
       this.$mdDialog.hide().then(() => {
         this.$state.go('application.internal.event.read', {highlight: event.id});
         this.uiService.notify('Event created');

@@ -6,9 +6,9 @@ import './polyfill/from';
 import 'whatwg-fetch';
 
 import angular from 'angular';
+import lockFromState from './lockFromState';
 
 import 'event-source-polyfill';
-import 'angular-lock';
 import 'ui-cropper';
 
 import 'script-loader!ui-cropper/compile/minified/ui-cropper.js';
@@ -86,6 +86,26 @@ if (!window.Promise) {
   window.Promise = Promise;
 }
 
+const onAuthentication = new Promise((resolve, reject) => {
+  const lock = lockFromState({});
+
+  lock.on('authorization_error', (authorization_error) => {
+    reject(authorization_error);
+  });
+
+  lock.on('authenticated', (auth) => {
+    fetch(`${settings.jivecakeapi.uri}/auth0/api/v2/users/${auth.idTokenPayload.sub}`, {
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`
+      }
+    })
+    .then(response => response.ok ? response.json() : Promise.reject(response))
+    .then((profile) => {
+      resolve({auth, profile});
+    }, reject);
+  });
+});
+
 const module = angular.module('jivecakeweb', [
   jiveCakeClassModule.name,
   jiveCakeServiceModule.name,
@@ -99,8 +119,7 @@ const module = angular.module('jivecakeweb', [
   angularAria,
   angularMessages,
   angularJwt,
-  'uiCropper',
-  'auth0.lock'
+  'uiCropper'
 ])
 .filter('featureTypeFilter', featureTypeFilter)
 .service('HTTPInterceptor', HTTPInterceptor)
@@ -110,6 +129,7 @@ const module = angular.module('jivecakeweb', [
 .filter('browserTimeZoneAbbreviation', browserTimeZoneAbbreviation)
 .filter('currencySymbolFilter', currencySymbolFilter)
 .constant('settings', settings)
+.constant('onAuthentication', onAuthentication)
 .config(configuration)
 .run(run)
 .controller('ApplicationController', ApplicationController)

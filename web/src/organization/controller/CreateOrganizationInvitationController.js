@@ -30,7 +30,7 @@ export default class CreateOrganizationInvitationController {
     this.$scope.loading = true;
 
     this.organizationInvitationService.create(
-      storage.auth.idToken,
+      storage.auth.accessToken,
       this.organization.id,
       invitation
     ).then((response) => {

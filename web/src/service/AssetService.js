@@ -1,3 +1,5 @@
+import URLSearchParams from 'url-search-params';
+
 export default class AssetService {
   constructor($http, settings) {
     this.$http = $http;
@@ -11,15 +13,22 @@ export default class AssetService {
     this.ORGANIZATION_CONSENT_TEXT = 2;
   }
 
-  search(token, params) {
-    const url = [this.settings.jivecakeapi.uri, 'asset'].join('/');
+  search(token, query) {
+    const params = new URLSearchParams();
 
-    return this.$http.get(url, {
-      params: params,
-      headers: {
-        Authorization: 'Bearer ' + token
+    for (let key in query) {
+      const value = query[key];
+      const values = Array.isArray(value) ? value : [value];
+      for (let value of values) {
+        params.append(key, value);
       }
-    }).then(response => response.data);
+    }
+
+    return fetch(`${this.settings.jivecakeapi.uri}/asset?${params.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then(response => response.ok ? response.json() : Promise.reject(response));
   }
 
   getUserImages(token, params) {
