@@ -116,7 +116,9 @@ export default class UpdateAccountController {
 
     let userUpdateFuture;
 
-    if (!this.$scope.isIdentityProviderAccount) {
+    if (this.$scope.isIdentityProviderAccount) {
+      userUpdateFuture = Promise.resolve();
+    } else {
       const body = {
         email: user.email,
         user_metadata: {
@@ -130,24 +132,36 @@ export default class UpdateAccountController {
         storage.auth.idTokenPayload.sub,
         body
       );
-    } else {
-      userUpdateFuture = Promise.resolve();
     }
 
-    Promise.all([imageFuture, userUpdateFuture]).then(() => {
-      this.uiService.notify('Successfully updated');
-      this.run();
-    }, (response) => {
-      const text = response.status === 409 ? 'Email has already been taken' : 'Unable to update user';
+    Promise.all([imageFuture, userUpdateFuture]).then((responses) => {
+      const [imageResponse, updateResponse] = responses;
+      let text = 'Successfully updated';
+
+      if (updateResponse && !updateResponse.ok) {
+        text = responses[1].status === 409 ? 'Email has already been taken' : 'Unable to update user';
+      }
+
+      if (imageResponse && !imageResponse.ok) {
+        text = 'Unable tp update image';
+      }
+
       this.uiService.notify(text);
-    }).then(() => {}, () => {}).then(() => {
-      this.$scope.loading = false;
+      this.run();
+    }, () => {
+      this.uiService.notify('Unable to update');
+    }).then(() => {}, (e) => {
+      console.log(e);
+
+    }).then(() => {
       this.reset();
+      this.$timeout();
     });
   }
 
   reset() {
     this.$scope.showCroppingDiv = false;
+    this.$scope.loading = false;
     this.$scope.image = null;
     document.querySelector('[name=photo]').value = '';
   }

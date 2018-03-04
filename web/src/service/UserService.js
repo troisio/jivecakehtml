@@ -21,16 +21,17 @@ export default class UserService {
     return result;
   }
 
-  uploadSelfie(token, user_id, data, contentType) {
+  uploadSelfie(token, user_id, body, contentType) {
     const url = [this.settings.jivecakeapi.uri, 'user', user_id, 'selfie'].join('/');
 
-    return this.$http.post(url, data, {
+    return fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': contentType
       },
-      transformRequest: []
-    }).then(response => response.data);
+      method: 'POST',
+      body: body
+    });
   }
 
   hasGoogleIdentity(user) {
