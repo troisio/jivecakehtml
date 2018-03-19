@@ -158,6 +158,11 @@ export default [
       template: myTransactionPartial,
       controller: 'MyTransactionController',
       controllerAs: 'controller'
+    })
+    .state('impersonation', {
+      url: '/impersonation/{userId}',
+      template: '',
+      controller: 'ImpersonationController'
     });
   }
 ];

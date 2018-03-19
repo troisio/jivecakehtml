@@ -47,6 +47,7 @@ import InternalApplicationController from './application/controller/InternalAppl
 import OAuthRedirectController from './access/controller/OAuthRedirectController';
 import EmailVerifiedController from './access/controller/EmailVerifiedController';
 import SessionWarningController from './access/controller/SessionWarningController';
+import ImpersonationController from './access/controller/ImpersonationController';
 
 import CreateEventController from './event/controller/CreateEventController';
 import CreateOrganizationAndEventController from './event/controller/CreateOrganizationAndEventController';
@@ -138,6 +139,7 @@ const module = angular.module('jivecakeweb', [
 .controller('OAuthRedirectController', OAuthRedirectController)
 .controller('EmailVerifiedController', EmailVerifiedController)
 .controller('SessionWarningController', SessionWarningController)
+.controller('ImpersonationController', ImpersonationController)
 
 .controller('CreateEventController', CreateEventController)
 .controller('CreateOrganizationAndEventController', CreateOrganizationAndEventController)

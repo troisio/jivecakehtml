@@ -1,7 +1,8 @@
 export default class UserService {
-  constructor($http, transactionService, settings, db) {
+  constructor($http, transactionService, storageService, settings, db) {
     this.$http = $http;
     this.transactionService = transactionService;
+    this.storageService = storageService;
     this.settings = settings;
     this.db = db;
   }
@@ -121,6 +122,16 @@ export default class UserService {
       return this.db.insertOrReplace().into(userTable).values(rows).exec();
     });
   }
+
+  writeUserToken(userId, token) {
+    return fetch(`${this.settings.jivecakeapi.uri}/user/${userId}/token`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(p => p.ok ? p.json() : Promise.reject(p));
+  }
 }
 
-UserService.$inject = ['$http', 'TransactionService', 'settings', 'db'];
+UserService.$inject = ['$http', 'TransactionService', 'StorageService', 'settings', 'db'];

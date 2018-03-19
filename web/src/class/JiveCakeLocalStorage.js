@@ -4,6 +4,5 @@ export default class JiveCakeLocalStorage {
     this.profile = null;
     this.timeCreated = null;
     this.timeUpdated = null;
-    this.onBoarding = null;
   }
 }

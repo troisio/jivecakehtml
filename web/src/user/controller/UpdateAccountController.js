@@ -150,9 +150,7 @@ export default class UpdateAccountController {
       this.run();
     }, () => {
       this.uiService.notify('Unable to update');
-    }).then(() => {}, (e) => {
-      console.log(e);
-
+    }).then(() => {}, () => {
     }).then(() => {
       this.reset();
       this.$timeout();
